@@ -3,6 +3,7 @@ import type { ReadableStream as NodeReadableStream } from 'node:stream/web'
 import { env } from 'hono/adapter'
 import { getContext } from 'hono/context-storage'
 import { getDirectories } from '../../constants/env.ts'
+import { getStoragePath } from './storage-path.ts'
 
 export function createStorage() {
   const c = getContext()
@@ -13,15 +14,27 @@ export function createStorage() {
 
   const { storageDirectory } = getDirectories()
 
+  // Ids that would reach outside the storage directory are treated as files that don't exist, or refused when writing
+  function getWritablePath(id: string) {
+    const filePath = getStoragePath(storageDirectory, id)
+    if (!filePath) {
+      throw new Error('Invalid file id')
+    }
+    return filePath
+  }
+
   return {
     async head(id: string) {
-      const filePath = path.join(storageDirectory, id)
+      const filePath = getStoragePath(storageDirectory, id)
+      if (!filePath) {
+        return false
+      }
       const { default: fs } = await import('fs-extra')
       return fs.pathExists(filePath)
     },
 
     async put(id: string, file: Blob) {
-      const filePath = path.join(storageDirectory, id)
+      const filePath = getWritablePath(id)
       const { default: fs } = await import('fs-extra')
       await fs.ensureDir(path.dirname(filePath))
       const { DiskFile } = await import('./disk-file.ts')
@@ -46,7 +59,10 @@ export function createStorage() {
     // Streams the file from disk as it's sent, so it never sits in memory whole whatever its size. Takes the same range
     // option as an R2 bucket, for partial requests
     async get(id: string, options?: { range?: { length?: number; offset: number } }) {
-      const filePath = path.join(storageDirectory, id)
+      const filePath = getStoragePath(storageDirectory, id)
+      if (!filePath) {
+        return
+      }
       const { createReadStream } = await import('node:fs')
       const { stat } = await import('node:fs/promises')
       const { Readable } = await import('node:stream')
@@ -70,7 +86,7 @@ export function createStorage() {
     },
 
     async delete(id: string) {
-      const filePath = path.join(storageDirectory, id)
+      const filePath = getWritablePath(id)
       const { default: fs } = await import('fs-extra')
       await fs.remove(filePath)
     },

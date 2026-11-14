@@ -32,4 +32,5 @@ export const files = new Hono().get(':id{.+}', async (c) => {
     }
     return createFileResponse(file, id)
   }
+  return c.notFound()
 })
