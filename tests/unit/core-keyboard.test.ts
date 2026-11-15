@@ -1,14 +1,23 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
+import { resolveConsole } from '#@/consoles/registry.ts'
 import { defaultPreference } from '#@/constants/preference.ts'
-import {
-  getArcadeKeyboard,
-  getColecoVisionKeyboard,
-  getCoreKeyboardConfig,
-  getGenesisKeyboard,
-} from '#@/pages/library/utils/core-keyboard.ts'
+import { getColecoVisionKeyboard, getConsoleKeyboardConfig, getControllerKeyboard } from '#@/input/keyboard.ts'
 
 const defaults = defaultPreference.input.keyboardMapping as Record<string, string>
+
+// The extra keys a console and emulator get
+function getCoreKeyboardConfig(core: string, mapping: Record<string, string>, platform: string) {
+  return getConsoleKeyboardConfig(resolveConsole(platform, core), mapping)
+}
+
+// The Genesis's and an arcade cabinet's keys, from their controllers in the registry
+function getGenesisKeyboard(mapping: Record<string, string>) {
+  return getControllerKeyboard(resolveConsole('genesis', 'genesis_plus_gx').controller, mapping)
+}
+function getArcadeKeyboard(mapping: Record<string, string>) {
+  return getControllerKeyboard(resolveConsole('arcade', 'fbneo').controller, mapping)
+}
 
 await describe('ColecoVision keys', async () => {
   await it('puts the keypad on the number keys', () => {

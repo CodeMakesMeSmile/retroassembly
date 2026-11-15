@@ -8,6 +8,7 @@ import useSWRImmutable from 'swr/immutable'
 import { client } from '#@/api/client.ts'
 import { resolveConsole } from '#@/consoles/registry.ts'
 import type { Rom } from '#@/controllers/roms/get-roms.ts'
+import { buildInputConfig } from '#@/input/build-input-config.ts'
 import {
   useEmulatorLaunched,
   useIsFullscreen,
@@ -17,13 +18,11 @@ import {
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
 import { useRouter } from '#@/pages/library/hooks/use-router.ts'
 import { closeAudioContexts } from '#@/pages/library/utils/audio-contexts.ts'
-import { getCoreKeyboardConfig } from '#@/pages/library/utils/core-keyboard.ts'
 import { getFileUrl } from '#@/pages/library/utils/file.ts'
 import { focus, offCancel, onCancel } from '#@/pages/library/utils/spatial-navigation.ts'
 import { attachVirtualGamepad } from '#@/pages/library/utils/virtual-gamepad.ts'
 import type { loader } from '#@/pages/routes/library-platform-rom.tsx'
 import { getGlobalCSSVars } from '#@/utils/isomorphic/misc.ts'
-import { toRetroarchInputNames } from '#@/utils/isomorphic/retroarch-input-names.ts'
 import { usePreference } from '../../../hooks/use-preference.ts'
 import { useEmulatorGamepadMapping, useEmulatorLazy } from '../emulator-session-provider.tsx'
 
@@ -32,10 +31,6 @@ type RetroarchConfig = Partial<NostalgistOption['retroarchConfig']>
 
 const defaultRetroarchConfig: RetroarchConfig = {
   fastforward_ratio: 10,
-  input_player1_analog_dpad_mode: 1,
-  input_player2_analog_dpad_mode: 1,
-  input_player3_analog_dpad_mode: 1,
-  input_player4_analog_dpad_mode: 1,
   // RetroArch would otherwise freeze while the page is hidden, before the game can be saved. The page pauses it then
   pause_nonactive: false,
   rewind_granularity: 4,
@@ -103,63 +98,20 @@ export function useEmulator() {
       core,
       retroarchConfig: {
         ...defaultRetroarchConfig,
-        ...toRetroarchInputNames(preference.input.keyboardMapping),
-        ...toRetroarchInputNames(emulatorGamepadMapping),
-        // this might be a bug of retroarch's emscripten build, y plus and y minus are swapped
-        input_player1_l_y_minus: preference.input.keyboardMapping.input_player1_l_y_plus,
-        input_player1_l_y_plus: preference.input.keyboardMapping.input_player1_l_y_minus,
-        // Keys for inputs this emulator needs that the shared mapping leaves unbound, such as the N64's Z, C buttons and
-        // separate stick and D-pad
-        ...getCoreKeyboardConfig(core, preference.input.keyboardMapping, rom.platform),
+        // The keyboard, gamepad and on-screen gamepad, as this console's controller
+        ...buildInputConfig({
+          console: resolveConsole(rom.platform, core),
+          gamepad: emulatorGamepadMapping,
+          keyboard: preference.input.keyboardMapping,
+          remapDirectory,
+          touch: hasAnalogStickOnScreen(),
+        }).retroarchConfig,
         rewind_buffer_size: launchProfile.rewindBufferSize,
         rewind_enable: preference.emulator.platform[rom.platform].rewindEnabled,
         run_ahead_enabled: launchProfile.runAhead,
         video_smooth: preference.emulator.videoSmooth,
         // A larger audio buffer keeps sound from crackling when a frame takes too long
         ...(launchProfile.audioLatency ? { audio_latency: launchProfile.audioLatency } : {}),
-        // On a touch screen the N64's on-screen controls have their own analog stick, so the D-pad is the D-pad again
-        // Its sticks are the on-screen gamepad's axes: the left stick moves, the right stick is the C buttons
-        // The ColecoVision's on-screen keypad presses 9 and 0 by pushing the left stick, which must then stay a stick
-        ...(launchProfile.stickAxes === 'left' && hasAnalogStickOnScreen()
-          ? {
-              input_player1_analog_dpad_mode: 0,
-              input_player1_l_x_minus_axis: '-0',
-              input_player1_l_x_plus_axis: '+0',
-              input_player1_l_y_minus_axis: '-1',
-              input_player1_l_y_plus_axis: '+1',
-            }
-          : {}),
-        // The PlayStation's on-screen controls are a DualShock's, with two sticks: the emulator is told so by a remap
-        // file, and its sticks are the on-screen gamepad's axes. Games that don't use the sticks still see a digital pad
-        ...(launchProfile.dualShockRemap && hasAnalogStickOnScreen()
-          ? {
-              input_player1_analog_dpad_mode: 0,
-              input_player1_l_x_minus_axis: '-0',
-              input_player1_l_x_plus_axis: '+0',
-              input_player1_l_y_minus_axis: '-1',
-              input_player1_l_y_plus_axis: '+1',
-              input_player1_r_x_minus_axis: '-2',
-              input_player1_r_x_plus_axis: '+2',
-              input_player1_r_y_minus_axis: '-3',
-              input_player1_r_y_plus_axis: '+3',
-              input_remapping_directory: remapDirectory,
-            }
-          : {}),
-        // The Atari 5200's stick is the on-screen gamepad's left stick, and its keypad presses most digits by pushing the
-        // right stick; the N64's left stick moves and its right stick is the C buttons. Both sticks are their axes
-        ...(launchProfile.stickAxes === 'both' && !launchProfile.dualShockRemap && hasAnalogStickOnScreen()
-          ? {
-              input_player1_analog_dpad_mode: 0,
-              input_player1_l_x_minus_axis: '-0',
-              input_player1_l_x_plus_axis: '+0',
-              input_player1_l_y_minus_axis: '-1',
-              input_player1_l_y_plus_axis: '+1',
-              input_player1_r_x_minus_axis: '-2',
-              input_player1_r_x_plus_axis: '+2',
-              input_player1_r_y_minus_axis: '-3',
-              input_player1_r_y_plus_axis: '+3',
-            }
-          : {}),
       },
       retroarchCoreConfig: preference.emulator.core[core],
       rom: romObject,

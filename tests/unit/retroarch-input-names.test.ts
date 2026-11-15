@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { toRetroarchInputNames } from '#@/utils/isomorphic/retroarch-input-names.ts'
+import { toRetroarchInputNames } from '#@/input/retropad.ts'
 
 await describe('RetroArch input names', async () => {
   await it('renames L1 and R1 to l and r, for keys and controller buttons', () => {

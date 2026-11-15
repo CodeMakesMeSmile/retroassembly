@@ -3,6 +3,7 @@ import { type ReactNode, type RefObject, useCallback, useEffect, useRef, useStat
 import { useTranslation } from 'react-i18next'
 import { twMerge } from 'tailwind-merge'
 import { resolveConsole } from '#@/consoles/registry.ts'
+import type { RetroPadButton } from '#@/input/retropad.ts'
 import { useEmulatorLaunched } from '#@/pages/library/atoms.ts'
 import { useGamepads } from '#@/pages/library/hooks/use-gamepads.ts'
 import { usePreference } from '#@/pages/library/hooks/use-preference.ts'
@@ -32,7 +33,6 @@ import { MasterSystemControls } from './sms-controls.tsx'
 import { SnesControls } from './snes-controls.tsx'
 import { VbControls } from './vb-controls.tsx'
 import { VirtualGamepadButton } from './virtual-gamepad-button.tsx'
-import { getVirtualGamepadLabels, type VirtualGamepadLabelButton } from './virtual-gamepad-labels.ts'
 import { WonderSwanControls } from './wonderswan-controls.tsx'
 
 type HoldCommand = 'FAST_FORWARD_HOLD' | 'REWIND'
@@ -257,7 +257,7 @@ function DSControls({
 }
 
 // X, Y, A and B around a diamond, by their grid cells
-const faceButtons: [VirtualGamepadLabelButton & ('a' | 'b' | 'x' | 'y'), string][] = [
+const faceButtons: [RetroPadButton & ('a' | 'b' | 'x' | 'y'), string][] = [
   ['x', 'col-start-2 row-start-1'],
   ['y', 'col-start-1 row-start-2'],
   ['a', 'col-start-3 row-start-2'],
@@ -279,8 +279,6 @@ export function GameOverlayVirtualGamepad() {
   const { coin: isArcade, controls } = rom ? resolveConsole(rom.platform, core) : { coin: false, controls: 'generic' }
   const [keypadOpen, setKeypadOpen] = useState(false)
   const closeKeypad = useCallback(() => setKeypadOpen(false), [])
-  // Each system's own names for the buttons; null hides a button its emulator does nothing with
-  const labels = getVirtualGamepadLabels(rom?.platform, core)
   const dsControls = useRef<HTMLDivElement>(null)
   useFitGameAboveControls(launched && controls === 'ds', dsControls)
   // Rotated for a game played upright, the WonderSwan's picture is tall; in portrait it's kept above the controls
@@ -388,36 +386,28 @@ export function GameOverlayVirtualGamepad() {
               clsx({ hidden: !gamepadVisible }),
             )}
           >
-            {labels.l === null && labels.l2 === null ? null : (
-              <div className='flex w-full gap-2'>
-                {labels.l === null ? null : (
-                  <VirtualGamepadButton buttonName='l' className='flex-1 rounded px-2 py-1 ring ring-white/20'>
-                    {labels.l}
-                  </VirtualGamepadButton>
-                )}
-                {labels.l2 === null ? null : (
-                  <VirtualGamepadButton buttonName='l2' className='flex-1 rounded px-2 py-1 ring ring-white/20'>
-                    {labels.l2}
-                  </VirtualGamepadButton>
-                )}
-              </div>
-            )}
-            <DPad className='size-42' />
-            {labels.select === null ? null : (
-              <VirtualGamepadButton buttonName='select' className='rounded py-1 text-xs ring ring-white/20'>
-                {isArcade ? (
-                  <>
-                    <span className='icon-[mdi--hand-coin]' />
-                    {t('emulator.coin')}
-                  </>
-                ) : (
-                  <>
-                    {labels.select === 'Select' ? <span className='icon-[mdi--menu]' /> : null}
-                    {labels.select}
-                  </>
-                )}
+            <div className='flex w-full gap-2'>
+              <VirtualGamepadButton buttonName='l' className='flex-1 rounded px-2 py-1 ring ring-white/20'>
+                L1
               </VirtualGamepadButton>
-            )}
+              <VirtualGamepadButton buttonName='l2' className='flex-1 rounded px-2 py-1 ring ring-white/20'>
+                L2
+              </VirtualGamepadButton>
+            </div>
+            <DPad className='size-42' />
+            <VirtualGamepadButton buttonName='select' className='rounded py-1 text-xs ring ring-white/20'>
+              {isArcade ? (
+                <>
+                  <span className='icon-[mdi--hand-coin]' />
+                  {t('emulator.coin')}
+                </>
+              ) : (
+                <>
+                  <span className='icon-[mdi--menu]' />
+                  Select
+                </>
+              )}
+            </VirtualGamepadButton>
           </div>
 
           <div
@@ -426,36 +416,28 @@ export function GameOverlayVirtualGamepad() {
               clsx({ hidden: !gamepadVisible }),
             )}
           >
-            {labels.r === null && labels.r2 === null ? null : (
-              <div className='flex w-full gap-2'>
-                {labels.r2 === null ? null : (
-                  <VirtualGamepadButton buttonName='r2' className='flex-1 rounded px-2 py-1 ring ring-white/20'>
-                    {labels.r2}
-                  </VirtualGamepadButton>
-                )}
-                {labels.r === null ? null : (
-                  <VirtualGamepadButton buttonName='r' className='flex-1 rounded px-2 py-1 ring ring-white/20'>
-                    {labels.r}
-                  </VirtualGamepadButton>
-                )}
-              </div>
-            )}
+            <div className='flex w-full gap-2'>
+              <VirtualGamepadButton buttonName='r2' className='flex-1 rounded px-2 py-1 ring ring-white/20'>
+                R2
+              </VirtualGamepadButton>
+              <VirtualGamepadButton buttonName='r' className='flex-1 rounded px-2 py-1 ring ring-white/20'>
+                R1
+              </VirtualGamepadButton>
+            </div>
             <div className='grid grid-cols-3 grid-rows-3 *:size-14 *:rounded-full'>
-              {faceButtons.map(([button, position]) =>
-                labels[button] === null ? null : (
-                  <VirtualGamepadButton
-                    buttonName={button}
-                    className={twMerge(position, 'ring ring-white/20', clsx({ 'text-xs': labels[button].length > 2 }))}
-                    group='face'
-                    key={button}
-                  >
-                    {labels[button]}
-                  </VirtualGamepadButton>
-                ),
-              )}
+              {faceButtons.map(([button, position]) => (
+                <VirtualGamepadButton
+                  buttonName={button}
+                  className={twMerge(position, 'ring ring-white/20')}
+                  group='face'
+                  key={button}
+                >
+                  {button.toUpperCase()}
+                </VirtualGamepadButton>
+              ))}
             </div>
             <VirtualGamepadButton buttonName='start' className='rounded py-1 text-xs ring ring-white/20'>
-              <span className='icon-[mdi--play]' /> {labels.start}
+              <span className='icon-[mdi--play]' /> Start
             </VirtualGamepadButton>
           </div>
         </>
