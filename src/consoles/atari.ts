@@ -13,6 +13,7 @@ export const atariConsoles = {
       releaseDate: '1977-09-11T00:00:00-07:00',
     },
     libretroName: 'Atari - 2600',
+    // Stella, the Atari 2600's emulator, reads the joystick from the on-screen gamepad
     setups: [
       {
         controls: 'atari2600',
@@ -37,6 +38,7 @@ export const atariConsoles = {
       releaseDate: '1982-11-01T00:00:00-08:00',
     },
     libretroName: 'Atari - 5200',
+    // a5200 reads the stick and the keypad's digits from the on-screen gamepad's sticks
     setups: [
       {
         controls: 'atari5200',
@@ -65,6 +67,7 @@ export const atariConsoles = {
       releaseDate: '1986-05-01T00:00:00-07:00',
     },
     libretroName: 'Atari - 7800',
+    // ProSystem, the Atari 7800's emulator, reads the joystick from the on-screen gamepad
     setups: [
       {
         controls: 'atari7800',
@@ -90,6 +93,7 @@ export const atariConsoles = {
       releaseDate: '1989-09-01T00:00:00-07:00',
     },
     libretroName: 'Atari - Lynx',
+    // Beetle Lynx reads A, B, both Options, Pause and Rotate as the Lynx has them
     setups: [
       {
         controls: 'lynx',

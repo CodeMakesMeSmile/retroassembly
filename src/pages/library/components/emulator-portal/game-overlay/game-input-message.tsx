@@ -1,6 +1,7 @@
 import { capitalize, compact } from 'es-toolkit'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
+import { resolveConsole } from '#@/consoles/registry.ts'
 import { useGamepadMapping } from '#@/pages/library/hooks/use-gamepad-mapping.ts'
 import { useGamepads } from '#@/pages/library/hooks/use-gamepads.ts'
 import { useInputMapping } from '#@/pages/library/hooks/use-input-mapping.ts'
@@ -70,10 +71,14 @@ export function GameInputMessage() {
   const rom = useRom()
   const rewindEnabled = rom ? preference.emulator.platform[rom.platform].rewindEnabled : true
   // Arcade games take a coin with Select, which the hint otherwise doesn't mention
-  const coinKey = rom?.platform === 'arcade' ? sharedKeyboardMapping.input_player1_select : undefined
   const core = rom ? preference.emulator.platform[rom.platform]?.core : undefined
+  // How the keys are described, set per console and emulator in the console registry
+  const { coin, hints, keyboard } =
+    rom && core ? resolveConsole(rom.platform, core) : { coin: false, hints: 'generic', keyboard: 'standard' }
+  const coinKey = coin ? sharedKeyboardMapping.input_player1_select : undefined
   // O2EM takes the keys the Odyssey²'s keyboard has off the controller buttons and shortcuts
-  const keyboardMapping = core === 'o2em' ? getOdyssey2Keyboard(sharedKeyboardMapping).mapping : sharedKeyboardMapping
+  const keyboardMapping =
+    keyboard === 'odyssey2' ? getOdyssey2Keyboard(sharedKeyboardMapping).mapping : sharedKeyboardMapping
   const n64Keys = getN64Keyboard(keyboardMapping).keys
 
   // On the N64 the keys play its controller: the RetroPad's B, Y, L2 and right stick are its A, B, Z and C buttons (its
@@ -127,7 +132,7 @@ export function GameInputMessage() {
   ]
 
   // On the Genesis the keys are named after its buttons: A B C, the 6-button pad's X Y Z, Start and Mode
-  const isGenesis = core === 'genesis_plus_gx' && (rom?.platform === 'genesis' || rom?.platform === 'megadrive')
+  const isGenesis = hints === 'genesis'
   const genesisKeys = getGenesisKeyboard(keyboardMapping).keys
   const genesisMessages: { keyNames: string[]; message: ReactNode }[] = [
     {
@@ -157,7 +162,7 @@ export function GameInputMessage() {
 
   // Arcade games with FinalBurn Neo: the stick, and buttons 1 to 6 by their numbers, coloured as on screen. Coin is
   // listed with the other arcade keys below
-  const isFBNeo = core === 'fbneo'
+  const isFBNeo = hints === 'arcade'
   const arcadeKeys = getArcadeKeyboard(keyboardMapping).keys
   const arcadeColors: Record<string, string | undefined> = {
     '1': '#ff5a5a',
@@ -230,11 +235,11 @@ export function GameInputMessage() {
         { keyNames: gamepadMapping.$fast_forward.split(/\s+\+\s/u), message: t('emulator.fastForward') },
       ]
     : [
-        ...(core === 'mupen64plus_next' ? n64Messages : []),
-        ...(core === 'gearcoleco' ? colecoVisionMessages : []),
+        ...(hints === 'n64' ? n64Messages : []),
+        ...(hints === 'colecovision' ? colecoVisionMessages : []),
         ...(isGenesis ? genesisMessages : []),
         ...(isFBNeo ? arcadeMessages : []),
-        ...(core === 'mupen64plus_next' || core === 'gearcoleco' || isGenesis || isFBNeo ? [] : genericMessages),
+        ...(hints === 'generic' ? genericMessages : []),
         ...(coinKey ? [{ keyNames: [modifierKeyNames[coinKey] ?? coinKey], message: t('emulator.insertCoin') }] : []),
         { keyNames: compact([keyboardMapping.$pause]), message: t('emulator.pause') },
         ...(rewindEnabled

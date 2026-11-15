@@ -30,6 +30,8 @@ export const otherConsoles = {
       releaseDate: '1976-11-01T00:00:00-08:00',
     },
     libretroName: 'Fairchild - Channel F',
+    // FreeChaF reads the Channel F's stick, its push, pull and twists, Console and Swap; the joystick goes through the
+    // on-screen gamepad
     setups: [
       {
         controls: 'channelf',
@@ -55,6 +57,7 @@ export const otherConsoles = {
       releaseDate: '1982-08-01T00:00:00-07:00',
     },
     libretroName: 'Coleco - ColecoVision',
+    // The keypad opens from beside pause
     setups: [
       {
         controls: 'colecovision',
@@ -80,6 +83,7 @@ export const otherConsoles = {
       releaseDate: '1978-12-01T00:00:00-08:00',
     },
     libretroName: 'Magnavox - Odyssey2',
+    // O2EM reads the Odyssey²'s joystick, its action button and its keyboard, which the Videopac shares
     setups: [
       {
         controls: 'odyssey2',
@@ -105,6 +109,7 @@ export const otherConsoles = {
       releaseDate: '1983-08-01T00:00:00-07:00',
     },
     libretroName: 'Philips - Videopac+',
+    // O2EM reads the Videopac's joystick, its action button and its keyboard, as the Odyssey²'s
     setups: [
       {
         controls: 'odyssey2',

@@ -13,6 +13,7 @@ export const bandaiConsoles = {
       releaseDate: '1999-03-04T00:00:00-08:00',
     },
     libretroName: 'Bandai - WonderSwan',
+    // Beetle WonderSwan reads both pads, A, B, Start and Rotate as the console has them
     setups: [
       {
         controls: 'wonderswan',
@@ -31,6 +32,7 @@ export const bandaiConsoles = {
       releaseDate: '2000-12-09T00:00:00-08:00',
     },
     libretroName: 'Bandai - WonderSwan Color',
+    // Beetle WonderSwan reads both pads, A, B, Start and Rotate as the console has them
     setups: [
       {
         controls: 'wonderswan',

@@ -21,6 +21,7 @@ export const nintendoConsoles = {
       releaseDate: '1983-07-15T00:00:00-07:00',
     },
     libretroName: 'Nintendo - Nintendo Entertainment System',
+    // Every NES emulator reads the controller's buttons as they are
     setups: [
       {
         controls: 'nes',
@@ -53,6 +54,7 @@ export const nintendoConsoles = {
       releaseDate: '1986-02-21T00:00:00-08:00',
     },
     libretroName: 'Nintendo - Family Computer Disk System',
+    // Played with the NES's controls, plus a button that flips the disk
     setups: [
       {
         controls: 'fds',
@@ -71,6 +73,7 @@ export const nintendoConsoles = {
       releaseDate: '1980-04-28T00:00:00-07:00',
     },
     libretroName: 'Handheld Electronic Game',
+    // gw reads the Game & Watch's d-pad, A and B, and its menu from Select and Start
     setups: [
       {
         controls: 'gw',
@@ -95,6 +98,7 @@ export const nintendoConsoles = {
       releaseDate: '1989-04-21T00:00:00-07:00',
     },
     libretroName: 'Nintendo - Game Boy',
+    // Every Game Boy emulator reads the Game Boy's buttons as they are; Game Boy Color games look the same
     setups: [
       {
         controls: 'gb',
@@ -118,6 +122,7 @@ export const nintendoConsoles = {
       releaseDate: '2001-06-11T00:00:00-07:00',
     },
     libretroName: 'Nintendo - Game Boy Advance',
+    // mGBA and VBA Next both read the GBA's buttons as they are
     setups: [
       {
         controls: 'gba',
@@ -141,6 +146,7 @@ export const nintendoConsoles = {
       releaseDate: '1998-10-21T00:00:00-07:00',
     },
     libretroName: 'Nintendo - Game Boy Color',
+    // Every Game Boy emulator reads the Game Boy's buttons as they are; Game Boy Color games look the same
     setups: [
       {
         controls: 'gb',
@@ -177,6 +183,7 @@ export const nintendoConsoles = {
       releaseDate: '2004-11-21T00:00:00-08:00',
     },
     libretroName: 'Nintendo - Nintendo DS',
+    // The bottom screen is a touchscreen; the microphone is held on L3
     setups: [
       {
         controls: 'ds',
@@ -195,6 +202,7 @@ export const nintendoConsoles = {
       releaseDate: '1983-07-15T00:00:00-07:00',
     },
     libretroName: 'Nintendo - Nintendo Entertainment System',
+    // Every NES emulator reads the controller's buttons as they are
     setups: [
       {
         controls: 'nes',
@@ -212,6 +220,7 @@ export const nintendoConsoles = {
       releaseDate: '1994-06-01T00:00:00-07:00',
     },
     libretroName: 'Nintendo - Super Nintendo Entertainment System',
+    // Every Snes9x reads the controller's buttons as they are
     setups: [
       {
         controls: 'snes',
@@ -230,6 +239,7 @@ export const nintendoConsoles = {
       releaseDate: '1990-11-21T00:00:00-08:00',
     },
     libretroName: 'Nintendo - Super Nintendo Entertainment System',
+    // Every Snes9x reads the controller's buttons as they are
     setups: [
       {
         controls: 'snes',

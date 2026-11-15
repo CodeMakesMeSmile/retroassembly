@@ -2,6 +2,7 @@ import { clsx } from 'clsx'
 import { type ReactNode, type RefObject, useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { twMerge } from 'tailwind-merge'
+import { resolveConsole } from '#@/consoles/registry.ts'
 import { useEmulatorLaunched } from '#@/pages/library/atoms.ts'
 import { useGamepads } from '#@/pages/library/hooks/use-gamepads.ts'
 import { usePreference } from '#@/pages/library/hooks/use-preference.ts'
@@ -272,72 +273,22 @@ export function GameOverlayVirtualGamepad() {
   const { preference } = usePreference()
   const rewindEnabled = rom ? preference.emulator.platform[rom.platform].rewindEnabled : true
   const { t } = useTranslation()
-  const isDS = rom?.platform === 'nds'
-  const isN64 = rom?.platform === 'n64'
-  const isColecoVision = rom?.platform === 'colecovision'
+  const { core } = useEmulator()
+  // Which controls this game gets, and whether Select inserts a coin, are set per console and emulator in the console
+  // registry (src/consoles)
+  const { coin: isArcade, controls } = rom ? resolveConsole(rom.platform, core) : { coin: false, controls: 'generic' }
   const [keypadOpen, setKeypadOpen] = useState(false)
   const closeKeypad = useCallback(() => setKeypadOpen(false), [])
-  // Arcade games take a coin with Select
-  const isArcade = rom?.platform === 'arcade'
-  const { core } = useEmulator()
-  // Drawn like its controller with the emulator whose buttons are known; Genesis games on PicoDrive keep the generic
-  // layout
-  // The 32X plays with the Genesis's controller, and PicoDrive, its only emulator, reads it from the same buttons
-  const isGenesis =
-    ((rom?.platform === 'genesis' || rom?.platform === 'megadrive') && core === 'genesis_plus_gx') ||
-    (rom?.platform === 'sega32x' && core === 'picodrive')
-  // Drawn like a cabinet with FinalBurn Neo, whose button numbers are known; MAME 2003-Plus keeps the generic layout
-  const isFBNeo = isArcade && core === 'fbneo'
-  // Every Snes9x reads the controller's buttons as they are
-  // Every NES emulator reads the controller's buttons as they are; the Famicom Disk System's own buttons keep the generic
-  // layout
-  const isNes = rom?.platform === 'nes' || rom?.platform === 'famicom'
-  const isFds = rom?.platform === 'fds' && (core === 'fceumm' || core === 'nestopia')
-  // mGBA and VBA Next both read the GBA's buttons as they are
-  const isGba = rom?.platform === 'gba'
-  // Every Game Boy emulator reads the Game Boy's buttons as they are; Game Boy Color games look the same
-  const isGb = rom?.platform === 'gb' || rom?.platform === 'gbc'
-  // Stella, the Atari 2600's emulator, reads the joystick from the on-screen gamepad
-  const isAtari2600 = rom?.platform === 'atari2600' && core === 'stella2014'
-  // Both Game Gear emulators read buttons 1 and 2 the same way
-  const isGameGear = rom?.platform === 'gamegear'
-  // All three Master System emulators read buttons 1 and 2, and Pause, the same way; the SG-1000, whose controller is
-  // the same, shares its controls
-  const isMasterSystem = rom?.platform === 'sms' || rom?.platform === 'sg-1000'
-  // PCSX ReARMed is told it has a DualShock, whose sticks the on-screen gamepad tilts
-  const isPsx = rom?.platform === 'psx' && core === 'pcsx_rearmed'
-  // Beetle PCE Fast reads II and I, Select and Run, as the controller has them
-  const isPcEngine = rom?.platform === 'pcengine' && core === 'mednafen_pce_fast'
-  // ProSystem, the Atari 7800's emulator, reads the joystick from the on-screen gamepad
-  const isAtari7800 = rom?.platform === 'atari7800' && core === 'prosystem'
-  // Beetle WonderSwan reads both pads, A, B, Start and Rotate as the console has them
-  const isWonderSwan =
-    (rom?.platform === 'wonderswan' || rom?.platform === 'wonderswancolor') && core === 'mednafen_wswan'
-  // a5200 reads the stick and the keypad's digits from the on-screen gamepad's sticks
-  const isAtari5200 = rom?.platform === 'atari5200' && core === 'a5200'
-  // Beetle Lynx reads A, B, both Options, Pause and Rotate as the Lynx has them
-  const isLynx = rom?.platform === 'atarilynx' && core === 'mednafen_lynx'
-  // Beetle Neo Geo Pocket reads A, B and Option as the Pocket has them, for both Pockets
-  const isNgp = (rom?.platform === 'ngp' || rom?.platform === 'ngpc') && core === 'mednafen_ngp'
-  // FreeChaF reads the Channel F's stick, its push, pull and twists, Console and Swap; the joystick goes through the
-  // on-screen gamepad
-  const isChannelF = rom?.platform === 'channelf' && core === 'freechaf'
-  const isVirtualBoy = rom?.platform === 'vb' && core === 'mednafen_vb'
-  // gw reads the Game & Watch's d-pad, A and B, and its menu from Select and Start
-  const isGameAndWatch = rom?.platform === 'gameandwatch' && core === 'gw'
-  // O2EM reads the Odyssey²'s joystick, its action button and its keyboard, which the Videopac shares
-  const isOdyssey2 = (rom?.platform === 'odyssey2' || rom?.platform === 'videopac') && core === 'o2em'
-  const isSnes = (rom?.platform === 'sfc' || rom?.platform === 'snes') && core.startsWith('snes9x')
   // Each system's own names for the buttons; null hides a button its emulator does nothing with
   const labels = getVirtualGamepadLabels(rom?.platform, core)
   const dsControls = useRef<HTMLDivElement>(null)
-  useFitGameAboveControls(launched && isDS, dsControls)
+  useFitGameAboveControls(launched && controls === 'ds', dsControls)
   // Rotated for a game played upright, the WonderSwan's picture is tall; in portrait it's kept above the controls
   const wonderSwanControlsTop = useRef<HTMLDivElement>(null)
-  useFitGameAboveControls(launched && isWonderSwan, wonderSwanControlsTop)
+  useFitGameAboveControls(launched && controls === 'wonderswan', wonderSwanControlsTop)
   // So is the Lynx's, rotated for a game played with it held upright
   const lynxControlsTop = useRef<HTMLDivElement>(null)
-  useFitGameAboveControls(launched && isLynx, lynxControlsTop)
+  useFitGameAboveControls(launched && controls === 'lynx', lynxControlsTop)
 
   if (!launched) {
     return
@@ -348,7 +299,7 @@ export function GameOverlayVirtualGamepad() {
       className={twMerge(
         'fixed inset-0 block touch-none lg:hidden',
         // The DS bottom screen is a touchscreen, so touches outside the buttons must reach the game
-        clsx({ 'pointer-events-none! *:pointer-events-auto': isDS }),
+        clsx({ 'pointer-events-none! *:pointer-events-auto': controls === 'ds' }),
       )}
     >
       <div className='top-safe p-x-2 absolute inset-x-0 flex'>
@@ -359,7 +310,7 @@ export function GameOverlayVirtualGamepad() {
           <span className='icon-[mdi--pause]' />
         </VirtualGamepadButton>
         {/* The ColecoVision's and Atari 5200's keypads open from beside pause */}
-        {isColecoVision || isAtari5200 ? (
+        {controls === 'colecovision' || controls === 'atari5200' ? (
           <VirtualGamepadButton
             className={twMerge(
               'left-safe-offset-10 absolute rounded p-2',
@@ -401,58 +352,35 @@ export function GameOverlayVirtualGamepad() {
         </div>
       </div>
 
-      {isDS ? <DSControls controls={dsControls} visible={gamepadVisible} /> : null}
-      {isN64 ? <N64Controls visible={gamepadVisible} /> : null}
-      {isColecoVision ? (
+      {controls === 'ds' ? <DSControls controls={dsControls} visible={gamepadVisible} /> : null}
+      {controls === 'n64' ? <N64Controls visible={gamepadVisible} /> : null}
+      {controls === 'colecovision' ? (
         <ColecoVisionControls keypadOpen={keypadOpen} onKeypadClose={closeKeypad} visible={gamepadVisible} />
       ) : null}
-      {isGenesis ? <GenesisControls visible={gamepadVisible} /> : null}
-      {isFBNeo ? <ArcadeControls visible={gamepadVisible} /> : null}
-      {isSnes ? <SnesControls visible={gamepadVisible} /> : null}
-      {isNes ? <NesControls visible={gamepadVisible} /> : null}
-      {isFds ? <NesControls diskCore={core} visible={gamepadVisible} /> : null}
-      {isGba ? <GbaControls visible={gamepadVisible} /> : null}
-      {isGb ? <GbControls visible={gamepadVisible} /> : null}
-      {isAtari2600 ? <Atari2600Controls visible={gamepadVisible} /> : null}
-      {isGameGear ? <GameGearControls visible={gamepadVisible} /> : null}
-      {isMasterSystem ? <MasterSystemControls visible={gamepadVisible} /> : null}
-      {isPsx ? <PsxControls visible={gamepadVisible} /> : null}
-      {isPcEngine ? <PcEngineControls visible={gamepadVisible} /> : null}
-      {isAtari7800 ? <Atari7800Controls visible={gamepadVisible} /> : null}
-      {isNgp ? <NgpControls visible={gamepadVisible} /> : null}
-      {isChannelF ? <ChannelFControls visible={gamepadVisible} /> : null}
-      {isVirtualBoy ? <VbControls visible={gamepadVisible} /> : null}
-      {isGameAndWatch ? <GwControls visible={gamepadVisible} /> : null}
-      {isOdyssey2 ? <Odyssey2Controls visible={gamepadVisible} /> : null}
-      {isLynx ? <LynxControls top={lynxControlsTop} visible={gamepadVisible} /> : null}
-      {isAtari5200 ? (
+      {controls === 'genesis' ? <GenesisControls visible={gamepadVisible} /> : null}
+      {controls === 'arcade' ? <ArcadeControls visible={gamepadVisible} /> : null}
+      {controls === 'snes' ? <SnesControls visible={gamepadVisible} /> : null}
+      {controls === 'nes' ? <NesControls visible={gamepadVisible} /> : null}
+      {controls === 'fds' ? <NesControls diskCore={core} visible={gamepadVisible} /> : null}
+      {controls === 'gba' ? <GbaControls visible={gamepadVisible} /> : null}
+      {controls === 'gb' ? <GbControls visible={gamepadVisible} /> : null}
+      {controls === 'atari2600' ? <Atari2600Controls visible={gamepadVisible} /> : null}
+      {controls === 'gamegear' ? <GameGearControls visible={gamepadVisible} /> : null}
+      {controls === 'mastersystem' ? <MasterSystemControls visible={gamepadVisible} /> : null}
+      {controls === 'psx' ? <PsxControls visible={gamepadVisible} /> : null}
+      {controls === 'pcengine' ? <PcEngineControls visible={gamepadVisible} /> : null}
+      {controls === 'atari7800' ? <Atari7800Controls visible={gamepadVisible} /> : null}
+      {controls === 'ngp' ? <NgpControls visible={gamepadVisible} /> : null}
+      {controls === 'channelf' ? <ChannelFControls visible={gamepadVisible} /> : null}
+      {controls === 'vb' ? <VbControls visible={gamepadVisible} /> : null}
+      {controls === 'gw' ? <GwControls visible={gamepadVisible} /> : null}
+      {controls === 'odyssey2' ? <Odyssey2Controls visible={gamepadVisible} /> : null}
+      {controls === 'lynx' ? <LynxControls top={lynxControlsTop} visible={gamepadVisible} /> : null}
+      {controls === 'atari5200' ? (
         <Atari5200Controls keypadOpen={keypadOpen} onKeypadClose={closeKeypad} visible={gamepadVisible} />
       ) : null}
-      {isWonderSwan ? <WonderSwanControls top={wonderSwanControlsTop} visible={gamepadVisible} /> : null}
-      {isDS ||
-      isN64 ||
-      isColecoVision ||
-      isGenesis ||
-      isFBNeo ||
-      isSnes ||
-      isNes ||
-      isFds ||
-      isGba ||
-      isGb ||
-      isAtari2600 ||
-      isGameGear ||
-      isMasterSystem ||
-      isPsx ||
-      isPcEngine ||
-      isAtari7800 ||
-      isWonderSwan ||
-      isAtari5200 ||
-      isLynx ||
-      isNgp ||
-      isChannelF ||
-      isVirtualBoy ||
-      isGameAndWatch ||
-      isOdyssey2 ? null : (
+      {controls === 'wonderswan' ? <WonderSwanControls top={wonderSwanControlsTop} visible={gamepadVisible} /> : null}
+      {controls === 'generic' ? (
         <>
           <div
             className={twMerge(
@@ -531,7 +459,7 @@ export function GameOverlayVirtualGamepad() {
             </VirtualGamepadButton>
           </div>
         </>
-      )}
+      ) : null}
     </div>
   )
 }

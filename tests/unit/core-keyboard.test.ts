@@ -38,8 +38,8 @@ await describe('ColecoVision keys', async () => {
   })
 
   await it('only applies to the ColecoVision emulator', () => {
-    assert.deepEqual(getCoreKeyboardConfig('fceumm', defaults), {})
-    assert.equal(getCoreKeyboardConfig('gearcoleco', defaults).input_player1_x, 'num2')
+    assert.deepEqual(getCoreKeyboardConfig('fceumm', defaults, 'nes'), {})
+    assert.equal(getCoreKeyboardConfig('gearcoleco', defaults, 'colecovision').input_player1_x, 'num2')
   })
 })
 

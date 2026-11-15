@@ -19,6 +19,7 @@ export const segaConsoles = {
       releaseDate: '1990-10-06T00:00:00-07:00',
     },
     libretroName: 'Sega - Game Gear',
+    // Both Game Gear emulators read buttons 1 and 2 the same way
     setups: [
       {
         controls: 'gamegear',
@@ -45,6 +46,8 @@ export const segaConsoles = {
       releaseDate: '1989-08-14T00:00:00-07:00',
     },
     libretroName: 'Sega - Mega Drive - Genesis',
+    // Drawn like its controller with the emulator whose buttons are known; Genesis games on PicoDrive keep the generic
+    // layout
     setups: [
       {
         controls: 'genesis',
@@ -74,6 +77,8 @@ export const segaConsoles = {
       releaseDate: '1989-08-14T00:00:00-07:00',
     },
     libretroName: 'Sega - Mega Drive - Genesis',
+    // Drawn like its controller with the emulator whose buttons are known; Mega Drive games on PicoDrive keep the generic
+    // layout
     setups: [
       {
         controls: 'genesis',
@@ -94,6 +99,7 @@ export const segaConsoles = {
       releaseDate: '1994-06-01T00:00:00-07:00',
     },
     libretroName: 'Sega - 32X',
+    // The 32X plays with the Genesis's controller, and PicoDrive, its only emulator, reads it from the same buttons
     setups: [
       {
         controls: 'genesis',
@@ -112,6 +118,7 @@ export const segaConsoles = {
       releaseDate: '1983-07-15T00:00:00-07:00',
     },
     libretroName: 'Sega - SG-1000',
+    // The SG-1000's controller is the Master System's, and shares its controls
     setups: [
       {
         controls: 'mastersystem',
@@ -143,6 +150,7 @@ export const segaConsoles = {
       releaseDate: '1986-09-01T00:00:00-07:00',
     },
     libretroName: 'Sega - Master System - Mark III',
+    // All three Master System emulators read buttons 1 and 2, and Pause, the same way
     setups: [
       {
         controls: 'mastersystem',

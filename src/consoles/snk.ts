@@ -13,6 +13,7 @@ export const snkConsoles = {
       releaseDate: '1998-12-31T00:00:00-08:00',
     },
     libretroName: 'SNK - Neo Geo Pocket',
+    // Beetle Neo Geo Pocket reads A, B and Option as the Pocket has them, for both Pockets
     setups: [
       {
         controls: 'ngp',
@@ -31,6 +32,7 @@ export const snkConsoles = {
       releaseDate: '1999-03-16T00:00:00-08:00',
     },
     libretroName: 'SNK - Neo Geo Pocket Color',
+    // Beetle Neo Geo Pocket reads A, B and Option as the Pocket has them, for both Pockets
     setups: [
       {
         controls: 'ngp',

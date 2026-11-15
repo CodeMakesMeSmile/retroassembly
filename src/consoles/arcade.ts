@@ -83,6 +83,7 @@ export const arcadeConsoles = {
       releaseDate: '1971-10-15T00:00:00-07:00',
     },
     libretroName: 'MAME',
+    // Drawn like a cabinet with FinalBurn Neo, whose button numbers are known; MAME 2003-Plus keeps the generic layout
     setups: [
       {
         controls: 'arcade',

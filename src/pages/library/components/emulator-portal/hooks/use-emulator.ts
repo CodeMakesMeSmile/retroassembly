@@ -6,6 +6,7 @@ import { useLoaderData } from 'react-router'
 import { unstable_serialize, useSWRConfig } from 'swr'
 import useSWRImmutable from 'swr/immutable'
 import { client } from '#@/api/client.ts'
+import { resolveConsole } from '#@/consoles/registry.ts'
 import type { Rom } from '#@/controllers/roms/get-roms.ts'
 import {
   useEmulatorLaunched,
@@ -84,6 +85,8 @@ export function useEmulator() {
 
   const romUrl = getFileUrl(rom.fileId) || ''
   const { core } = preference.emulator.platform[rom.platform] || {}
+  // How this emulator is started and run, from the console registry
+  const launchProfile = useMemo(() => resolveConsole(rom.platform, core).launch, [rom.platform, core])
 
   const platformShader = preference.emulator.platform[rom.platform].shader
   const shader =
@@ -108,16 +111,16 @@ export function useEmulator() {
         // Keys for inputs this emulator needs that the shared mapping leaves unbound, such as the N64's Z, C buttons and
         // separate stick and D-pad
         ...getCoreKeyboardConfig(core, preference.input.keyboardMapping, rom.platform),
-        rewind_buffer_size: ['desmume2015', 'mupen64plus_next', 'pcsx_rearmed'].includes(core) ? 100 : 20,
+        rewind_buffer_size: launchProfile.rewindBufferSize,
         rewind_enable: preference.emulator.platform[rom.platform].rewindEnabled,
-        run_ahead_enabled: !['desmume2015', 'mupen64plus_next', 'pcsx_rearmed'].includes(core),
+        run_ahead_enabled: launchProfile.runAhead,
         video_smooth: preference.emulator.videoSmooth,
         // A larger audio buffer keeps sound from crackling when a frame takes too long
-        ...(core === 'desmume2015' ? { audio_latency: 160 } : {}),
+        ...(launchProfile.audioLatency ? { audio_latency: launchProfile.audioLatency } : {}),
         // On a touch screen the N64's on-screen controls have their own analog stick, so the D-pad is the D-pad again
         // Its sticks are the on-screen gamepad's axes: the left stick moves, the right stick is the C buttons
         // The ColecoVision's on-screen keypad presses 9 and 0 by pushing the left stick, which must then stay a stick
-        ...(core === 'gearcoleco' && hasAnalogStickOnScreen()
+        ...(launchProfile.stickAxes === 'left' && hasAnalogStickOnScreen()
           ? {
               input_player1_analog_dpad_mode: 0,
               input_player1_l_x_minus_axis: '-0',
@@ -128,7 +131,7 @@ export function useEmulator() {
           : {}),
         // The PlayStation's on-screen controls are a DualShock's, with two sticks: the emulator is told so by a remap
         // file, and its sticks are the on-screen gamepad's axes. Games that don't use the sticks still see a digital pad
-        ...(core === 'pcsx_rearmed' && hasAnalogStickOnScreen()
+        ...(launchProfile.dualShockRemap && hasAnalogStickOnScreen()
           ? {
               input_player1_analog_dpad_mode: 0,
               input_player1_l_x_minus_axis: '-0',
@@ -143,21 +146,8 @@ export function useEmulator() {
             }
           : {}),
         // The Atari 5200's stick is the on-screen gamepad's left stick, and its keypad presses most digits by pushing the
-        // right stick, so both sticks are its axes
-        ...(core === 'a5200' && hasAnalogStickOnScreen()
-          ? {
-              input_player1_analog_dpad_mode: 0,
-              input_player1_l_x_minus_axis: '-0',
-              input_player1_l_x_plus_axis: '+0',
-              input_player1_l_y_minus_axis: '-1',
-              input_player1_l_y_plus_axis: '+1',
-              input_player1_r_x_minus_axis: '-2',
-              input_player1_r_x_plus_axis: '+2',
-              input_player1_r_y_minus_axis: '-3',
-              input_player1_r_y_plus_axis: '+3',
-            }
-          : {}),
-        ...(core === 'mupen64plus_next' && hasAnalogStickOnScreen()
+        // right stick; the N64's left stick moves and its right stick is the C buttons. Both sticks are their axes
+        ...(launchProfile.stickAxes === 'both' && !launchProfile.dualShockRemap && hasAnalogStickOnScreen()
           ? {
               input_player1_analog_dpad_mode: 0,
               input_player1_l_x_minus_axis: '-0',
@@ -176,7 +166,7 @@ export function useEmulator() {
       shader,
       state: state?.fileId ? getFileUrl(state.fileId) : undefined,
     }),
-    [romObject, bios, core, preference, emulatorGamepadMapping, shader, state?.fileId, rom.platform],
+    [romObject, bios, core, preference, emulatorGamepadMapping, shader, state?.fileId, rom.platform, launchProfile],
   )
 
   // Many parts of the game screen use this hook, and some appear only once the game is running. Preparing again each
@@ -238,7 +228,7 @@ export function useEmulator() {
       })
     }
 
-    if (core === 'pcsx_rearmed' && hasAnalogStickOnScreen()) {
+    if (launchProfile.dualShockRemap && hasAnalogStickOnScreen()) {
       emulator.getEmulator().on('beforeLaunch', () => writeDualShockRemap(emulator))
     }
 
@@ -267,21 +257,7 @@ export function useEmulator() {
     // The on-screen controls that need more than key presses: the N64's analog stick, the ColecoVision's joystick and
     // keypad, the arcade, Atari and Channel F sticks, the Atari 5200's keypad, the PlayStation's two analog sticks,
     // the Virtual Boy's right d-pad, the Disk System's flip disk button and the Odyssey²'s joystick
-    if (
-      [
-        'a5200',
-        'fbneo',
-        'freechaf',
-        'gearcoleco',
-        'mednafen_vb',
-        'mupen64plus_next',
-        'o2em',
-        'pcsx_rearmed',
-        'prosystem',
-        'stella2014',
-      ].includes(core) ||
-      rom.platform === 'fds'
-    ) {
+    if (launchProfile.attachVirtualGamepad) {
       attachVirtualGamepad(emulator)
     }
     const canvas = emulator.getCanvas()
@@ -302,7 +278,7 @@ export function useEmulator() {
     await noSleep.enable()
 
     // ad-hoc patch for mupen64plus_next
-    if (core === 'mupen64plus_next') {
+    if (launchProfile.nudgeAfterStart) {
       await delay(0)
       emulator.sendCommand('PAUSE_TOGGLE')
       await delay(0)

@@ -31,6 +31,7 @@ export const sonyConsoles = {
       releaseDate: '1994-12-03T00:00:00-08:00',
     },
     libretroName: 'Sony - PlayStation',
+    // PCSX ReARMed is told it has a DualShock, whose sticks the on-screen gamepad tilts
     setups: [
       {
         controls: 'psx',

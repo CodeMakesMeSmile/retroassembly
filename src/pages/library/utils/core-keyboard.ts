@@ -1,3 +1,4 @@
+import { resolveConsole } from '#@/consoles/registry.ts'
 import { toRetroarchInputNames } from '#@/utils/isomorphic/retroarch-input-names.ts'
 
 type KeyboardMapping = Record<string, string>
@@ -248,25 +249,20 @@ export function getDSKeyboard(mapping: KeyboardMapping) {
 }
 
 /** RetroArch settings for the keys an emulator needs beyond the shared keyboard mapping */
-export function getCoreKeyboardConfig(core: string | undefined, mapping: KeyboardMapping, platform?: string) {
-  // Genesis Plus GX also plays the Game Gear and Master System, whose two buttons keep their keys
-  if (core === 'genesis_plus_gx' && (platform === 'genesis' || platform === 'megadrive')) {
-    return getGenesisKeyboard(mapping).config
+export function getCoreKeyboardConfig(core: string | undefined, mapping: KeyboardMapping, platform: string) {
+  if (!core) {
+    return {}
   }
-  if (core === 'fbneo') {
-    return getArcadeKeyboard(mapping).config
+  // Which keys a game needs is set per console and emulator in the console registry. Genesis Plus GX, for one, also
+  // plays the Game Gear and Master System, whose two buttons keep their keys
+  const builders = {
+    arcade: getArcadeKeyboard,
+    colecovision: getColecoVisionKeyboard,
+    ds: getDSKeyboard,
+    genesis: getGenesisKeyboard,
+    n64: getN64Keyboard,
+    odyssey2: getOdyssey2Keyboard,
   }
-  if (core === 'mupen64plus_next') {
-    return getN64Keyboard(mapping).config
-  }
-  if (core === 'gearcoleco') {
-    return getColecoVisionKeyboard(mapping).config
-  }
-  if (core === 'o2em') {
-    return getOdyssey2Keyboard(mapping).config
-  }
-  if (core === 'desmume2015') {
-    return getDSKeyboard(mapping).config
-  }
-  return {}
+  const { keyboard } = resolveConsole(platform, core)
+  return keyboard === 'standard' ? {} : builders[keyboard](mapping).config
 }

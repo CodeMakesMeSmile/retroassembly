@@ -28,6 +28,7 @@ export const necConsoles = {
       releaseDate: '1989-08-29T00:00:00-07:00',
     },
     libretroName: 'NEC - PC Engine - TurboGrafx 16',
+    // Beetle PCE Fast reads II and I, Select and Run, as the controller has them
     setups: [
       {
         controls: 'pcengine',
