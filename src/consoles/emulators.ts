@@ -2,7 +2,12 @@ import type { EmulatorDefinition } from './types.ts'
 
 export const emulators = {
   a5200: { displayName: 'a5200', launch: { attachVirtualGamepad: true, stickAxes: 'both' }, source: 'custom' },
-  desmume2015: { displayName: 'DeSmuME 2015', launch: { audioLatency: 160, heavy: true }, source: 'bundled' },
+  desmume2015: {
+    displayName: 'DeSmuME 2015',
+    launch: { audioLatency: 160, heavy: true },
+    saveFileType: 'dsv',
+    source: 'bundled',
+  },
   fbneo: { displayName: 'FinalBurn Neo', launch: { attachVirtualGamepad: true }, source: 'retroarch' },
   fceumm: { displayName: 'FCEUmm', source: 'retroarch' },
   freechaf: { displayName: 'FreeChaF', launch: { attachVirtualGamepad: true }, source: 'retroarch' },

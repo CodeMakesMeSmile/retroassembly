@@ -103,6 +103,8 @@ export interface LaunchProfile {
 
 export interface EmulatorDefinition {
   displayName: string
+  /** The extension of the game's own save (memory card, battery save) as the emulator writes it; srm when left out */
+  saveFileType?: string
   launch?: LaunchProfile
   /** Shipped with the app, built for this fork, or from the RetroArch Emscripten build */
   source: 'bundled' | 'custom' | 'retroarch'

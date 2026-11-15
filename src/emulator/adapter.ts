@@ -7,9 +7,11 @@ export { applyVolume, closeAudioContexts, getVolume, type Volume } from './audio
 
 // Nostalgist's emulator, with the private members used here
 interface InnerEmulator {
+  callCommand: (command: string) => void
   clearStateFile: () => void
   on: (event: 'beforeLaunch', listener: () => void) => void
   sendCommand: (command: string) => void
+  sramFilePath: string
   stateFilePath: string
   stateThumbnailFilePath: string
 }
@@ -25,6 +27,30 @@ export function skipAutoState(emulator: Nostalgist) {
       emulator.getEmscriptenFS().unlink(`${getInner(emulator).stateFilePath}.auto`)
     } catch {}
   })
+}
+
+/** Puts the game's own save (memory card, battery save) where the emulator looks for it, before the game boots */
+export function restoreGameSave(emulator: Nostalgist, save: Uint8Array) {
+  getInner(emulator).on('beforeLaunch', () => {
+    const fs = emulator.getEmscriptenFS()
+    const filePath = getInner(emulator).sramFilePath
+    fs.mkdirTree(filePath.slice(0, filePath.lastIndexOf('/')))
+    fs.writeFile(filePath, save)
+  })
+}
+
+/**
+ * Reads the game's own save as it is now. RetroArch writes it out when told, straight away, so this needs no frames to
+ * run and works while the game is paused or the page is being hidden. Nothing is returned when the game has nothing
+ * saved yet (some emulators write no file until the game saves)
+ */
+export function readGameSave(emulator: Nostalgist) {
+  const fs = emulator.getEmscriptenFS()
+  const inner = getInner(emulator)
+  try {
+    inner.callCommand('_cmd_savefiles')
+    return new Uint8Array(fs.readFile(inner.sramFilePath) as Uint8Array)
+  } catch {}
 }
 
 // PCSX ReARMed's DualShock: libretro's analog controller (5), the second of its kinds, as RetroArch numbers it.

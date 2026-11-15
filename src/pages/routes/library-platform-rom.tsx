@@ -2,6 +2,7 @@ import assert from 'node:assert'
 import { getContext } from 'hono/context-storage'
 import { generatePath, redirect } from 'react-router'
 import type { PlatformName } from '#@/constants/platform.ts'
+import { getLatestGameSave } from '#@/controllers/game-saves/game-saves.ts'
 import { getDiscs } from '#@/controllers/roms/get-discs.ts'
 import { getRom } from '#@/controllers/roms/get-rom.ts'
 import { getStates } from '#@/controllers/states/get-states.ts'
@@ -26,8 +27,12 @@ export async function loader({ params }: Route.LoaderArgs) {
   }
   const { preference } = getContext().var
   const core = preference.emulator.platform[rom.platform]?.core
-  const [state] = await getStates(getLibraryScope(), { core, limit: 1, rom: rom?.id, type: 'any' })
-  return { discs, rom, state, title: getRomGoodcodes(rom).rom }
+  const [[state], gameSave] = await Promise.all([
+    getStates(getLibraryScope(), { core, limit: 1, rom: rom?.id, type: 'any' }),
+    // The game's own save, put back before it boots
+    core ? getLatestGameSave(getLibraryScope(), { core, rom: rom.id }) : undefined,
+  ])
+  return { discs, gameSave, rom, state, title: getRomGoodcodes(rom).rom }
 }
 
 export default function LibraryPlatformRomRoute() {

@@ -4,7 +4,8 @@ import { client } from '#@/api/client.ts'
 // connection or the browser closing the tab mid-upload, and is uploaded the next time the library opens. Each save has
 // an id made here, so uploading it again can't store it twice
 
-export interface QueuedSave {
+/** A save state: a snapshot of the whole emulator */
+export interface QueuedStateSave {
   core: string
   /** The disc in the drive, for a game on several discs */
   disc?: number
@@ -15,6 +16,23 @@ export interface QueuedSave {
   thumbnail: Blob
   type: 'auto' | 'manual'
 }
+
+/** The game's own save, as the game wrote it: a memory card or a cartridge's battery save */
+export interface QueuedGameSave {
+  core: string
+  file: Blob
+  /** The file's extension, as the emulator names it */
+  fileType: string
+  id: string
+  rom: string
+  savedAt: number
+  type: 'game'
+}
+
+export type QueuedSave = QueuedGameSave | QueuedStateSave
+
+// What's given to save(): a save without the id and time the queue gives it
+type SaveInput = QueuedSave extends infer T ? (T extends QueuedSave ? Omit<T, 'id' | 'savedAt'> : never) : never
 
 /** Where queued saves are kept: IndexedDB in the browser, memory in tests */
 export interface SaveStore {
@@ -81,10 +99,20 @@ export const indexedDBSaveStore: SaveStore = {
   },
 }
 
-export async function uploadSaveToServer({ core, disc, id, rom, state, thumbnail, type }: QueuedSave) {
+async function postSave(save: QueuedSave) {
+  if (save.type === 'game') {
+    const { core, file, fileType, id, rom } = save
+    // @ts-expect-error the hono client accepts blobs as form values, though its types only list files
+    return await client.game_saves.$post({ form: { clientId: id, core, file, fileType, rom } })
+  }
+  const { core, disc, id, rom, state, thumbnail, type } = save
   const form = { clientId: id, core, rom, state, thumbnail, type, ...(disc ? { disc: String(disc) } : {}) }
   // @ts-expect-error the hono client accepts blobs as form values, though its types only list files
-  const response = await client.states.$post({ form })
+  return await client.states.$post({ form })
+}
+
+export async function uploadSaveToServer(save: QueuedSave) {
+  const response = await postSave(save)
   if (!response.ok) {
     throw new Error(`Failed to upload the save: ${response.status}`)
   }
@@ -98,19 +126,23 @@ export function createSaveQueue(store: SaveStore = indexedDBSaveStore, upload: S
   }
 
   /**
-   * Queues a save and uploads it. Only the newest auto save of a game is worth keeping, so older ones waiting to upload
-   * are dropped; manual saves are all kept. If the upload fails, the save stays queued and the error is thrown.
+   * Queues a save and uploads it. Only the newest auto save of a game, and the newest of its own saves, are worth
+   * keeping, so older ones waiting to upload are dropped; manual saves are all kept. If the upload fails, the save stays
+   * queued and the error is thrown.
    */
-  async function save(input: Omit<QueuedSave, 'id' | 'savedAt'>) {
-    const queued: QueuedSave = { ...input, id: newId(), savedAt: Date.now() }
+  async function save(input: SaveInput) {
+    const queued = { ...input, id: newId(), savedAt: Date.now() } as QueuedSave
     // Kept first, before anything else, so a tab closed right after a save on hide still has it
     try {
       await store.put(queued)
     } catch {}
-    if (queued.type === 'auto') {
+    if (queued.type !== 'manual') {
       try {
         const waiting = await store.getAll()
-        const older = waiting.filter(({ id, rom, type }) => type === 'auto' && rom === queued.rom && id !== queued.id)
+        const older = waiting.filter(
+          ({ core, id, rom, type }) =>
+            type === queued.type && rom === queued.rom && (type === 'auto' || core === queued.core) && id !== queued.id,
+        )
         await Promise.all(older.map((old) => remove(old)))
       } catch {}
     }

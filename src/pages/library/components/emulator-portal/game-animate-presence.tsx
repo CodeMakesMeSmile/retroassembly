@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react'
 import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { useLaunchButton } from '../../atoms.ts'
 import { useAutosave } from './hooks/use-autosave.ts'
+import { useKeepGameSave } from './hooks/use-keep-game-save.ts'
 import { useSaveOnHide } from './hooks/use-save-on-hide.ts'
 
 export function GameAnimatePresence() {
@@ -21,6 +22,7 @@ export function GameAnimatePresence() {
 
   useAutosave()
   useSaveOnHide()
+  useKeepGameSave()
 
   async function handleAnimationComplete(definition: TargetAndTransition) {
     if (isMatch(definition, animateStyle) && emulator) {

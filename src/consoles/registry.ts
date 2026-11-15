@@ -44,6 +44,8 @@ export interface ResolvedConsole {
   emulator: (typeof emulators)[CoreName]
   hints: HintsKind
   keyboard: KeyboardKind
+  /** The extension of the game's own save as the emulator writes it */
+  saveFileType: string
   launch: {
     attachVirtualGamepad: boolean
     audioLatency: null | number
@@ -80,5 +82,6 @@ export function resolveConsole(platform: string, core: string): ResolvedConsole 
       runAhead: !launch.heavy,
       stickAxes: launch.stickAxes ?? null,
     },
+    saveFileType: (emulator as EmulatorDefinition | undefined)?.saveFileType ?? 'srm',
   }
 }

@@ -1,4 +1,5 @@
 import { getContext } from 'hono/context-storage'
+import { getLatestGameSave } from '#@/controllers/game-saves/game-saves.ts'
 import { getLaunchRecords } from '#@/controllers/launch-records/get-launch-records.ts'
 import { type Disc, getDiscs } from '#@/controllers/roms/get-discs.ts'
 import { getRom } from '#@/controllers/roms/get-rom.ts'
@@ -21,14 +22,16 @@ export async function loader() {
 
   const data: {
     discs: Disc[]
+    gameSave?: Awaited<ReturnType<typeof getLatestGameSave>>
     rom: (typeof recentlySavedRoms)[number] | null
     state: any
   } = { discs: [], rom: null, state: null }
 
   const rom = recentlySavedRoms[0] || recentlyLaunchedRoms[0] || newAddedRoms[0]
   if (rom) {
+    const { core } = preference.emulator.platform[rom.platform]
     const [state] = await getStates(getLibraryScope(), {
-      core: preference.emulator.platform[rom.platform].core,
+      core,
       limit: 1,
       rom: rom?.id,
       type: 'any',
@@ -42,11 +45,14 @@ export async function loader() {
     if (fullRom) {
       data.discs = await getDiscs(getLibraryScope(), fullRom)
     }
+    // The game's own save, put back before it boots
+    data.gameSave = core ? await getLatestGameSave(getLibraryScope(), { core, rom: rom.id }) : undefined
   }
 
   return {
     discs: data.discs,
     favoriteRoms,
+    gameSave: data.gameSave,
     newAddedRoms,
     recentlySavedRoms,
     rom: data.rom,

@@ -10,12 +10,15 @@ import { resolveConsole } from '#@/consoles/registry.ts'
 import type { Rom } from '#@/controllers/roms/get-roms.ts'
 import {
   closeAudioContexts,
+  readGameSave,
+  restoreGameSave,
   setDualShockController,
   skipAutoState,
   startWithoutCamera,
   switchDisc,
 } from '#@/emulator/adapter.ts'
 import { connectOnScreenGamepad, disconnectOnScreenGamepad } from '#@/emulator/on-screen-gamepad.ts'
+import { saveQueue } from '#@/emulator/save-queue.ts'
 import { getSessionPhase } from '#@/emulator/session.ts'
 import { buildInputConfig } from '#@/input/build-input-config.ts'
 import {
@@ -55,6 +58,15 @@ const preparations = new Map<string, Promise<Nostalgist | undefined>>()
 
 const remapDirectory = '/home/web_user/retroarch/userdata/config/remaps'
 
+// A save that's one byte over and over is what an emulator writes before the game has saved anything
+function isBlank(content: Uint8Array) {
+  return content.every((byte) => byte === content[0])
+}
+
+function isSame(a: Uint8Array, b: Uint8Array | undefined) {
+  return b !== undefined && a.length === b.length && a.every((byte, index) => byte === b[index])
+}
+
 function hasAnalogStickOnScreen() {
   return globalThis.matchMedia?.('(pointer: coarse)').matches ?? false
 }
@@ -72,12 +84,15 @@ export function useEmulatorSessionController({
 }) {
   const rom: Rom = useRom()
   // The page the game is played from gives its discs, when it's on several: the game's page or the home page
-  const { discs = [], state } = useLoaderData<typeof loader>() as Partial<Awaited<ReturnType<typeof loader>>>
+  const { discs = [], gameSave, state } = useLoaderData<typeof loader>() as Partial<Awaited<ReturnType<typeof loader>>>
   // A game on several discs is given the emulator as a disc list and its discs; only the first downloads at start
   const multiDisc = discs.length > 1
   const [currentDisc, setCurrentDisc] = useState(discs[0]?.number ?? 1)
   // Whether the game was launched to continue from the latest save
   const withStateRef = useRef(false)
+  // The game's own save as this page last knew it: put back at launch, or read out while playing. `from` is the server's
+  // save it came from, so a newer one from another device is fetched instead
+  const knownGameSave = useRef<{ content?: Uint8Array; from?: string }>({})
   const { preference } = usePreference()
   // The wake lock that keeps the screen on while playing
   const noSleep = useRef<NoSleep | undefined>(undefined)
@@ -95,7 +110,10 @@ export function useEmulatorSessionController({
   const romUrl = getFileUrl(rom.fileId) || ''
   const { core } = preference.emulator.platform[rom.platform] || {}
   // How this emulator is started and run, from the console registry
-  const launchProfile = useMemo(() => resolveConsole(rom.platform, core).launch, [rom.platform, core])
+  const { launch: launchProfile, saveFileType } = useMemo(
+    () => resolveConsole(rom.platform, core),
+    [rom.platform, core],
+  )
 
   const platformShader = preference.emulator.platform[rom.platform].shader
   const shader =
@@ -142,6 +160,9 @@ export function useEmulatorSessionController({
       retroarchCoreConfig: preference.emulator.core[core],
       rom: romObject,
       shader,
+      // The game's own save is named as this emulator names it, and put in place at launch. Nostalgist's types only list
+      // srm and sav, but it takes any extension
+      sramType: saveFileType as 'srm',
       // A game on several discs is continued once started, after its disc is put in
       state: state?.fileId && !multiDisc ? getFileUrl(state.fileId) : undefined,
     }),
@@ -156,6 +177,7 @@ export function useEmulatorSessionController({
       rom.platform,
       launchProfile,
       multiDisc,
+      saveFileType,
     ],
   )
 
@@ -211,6 +233,10 @@ export function useEmulatorSessionController({
     if (!withState) {
       skipAutoState(emulator)
     }
+    const save = await getGameSave()
+    if (save) {
+      restoreGameSave(emulator, save)
+    }
     withStateRef.current = Boolean(withState)
     setCurrentDisc(discs[0]?.number ?? 1)
 
@@ -226,6 +252,42 @@ export function useEmulatorSessionController({
     setLaunched(true)
 
     await client.launch_records.$post({ form: { core, rom: rom.id } })
+  }
+
+  /** The game's own save to put back: the latest this page knows, or the server's when it has a newer one */
+  async function getGameSave() {
+    const known = knownGameSave.current
+    if (gameSave && gameSave.id !== known.from) {
+      const [, content] = await attemptAsync(async () => {
+        const response = await fetch(getFileUrl(gameSave.fileId))
+        if (!response.ok) {
+          throw new Error(`${response.status}`)
+        }
+        return new Uint8Array(await response.arrayBuffer())
+      })
+      if (content) {
+        knownGameSave.current = { content, from: gameSave.id }
+      }
+    }
+    return knownGameSave.current.content
+  }
+
+  /**
+   * Reads the game's own save and, when it changed, keeps it through the save queue. The save is read before this
+   * returns its promise, so a page being hidden or a game being exited has it already
+   */
+  function keepGameSave() {
+    if (!emulator || !rom || !core || !['paused', 'running'].includes(emulator.getStatus())) {
+      return Promise.resolve()
+    }
+    const content = readGameSave(emulator)
+    if (!content || isBlank(content) || isSame(content, knownGameSave.current.content)) {
+      return Promise.resolve()
+    }
+    knownGameSave.current = { ...knownGameSave.current, content }
+    return attemptAsync(() =>
+      saveQueue.save({ core, file: new Blob([content]), fileType: saveFileType, rom: rom.id, type: 'game' }),
+    ).then(noop)
   }
 
   async function start() {
@@ -288,6 +350,8 @@ export function useEmulatorSessionController({
     }
     exitingRef.current = true
     setExiting(true)
+    // Read before the emulator shuts down; uploaded while the rest of the exit goes on
+    const keeping = keepGameSave()
     try {
       try {
         emulator?.exit()
@@ -313,6 +377,7 @@ export function useEmulatorSessionController({
       // The game is let go, to be downloaded again when it's next started
       await (lazy ? prepare(undefined, { revalidate: false }) : attemptAsync(prepare))
       if (reloadAfterExit) {
+        await keeping
         await refresh()
       }
     } finally {
@@ -361,6 +426,7 @@ export function useEmulatorSessionController({
     isDownloading,
     isFullscreen,
     isPreparing,
+    keepGameSave,
     launch,
     launched,
     launchProfile,

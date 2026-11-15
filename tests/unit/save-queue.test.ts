@@ -40,6 +40,10 @@ function input(rom: string, type: 'auto' | 'manual') {
   return { core: 'fceumm', rom, state: blob, thumbnail: blob, type }
 }
 
+function gameSave(rom: string, core: string, content: string) {
+  return { core, file: new Blob([content]), fileType: 'srm', rom, type: 'game' } as const
+}
+
 await describe('save queue', async () => {
   await it('uploads a save under an id of its own and lets it go', async () => {
     const { saves, store } = memoryStore()
@@ -78,6 +82,27 @@ await describe('save queue', async () => {
     assert.equal(waiting.filter(({ type }) => type === 'manual').length, 2)
     assert.equal(waiting.filter(({ rom, type }) => type === 'auto' && rom === 'rom-1').length, 1)
     assert.equal(waiting.filter(({ rom }) => rom === 'rom-2').length, 1)
+  })
+
+  await it("keeps only a game's newest own save waiting for each emulator, apart from its save states", async () => {
+    const { saves, store } = memoryStore()
+    const server = recorder({ failing: true })
+    const queue = createSaveQueue(store, server.upload)
+    await assert.rejects(queue.save(input('rom-1', 'auto')))
+    await assert.rejects(queue.save(gameSave('rom-1', 'mgba', 'a')))
+    await assert.rejects(queue.save(gameSave('rom-1', 'gambatte', 'b')))
+    await assert.rejects(queue.save(gameSave('rom-2', 'mgba', 'c')))
+    await assert.rejects(queue.save(gameSave('rom-1', 'mgba', 'd')))
+    const waiting = [...saves.values()]
+    assert.equal(waiting.filter(({ type }) => type === 'auto').length, 1)
+    const games = waiting.filter((save) => save.type === 'game')
+    assert.equal(games.length, 3)
+    const newest = games.find(({ core, rom }) => core === 'mgba' && rom === 'rom-1')
+    assert.equal(newest?.type === 'game' && (await newest.file.text()), 'd')
+
+    server.failing = false
+    assert.equal(await queue.flush(), 4)
+    assert.equal(saves.size, 0)
   })
 
   await it('uploads the saves left waiting, oldest first', async () => {
