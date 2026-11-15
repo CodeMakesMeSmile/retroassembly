@@ -1,6 +1,6 @@
 import { Select, Tooltip } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
-import { shaders } from './shaders.ts'
+import { shaders } from '#@/consoles/shaders.ts'
 
 export function ShaderSelect(props: Readonly<Select.RootProps>) {
   const { t } = useTranslation()

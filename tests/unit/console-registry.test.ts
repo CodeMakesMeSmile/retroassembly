@@ -24,7 +24,7 @@ await describe('console registry', async () => {
   }
 
   await it('keeps the console table, and its order, as before', () => {
-    assert.deepEqual(JSON.parse(JSON.stringify(platformMap)), data.platformMap)
+    assert.deepEqual(structuredClone(platformMap), data.platformMap)
     assert.deepEqual(
       platforms.map(({ name }) => name),
       data.platformOrder,

@@ -4,6 +4,7 @@ import path from 'node:path'
 import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { attemptAsync } from 'es-toolkit'
+import { customCoresPackage, retroarchBuild, shadersRepository } from '#@/consoles/assets.ts'
 import { getDirectories } from '#@/constants/env.ts'
 import { cdnCacheHosts, cdnHost, repositoryVersions } from '#@/utils/isomorphic/cdn.ts'
 import { fonts } from '#@/utils/isomorphic/fonts.ts'
@@ -20,10 +21,10 @@ const unreachableBackoff = 5 * 60 * 1000
 // Pinned repositories, plus the ones whose URLs are built elsewhere (emulator cores and shaders)
 const pinnedRepositories: Record<string, string> = {
   ...repositoryVersions,
-  'arianrhodsandlot/retroarch-emscripten-build': 'v1.22.2-1',
-  'libretro/glsl-shaders': '468f67b6f6788e2719d1dd28dfb2c9b7c3db3cc7',
+  [retroarchBuild.repository]: retroarchBuild.version,
+  [shadersRepository.repository]: shadersRepository.version,
 }
-const pinnedPackages: Record<string, string> = { 'retroassembly-custom-cores': '1.22.2-20260719172358' }
+const pinnedPackages: Record<string, string> = { [customCoresPackage.name]: customCoresPackage.version }
 const fontPaths = new Set(fonts.map(({ path }) => `/${path}`))
 
 export interface CDNCacheTarget {

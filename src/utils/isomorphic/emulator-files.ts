@@ -1,34 +1,26 @@
+import { customCoresPackage, retroarchBuild, shadersRepository } from '../../consoles/assets.ts'
+import { type CoreName, emulators } from '../../consoles/emulators.ts'
 import { cdnHost } from './cdn.ts'
 
-const customCores = new Set(['a5200', 'mupen64plus_next', 'prosystem', 'stella2014'])
+function getSource(core: string) {
+  return emulators[core as CoreName]?.source
+}
 
 // Cores built for this fork and shipped with the app, from src/assets/cores; the page gets their addresses from
 // bundled-cores.ts, since only the browser build can give them fingerprinted addresses
-const bundledCores = new Set(['desmume2015'])
-
 export function isBundledCore(core: string) {
-  return bundledCores.has(core)
+  return getSource(core) === 'bundled'
 }
 
 export function getCoreUrl(core: string) {
-  const segments = customCores.has(core)
-    ? [
-        'npm',
-        ['retroassembly-custom-cores', '1.22.2-20260719172358'].join('@'),
-        'dist',
-        'cores',
-        `${core}_libretro.zip`,
-      ]
-    : [
-        'gh',
-        ['arianrhodsandlot/retroarch-emscripten-build', 'v1.22.2-1'].join('@'),
-        'retroarch',
-        `${core}_libretro.zip`,
-      ]
+  const segments =
+    getSource(core) === 'custom'
+      ? ['npm', `${customCoresPackage.name}@${customCoresPackage.version}`, 'dist', 'cores', `${core}_libretro.zip`]
+      : ['gh', `${retroarchBuild.repository}@${retroarchBuild.version}`, 'retroarch', `${core}_libretro.zip`]
   return new URL(segments.join('/'), cdnHost).href
 }
 
-const shaderPrefix = new URL('gh/libretro/glsl-shaders@468f67b6f6788e2719d1dd28dfb2c9b7c3db3cc7', cdnHost).href
+const shaderPrefix = new URL(`gh/${shadersRepository.repository}@${shadersRepository.version}`, cdnHost).href
 
 const shaderFiles: Record<string, string[]> = {
   'crt/crt-easymode-halation': [

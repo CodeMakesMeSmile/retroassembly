@@ -1,0 +1,55 @@
+import { getCDNUrl } from '../utils/isomorphic/cdn.ts'
+
+// Company logos, shown for a console's maker and an arcade game's
+const knownCompanyMap = new Map(
+  Object.entries({
+    '3do': '3do.svg',
+    atari: 'atari.png',
+    atlus: 'atlus.svg',
+    banpresto: 'banpresto.svg',
+    capcom: 'capcom.svg',
+    dataeast: 'dataeast.svg',
+    gaelco: 'gaelco.svg',
+    gottlieb: 'gottlieb.svg',
+    igs: 'igs.svg',
+    irem: 'irem.svg',
+    jaleco: 'jaleco.svg',
+    konami: 'konami.svg',
+    midway: 'midway.svg',
+    namco: 'namco.svg',
+    nichibutsu: 'nichibutsu.svg',
+    nintendo: 'nintendo.svg',
+    pgm: 'pgm.png',
+    psikyo: 'psikyo.svg',
+    sega: 'sega.svg',
+    seibu: 'seibu.svg',
+    snk: 'snk.svg',
+    taito: 'taito.svg',
+    technos: 'technos.svg',
+    tecmo: 'tecmo.svg',
+  }),
+)
+
+const repo = 'Mattersons/es-theme-neutral'
+
+export function getCompanyLogoUrls() {
+  return [...new Set(knownCompanyMap.values())].map((fileName) => getCDNUrl(repo, `systems/logo/${fileName}`))
+}
+
+export function getCompanyLogo(company: string) {
+  if (!company) {
+    return
+  }
+
+  const companyLower = company.toLowerCase()
+  if (knownCompanyMap.has(companyLower)) {
+    const fileName = knownCompanyMap.get(companyLower)
+    return getCDNUrl(repo, `systems/logo/${fileName}`)
+  }
+
+  for (const [knownCompany, fileName] of knownCompanyMap.entries()) {
+    if (companyLower.includes(knownCompany)) {
+      return getCDNUrl(repo, `systems/logo/${fileName}`)
+    }
+  }
+}
