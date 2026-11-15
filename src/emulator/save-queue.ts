@@ -6,6 +6,8 @@ import { client } from '#@/api/client.ts'
 
 export interface QueuedSave {
   core: string
+  /** The disc in the drive, for a game on several discs */
+  disc?: number
   id: string
   rom: string
   savedAt: number
@@ -79,9 +81,10 @@ export const indexedDBSaveStore: SaveStore = {
   },
 }
 
-export async function uploadSaveToServer({ core, id, rom, state, thumbnail, type }: QueuedSave) {
+export async function uploadSaveToServer({ core, disc, id, rom, state, thumbnail, type }: QueuedSave) {
+  const form = { clientId: id, core, rom, state, thumbnail, type, ...(disc ? { disc: String(disc) } : {}) }
   // @ts-expect-error the hono client accepts blobs as form values, though its types only list files
-  const response = await client.states.$post({ form: { clientId: id, core, rom, state, thumbnail, type } })
+  const response = await client.states.$post({ form })
   if (!response.ok) {
     throw new Error(`Failed to upload the save: ${response.status}`)
   }

@@ -11,6 +11,7 @@ import { useGameOverlay } from '../hooks/use-game-overlay.ts'
 import { ControllerButton } from './controller-button.tsx'
 import { GameInputMessage } from './game-input-message.tsx'
 import { GameOverlayButtons } from './game-overlay-buttons.tsx'
+import { GameOverlayDiscs } from './game-overlay-discs.tsx'
 import { GameOverlayVolume } from './game-overlay-volume.tsx'
 import { GameStates } from './game-states.tsx'
 
@@ -69,6 +70,7 @@ export function GameOverlayContent() {
               <GameOverlayButtons />
             </div>
             <GameOverlayVolume />
+            <GameOverlayDiscs />
             <GameStates />
           </div>
 

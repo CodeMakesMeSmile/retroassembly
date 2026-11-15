@@ -19,12 +19,18 @@ export function GameState({
   const { i18n, t } = useTranslation()
   const { preference } = usePreference()
   const { hide, setIsPending } = useGameOverlay()
-  const { core, emulator } = useSession()
+  const { core, discs, emulator, switchToDisc } = useSession()
   const [loaded, setLoaded] = useState(false)
   const [errored, setErrored] = useState(false)
   const { isMutating, trigger: loadState } = useSWRMutation(
     getFileUrl(state.fileId),
-    (url) => emulator?.loadState(url),
+    // A save of a game on several discs is loaded with its disc in the drive
+    async (url) => {
+      if (state.disc && discs.length > 1) {
+        await switchToDisc(state.disc)
+      }
+      await emulator?.loadState(url)
+    },
     { onSuccess: hide },
   )
 
@@ -101,7 +107,11 @@ export function GameState({
             <span className='icon-[svg-spinners--180-ring] block size-3 text-(--accent-9)' />
           ) : (
             <>
-              {t('common.savedAt')}{' '}
+              {state.disc && discs.length > 1 ? (
+                <Badge className='origin-left scale-90'>{t('emulator.disc', { number: state.disc })}</Badge>
+              ) : (
+                <>{t('common.savedAt')} </>
+              )}
               <Badge className='origin-left scale-90'>{humanizeDate(state.createdAt, dateFormat)}</Badge>
             </>
           )}

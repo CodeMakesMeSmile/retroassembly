@@ -3,12 +3,14 @@ import { Atropos } from 'atropos/react'
 import { clsx } from 'clsx'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { getRomGoodcodes } from '#@/utils/client/library.ts'
 import { skeletonClassnames } from '../../constants/skeleton-classnames.ts'
 import { useRomCover } from '../../hooks/use-rom-cover.ts'
 import { useViewport } from '../../hooks/use-viewport.ts'
 
 export function GameEntryImage({ centered = false, rom }: Readonly<{ centered?: boolean; rom: any }>) {
+  const { t } = useTranslation()
   const goodcodes = getRomGoodcodes(rom)
   const { data: cover, isLoading } = useRomCover(rom)
   const [loaded, setLoaded] = useState(false)
@@ -70,6 +72,12 @@ export function GameEntryImage({ centered = false, rom }: Readonly<{ centered?: 
         ) : null}
       </AnimatePresence>
       {cover?.src ? coverElement : null}
+      {/* A game on several discs is one entry; the badge says how many */}
+      {rom.discCount > 1 ? (
+        <span className='absolute right-1 bottom-1 z-1 rounded-full bg-(--accent-9) px-2 py-0.5 text-[11px] font-bold text-white'>
+          {t('emulator.discCount', { count: rom.discCount })}
+        </span>
+      ) : null}
     </div>
   )
 }

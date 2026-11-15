@@ -8,7 +8,13 @@ import useSWRImmutable from 'swr/immutable'
 import { client } from '#@/api/client.ts'
 import { resolveConsole } from '#@/consoles/registry.ts'
 import type { Rom } from '#@/controllers/roms/get-roms.ts'
-import { closeAudioContexts, setDualShockController, skipAutoState, startWithoutCamera } from '#@/emulator/adapter.ts'
+import {
+  closeAudioContexts,
+  setDualShockController,
+  skipAutoState,
+  startWithoutCamera,
+  switchDisc,
+} from '#@/emulator/adapter.ts'
 import { connectOnScreenGamepad, disconnectOnScreenGamepad } from '#@/emulator/on-screen-gamepad.ts'
 import { getSessionPhase } from '#@/emulator/session.ts'
 import { buildInputConfig } from '#@/input/build-input-config.ts'
@@ -23,6 +29,7 @@ import { useRom } from '#@/pages/library/hooks/use-rom.ts'
 import { getFileUrl } from '#@/pages/library/utils/file.ts'
 import { focus, offCancel, onCancel } from '#@/pages/library/utils/spatial-navigation.ts'
 import type { loader } from '#@/pages/routes/library-platform-rom.tsx'
+import { createDiscList } from '#@/utils/isomorphic/discs.ts'
 import { getGlobalCSSVars } from '#@/utils/isomorphic/misc.ts'
 import { usePreference } from '../../../hooks/use-preference.ts'
 import type { useEmulatorGamepadMapping } from '../emulator-session-provider.tsx'
@@ -64,7 +71,13 @@ export function useEmulatorSessionController({
   lazy: boolean
 }) {
   const rom: Rom = useRom()
-  const { state } = useLoaderData<typeof loader>()
+  // The page the game is played from gives its discs, when it's on several: the game's page or the home page
+  const { discs = [], state } = useLoaderData<typeof loader>() as Partial<Awaited<ReturnType<typeof loader>>>
+  // A game on several discs is given the emulator as a disc list and its discs; only the first downloads at start
+  const multiDisc = discs.length > 1
+  const [currentDisc, setCurrentDisc] = useState(discs[0]?.number ?? 1)
+  // Whether the game was launched to continue from the latest save
+  const withStateRef = useRef(false)
   const { preference } = usePreference()
   // The wake lock that keeps the screen on while playing
   const noSleep = useRef<NoSleep | undefined>(undefined)
@@ -88,7 +101,19 @@ export function useEmulatorSessionController({
   const shader =
     platformShader === 'inherit' ? preference.emulator.shader : (platformShader ?? preference.emulator.shader)
 
-  const romObject = useMemo(() => ({ fileContent: romUrl, fileName: rom?.fileName }), [rom, romUrl])
+  const romObject = useMemo(
+    () =>
+      multiDisc
+        ? [
+            {
+              fileContent: new Blob([createDiscList(discs.map(({ fileName }) => fileName))]),
+              fileName: `${rom.discGroup}.m3u`,
+            },
+            ...discs.map(({ fileId, fileName }) => ({ fileContent: getFileUrl(fileId), fileName })),
+          ]
+        : { fileContent: romUrl, fileName: rom?.fileName },
+    [discs, multiDisc, rom, romUrl],
+  )
   const bios = preference.emulator.platform[rom.platform].bioses.map(({ fileId, fileName }) => ({
     fileContent: getFileUrl(fileId),
     fileName,
@@ -117,9 +142,21 @@ export function useEmulatorSessionController({
       retroarchCoreConfig: preference.emulator.core[core],
       rom: romObject,
       shader,
-      state: state?.fileId ? getFileUrl(state.fileId) : undefined,
+      // A game on several discs is continued once started, after its disc is put in
+      state: state?.fileId && !multiDisc ? getFileUrl(state.fileId) : undefined,
     }),
-    [romObject, bios, core, preference, emulatorGamepadMapping, shader, state?.fileId, rom.platform, launchProfile],
+    [
+      romObject,
+      bios,
+      core,
+      preference,
+      emulatorGamepadMapping,
+      shader,
+      state?.fileId,
+      rom.platform,
+      launchProfile,
+      multiDisc,
+    ],
   )
 
   // A game is prepared on mount only when there's none yet, or the last one has been shut down. Preparing again while
@@ -174,6 +211,8 @@ export function useEmulatorSessionController({
     if (!withState) {
       skipAutoState(emulator)
     }
+    withStateRef.current = Boolean(withState)
+    setCurrentDisc(discs[0]?.number ?? 1)
 
     if (launchProfile.dualShockRemap && hasAnalogStickOnScreen()) {
       setDualShockController(emulator, remapDirectory)
@@ -224,6 +263,22 @@ export function useEmulatorSessionController({
       await delay(0)
       emulator.sendCommand('PAUSE_TOGGLE')
     }
+
+    if (multiDisc && withStateRef.current && state?.fileId) {
+      await switchToDisc(state.disc ?? discs[0].number, discs[0].number)
+      await emulator.loadState(getFileUrl(state.fileId))
+    }
+  }
+
+  /** Puts disc `number` of a game on several discs in the drive */
+  async function switchToDisc(number: number, from = currentDisc) {
+    const to = discs.findIndex((disc) => disc.number === number)
+    const current = discs.findIndex((disc) => disc.number === from)
+    if (!emulator || to === -1 || current === -1 || to === current) {
+      return
+    }
+    await switchDisc(emulator, current + 1, to + 1)
+    setCurrentDisc(number)
   }
 
   async function exit({ reloadAfterExit = false } = {}) {
@@ -298,6 +353,8 @@ export function useEmulatorSessionController({
 
   return {
     core,
+    currentDisc: multiDisc ? currentDisc : undefined,
+    discs: multiDisc ? discs : [],
     emulator,
     error,
     exit,
@@ -311,6 +368,7 @@ export function useEmulatorSessionController({
     prepare,
     setLaunched,
     start,
+    switchToDisc,
     toggleFullscreen,
     warmUp,
   }

@@ -17,7 +17,7 @@ import { GameMedia } from './components/game-media/game-media.tsx'
 export default function RomPage() {
   const { t } = useTranslation()
   const { isLargeScreen } = useViewport()
-  const { rom } = useLoaderData<typeof loader>()
+  const { discs, rom } = useLoaderData<typeof loader>()
 
   const goodcodes = getRomGoodcodes(rom)
   const launchboxGame = rom.rawGameMetadata?.launchbox
@@ -42,7 +42,14 @@ export default function RomPage() {
 
           <div className='flex flex-1 flex-col gap-8'>
             <div className='flex items-center gap-3 pt-4 lg:px-8'>
-              <h1 className='text-3xl font-bold'>{goodcodes.rom}</h1>
+              <h1 className='text-3xl font-bold'>
+                {goodcodes.rom}
+                {discs.length > 1 ? (
+                  <span className='ml-3 text-base font-normal text-(--gray-11)'>
+                    · {t('emulator.discCount', { count: discs.length })}
+                  </span>
+                ) : null}
+              </h1>
               <FavoriteButton rom={rom} variant='inline' />
               <DownloadButton rom={rom} />
             </div>

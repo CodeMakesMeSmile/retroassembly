@@ -14,7 +14,7 @@ interface SavedState {
 // Mobile browsers often unload a page soon after you switch to another app, which loses the game. When the page is
 // hidden, pause the game and save it, first in the browser and then to the server, and resume it if the page comes back.
 export function useSaveOnHide() {
-  const { core, emulator, launchProfile } = useSession()
+  const { core, currentDisc, emulator, launchProfile } = useSession()
   const rom = useRom()
   const [launched] = useEmulatorLaunched()
   const { reloadAutoStates } = useGameStates()
@@ -33,7 +33,7 @@ export function useSaveOnHide() {
         return
       }
       try {
-        await saveQueue.save({ core, rom: rom.id, type: 'auto', ...(await capturing) })
+        await saveQueue.save({ core, disc: currentDisc, rom: rom.id, type: 'auto', ...(await capturing) })
         await reloadAutoStates()
       } catch {}
     }
@@ -68,5 +68,5 @@ export function useSaveOnHide() {
     // page is hidden
     globalThis.addEventListener('visibilitychange', handleVisibilityChange, { capture: true })
     return () => globalThis.removeEventListener('visibilitychange', handleVisibilityChange, { capture: true })
-  }, [launched, emulator, core, rom, reloadAutoStates, launchProfile])
+  }, [launched, emulator, core, rom, reloadAutoStates, launchProfile, currentDisc])
 }

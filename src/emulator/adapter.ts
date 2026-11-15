@@ -206,3 +206,13 @@ export function relocateShaderFiles(nostalgist: Nostalgist, path: { join: (...pa
       break
   }
 }
+
+/**
+ * Puts another disc of a game on several discs in the drive. Discs are numbered by their place in the disc list, from 1.
+ * Nostalgist only learns which disc is in once it has swapped one, so it's told the disc in the drive first
+ */
+export async function switchDisc(emulator: Nostalgist, from: number, to: number) {
+  const { options } = emulator.getEmulator() as unknown as { options: { multiDiscIndex?: number } }
+  options.multiDiscIndex ??= from
+  await emulator.switchDisc(to)
+}

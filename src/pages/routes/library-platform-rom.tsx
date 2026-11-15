@@ -1,8 +1,11 @@
 import assert from 'node:assert'
 import { getContext } from 'hono/context-storage'
+import { generatePath, redirect } from 'react-router'
 import type { PlatformName } from '#@/constants/platform.ts'
+import { getDiscs } from '#@/controllers/roms/get-discs.ts'
 import { getRom } from '#@/controllers/roms/get-rom.ts'
 import { getStates } from '#@/controllers/states/get-states.ts'
+import { routes } from '#@/pages/routes.ts'
 import { getRomGoodcodes } from '#@/utils/client/library.ts'
 import { getLibraryScope } from '#@/utils/server/library-scope.ts'
 import RomPage from '../library/platform/rom/page.tsx'
@@ -16,10 +19,15 @@ export async function loader({ params }: Route.LoaderArgs) {
   if (!rom) {
     throw new Response('Not Found', { status: 404 })
   }
+  // A game on several discs has one page, its first disc's; another disc's address leads there
+  const discs = await getDiscs(getLibraryScope(), rom)
+  if (discs.length > 0 && discs[0].id !== rom.id) {
+    throw redirect(generatePath(routes.libraryPlatformRom, { fileName: discs[0].fileName, platform }))
+  }
   const { preference } = getContext().var
   const core = preference.emulator.platform[rom.platform]?.core
   const [state] = await getStates(getLibraryScope(), { core, limit: 1, rom: rom?.id, type: 'any' })
-  return { rom, state, title: getRomGoodcodes(rom).rom }
+  return { discs, rom, state, title: getRomGoodcodes(rom).rom }
 }
 
 export default function LibraryPlatformRomRoute() {

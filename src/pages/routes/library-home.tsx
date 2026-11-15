@@ -1,5 +1,7 @@
 import { getContext } from 'hono/context-storage'
 import { getLaunchRecords } from '#@/controllers/launch-records/get-launch-records.ts'
+import { type Disc, getDiscs } from '#@/controllers/roms/get-discs.ts'
+import { getRom } from '#@/controllers/roms/get-rom.ts'
 import { getRomsWithStates } from '#@/controllers/roms/get-roms-with-states.ts'
 import { getRoms } from '#@/controllers/roms/get-roms.ts'
 import { getStates } from '#@/controllers/states/get-states.ts'
@@ -18,9 +20,10 @@ export async function loader() {
     ])
 
   const data: {
+    discs: Disc[]
     rom: (typeof recentlySavedRoms)[number] | null
     state: any
-  } = { rom: null, state: null }
+  } = { discs: [], rom: null, state: null }
 
   const rom = recentlySavedRoms[0] || recentlyLaunchedRoms[0] || newAddedRoms[0]
   if (rom) {
@@ -34,9 +37,22 @@ export async function loader() {
     if (state) {
       data.state = state
     }
+    // A game on several discs is played with all of them
+    const fullRom = await getRom(getLibraryScope(), { id: rom.id })
+    if (fullRom) {
+      data.discs = await getDiscs(getLibraryScope(), fullRom)
+    }
   }
 
-  return { favoriteRoms, newAddedRoms, recentlySavedRoms, rom: data.rom, state: data.state, title: '' }
+  return {
+    discs: data.discs,
+    favoriteRoms,
+    newAddedRoms,
+    recentlySavedRoms,
+    rom: data.rom,
+    state: data.state,
+    title: '',
+  }
 }
 
 export default function LibraryRoute() {

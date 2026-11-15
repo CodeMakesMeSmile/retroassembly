@@ -11,7 +11,7 @@ const { $get } = client.states
 
 export function useGameStates() {
   const rom = useRom()
-  const { core, emulator, launchProfile } = useSession()
+  const { core, currentDisc, emulator, launchProfile } = useSession()
   const [showGameOverlay] = useShowGameOverlayContent()
 
   const {
@@ -48,7 +48,7 @@ export function useGameStates() {
       } else {
         captured = await captureState(emulator, { canvasThumbnail })
       }
-      await saveQueue.save({ core, rom: rom.id, type: 'manual', ...captured })
+      await saveQueue.save({ core, disc: currentDisc, rom: rom.id, type: 'manual', ...captured })
       await Promise.all([reloadStates(), reloadAutoStates()])
     },
   )
@@ -58,7 +58,7 @@ export function useGameStates() {
       throw new Error('invalid emulator or core or rom')
     }
     const captured = await captureState(emulator, { canvasThumbnail: launchProfile.canvasThumbnail })
-    await saveQueue.save({ core, rom: rom.id, type: 'auto', ...captured })
+    await saveQueue.save({ core, disc: currentDisc, rom: rom.id, type: 'auto', ...captured })
     await reloadAutoStates()
   })
 
