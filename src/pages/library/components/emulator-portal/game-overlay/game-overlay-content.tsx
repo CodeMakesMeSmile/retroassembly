@@ -57,7 +57,7 @@ export function GameOverlayContent() {
         >
           <div className='to-text-transparent h-4 w-full bg-linear-to-b from-black lg:h-32' />
 
-          <div className='flex w-full flex-1 flex-col gap-8 overflow-auto px-4 lg:mx-auto lg:w-6xl lg:px-0'>
+          <div className='flex w-full flex-1 flex-col gap-8 overflow-auto px-4 lg:mx-auto lg:w-[min(72rem,calc(100%-4rem))] lg:px-0'>
             <div className='hidden items-center gap-4 lg:flex'>
               <div className='size-30 shrink-0'>
                 {cover ? (
