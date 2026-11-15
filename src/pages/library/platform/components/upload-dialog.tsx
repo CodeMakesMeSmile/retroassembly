@@ -1,14 +1,11 @@
 import { Button, Dialog } from '@radix-ui/themes'
 import { fileOpen } from 'browser-fs-access'
-import confetti from 'canvas-confetti'
 import { clsx } from 'clsx'
-import { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useTranslation } from 'react-i18next'
 import { platformMap, type PlatformName } from '#@/constants/platform.ts'
 import { useGlobalLoaderData } from '#@/pages/hooks/use-global-loader-data.ts'
-import { useLibraryRefresh } from '../../hooks/use-library-refresh.ts'
-import { type UploadFailure, type UploadSnapshot, uploadRoms } from '../../utils/upload-roms.ts'
+import { useUploads } from '../../hooks/use-uploads.ts'
 import { UploadInstruction } from './upload-instruction.tsx'
 import { UploadProgress } from './upload-progress.tsx'
 
@@ -18,48 +15,17 @@ export function UploadDialog({ platform, toggleOpen }: Readonly<{ platform: Plat
   const maxFiles = Math.trunc(Number(env.RETROASSEMBLY_RUN_TIME_MAX_UPLOAD_AT_ONCE)) || 1000
   const maxRomCount = Math.trunc(Number(env.RETROASSEMBLY_RUN_TIME_MAX_ROM_COUNT)) || Infinity
 
-  const refresh = useLibraryRefresh()
   const { getRootProps, isDragActive } = useDropzone({ onDrop })
-
-  const [files, setFiles] = useState<File[]>([])
-  const [status, setStatus] = useState<'done' | 'initial' | 'loading'>('initial')
-  const [successCount, setSuccessCount] = useState(0)
-  const [failures, setFailures] = useState<UploadFailure[]>([])
-  const [progress, setProgress] = useState<UploadSnapshot>()
-
-  // Leaving or reloading the page stops the upload, so the browser asks first
-  useEffect(() => {
-    if (status !== 'loading') {
-      return
-    }
-    function handleBeforeUnload(event: BeforeUnloadEvent) {
-      event.preventDefault()
-    }
-    globalThis.addEventListener('beforeunload', handleBeforeUnload)
-    return () => globalThis.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [status])
-
-  async function refreshLibrary() {
-    await refresh()
-  }
+  // The upload itself is kept by the library layout: it carries on, and shows its progress, if this dialog is closed
+  const { reset, start, upload: current } = useUploads()
+  const { failures, files, progress, successCount } = current
+  const status = current.status === 'loading' || current.platform === platform ? current.status : 'initial'
 
   async function upload(files: File[]) {
-    setFiles(files)
-    setStatus('loading')
-    setFailures([])
-    setProgress(undefined)
-    const result = await uploadRoms({ files, onProgress: setProgress, platform })
-    setSuccessCount(result.succeeded.length)
-    setFailures(result.failed)
-
+    const result = await start(platform, files)
     if (result.failed.length === 0) {
+      reset()
       toggleOpen()
-      await refreshLibrary()
-    } else {
-      setStatus('done')
-    }
-    if (result.succeeded.length > 0) {
-      await confetti({ disableForReducedMotion: true, particleCount: 150, spread: 180 })
     }
   }
 
@@ -100,23 +66,13 @@ export function UploadDialog({ platform, toggleOpen }: Readonly<{ platform: Plat
     await upload(files)
   }
 
-  function prevendDefaultWhenUploading(event: Event) {
-    if (status === 'loading') {
-      event.preventDefault()
-    }
-  }
-
-  async function handleClickDone() {
+  function handleClickDone() {
+    reset()
     toggleOpen()
-    await refreshLibrary()
   }
 
   return (
-    <Dialog.Content
-      aria-describedby={undefined}
-      onEscapeKeyDown={prevendDefaultWhenUploading}
-      onPointerDownOutside={prevendDefaultWhenUploading}
-    >
+    <Dialog.Content aria-describedby={undefined}>
       <Dialog.Title>
         {
           {

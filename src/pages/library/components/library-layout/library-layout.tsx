@@ -8,14 +8,15 @@ import { usePageTitle } from '#@/pages/library/hooks/use-library-data.ts'
 import { routes } from '#@/pages/routes.ts'
 import { useFocusRestoration } from '../../hooks/use-focus-restoration.ts'
 import { useUploadPendingSaves } from '../../hooks/use-upload-pending-saves.ts'
+import { useWarnBeforeLeavingUpload } from '../../hooks/use-uploads.ts'
 import { useViewport } from '../../hooks/use-viewport.ts'
 import { PendingMask } from '../pending-mask.tsx'
 import { FocusIndicator } from './focus-indicator.tsx'
 import { LayoutHeader } from './layout-header/layout-header.tsx'
 import { LayoutMain } from './layout-main.tsx'
 import { LayoutMenu } from './layout-menu/layout-menu.tsx'
-import { SearchModal } from './search-modal/search-modal.tsx'
 import '../../utils/nostalgist.ts'
+import { SearchModal } from './search-modal/search-modal.tsx'
 import { SidebarContainer } from './sidebar-container.tsx'
 import { SidebarLinks } from './sidebar-links/sidebar-links.tsx'
 import { StatusBar } from './status-bar.tsx'
@@ -27,6 +28,7 @@ function getPostfixedTitle(title: string) {
 export default function LibraryLayout({ children }: Readonly<PropsWithChildren>) {
   const title = usePageTitle()
   useUploadPendingSaves()
+  useWarnBeforeLeavingUpload()
   const { isLargeScreen } = useViewport()
 
   useFocusRestoration()

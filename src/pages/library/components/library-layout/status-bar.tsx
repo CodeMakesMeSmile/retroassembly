@@ -5,6 +5,7 @@ import { useGamepads } from '../../hooks/use-gamepads.ts'
 import { useInputMapping } from '../../hooks/use-input-mapping.ts'
 import { usePreference } from '../../hooks/use-preference.ts'
 import { LayoutMenu } from './layout-menu/layout-menu.tsx'
+import { UploadBadge } from './upload-badge.tsx'
 
 const rightButtonIcon = <span className='icon-[mdi--gamepad-circle-right] text-white' />
 const downButtonIcon = <span className='icon-[mdi--gamepad-circle-down] text-white' />
@@ -25,6 +26,7 @@ export function StatusBar() {
 
   return (
     <div className='fixed right-0 bottom-0 left-72 z-11 hidden h-12 items-center justify-end gap-4 bg-(--accent-9) pr-8 text-sm font-medium text-white/80 lg:flex'>
+      <UploadBadge className='mr-auto ml-8 flex items-center gap-2 text-white' />
       {connected ? (
         <>
           <span className='flex items-center gap-2'>
