@@ -10,6 +10,7 @@ import { snkConsoles } from './snk.ts'
 import { sonyConsoles } from './sony.ts'
 import type {
   ConsoleDefinition,
+  ControllerButton,
   ControlsKind,
   EmulatorDefinition,
   HintsKind,
@@ -37,6 +38,8 @@ export interface ResolvedConsole {
   /** Select inserts a coin */
   coin: boolean
   console: ConsoleDefinition
+  /** The buttons of the console's own controller, as its emulator reads them; empty if they're the RetroPad's */
+  controller: ControllerButton[]
   controls: ControlsKind
   emulator: (typeof emulators)[CoreName]
   hints: HintsKind
@@ -61,6 +64,7 @@ export function resolveConsole(platform: string, core: string): ResolvedConsole 
   return {
     coin: Boolean(definition?.coin),
     console: definition,
+    controller: setup?.controller ?? [],
     controls: setup?.controls ?? 'generic',
     emulator,
     hints: setup?.hints ?? 'generic',

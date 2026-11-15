@@ -86,6 +86,15 @@ export const arcadeConsoles = {
     // Drawn like a cabinet with FinalBurn Neo, whose button numbers are known; MAME 2003-Plus keeps the generic layout
     setups: [
       {
+        controller: [
+          { color: '#ff5a5a', key: 'z', label: '1', retropad: 'b' },
+          { color: '#f1c40f', key: 'x', label: '2', retropad: 'a' },
+          { color: '#5aa8ff', key: 'a', label: '3', retropad: 'y' },
+          { color: '#4fcf68', key: 's', label: '4', retropad: 'x' },
+          { color: '#e6e6ea', key: 'c', label: '5', retropad: 'r' },
+          { key: 'd', label: '6', retropad: 'l' },
+          { label: 'Start', retropad: 'start' },
+        ],
         controls: 'arcade',
         cores: ['fbneo'],
         hints: 'arcade',

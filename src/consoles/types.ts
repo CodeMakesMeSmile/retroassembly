@@ -1,3 +1,4 @@
+import type { RetroPadButton } from '../input/retropad.ts'
 import type { CoreName } from './emulators.ts'
 
 /** Which on-screen controls a game gets on a touch screen; `generic` is the RetroPad layout with the console's labels */
@@ -40,8 +41,20 @@ export interface Bios {
   required?: boolean
 }
 
+/** A button on the console's own controller, and the RetroPad button its emulator reads it from */
+export interface ControllerButton {
+  /** Its colour on the controller, for the keyboard hints */
+  color?: string
+  /** The key it moves to when the shared keyboard defaults would put the controller's buttons out of order */
+  key?: string
+  /** What it's called on the controller */
+  label: string
+  retropad: RetroPadButton
+}
+
 /** How a console is played with some of its emulators; `cores` left out means with any of them */
 export interface Setup {
+  controller?: ControllerButton[]
   controls: ControlsKind
   cores?: CoreName[]
   hints?: HintsKind

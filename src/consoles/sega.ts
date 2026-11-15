@@ -50,6 +50,16 @@ export const segaConsoles = {
     // layout
     setups: [
       {
+        controller: [
+          { key: 'z', label: 'A', retropad: 'y' },
+          { key: 'x', label: 'B', retropad: 'b' },
+          { key: 'c', label: 'C', retropad: 'a' },
+          { key: 'a', label: 'X', retropad: 'l' },
+          { key: 's', label: 'Y', retropad: 'x' },
+          { key: 'd', label: 'Z', retropad: 'r' },
+          { label: 'Start', retropad: 'start' },
+          { label: 'Mode', retropad: 'select' },
+        ],
         controls: 'genesis',
         cores: ['genesis_plus_gx'],
         hints: 'genesis',
@@ -81,6 +91,16 @@ export const segaConsoles = {
     // layout
     setups: [
       {
+        controller: [
+          { key: 'z', label: 'A', retropad: 'y' },
+          { key: 'x', label: 'B', retropad: 'b' },
+          { key: 'c', label: 'C', retropad: 'a' },
+          { key: 'a', label: 'X', retropad: 'l' },
+          { key: 's', label: 'Y', retropad: 'x' },
+          { key: 'd', label: 'Z', retropad: 'r' },
+          { label: 'Start', retropad: 'start' },
+          { label: 'Mode', retropad: 'select' },
+        ],
         controls: 'genesis',
         cores: ['genesis_plus_gx'],
         hints: 'genesis',

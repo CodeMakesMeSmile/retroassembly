@@ -166,6 +166,14 @@ export const nintendoConsoles = {
     libretroName: 'Nintendo - Nintendo 64',
     setups: [
       {
+        controller: [
+          { color: '#6f9bff', label: 'A', retropad: 'b' },
+          { color: '#4fcf68', label: 'B', retropad: 'y' },
+          { label: 'Z', retropad: 'l2' },
+          { label: 'L', retropad: 'l' },
+          { label: 'R', retropad: 'r' },
+          { color: '#ff6b5e', label: 'Start', retropad: 'start' },
+        ],
         controls: 'n64',
         hints: 'n64',
         keyboard: 'n64',

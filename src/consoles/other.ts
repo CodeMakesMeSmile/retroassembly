@@ -60,6 +60,12 @@ export const otherConsoles = {
     // The keypad opens from beside pause
     setups: [
       {
+        controller: [
+          { color: '#f5944a', label: 'Fire L', retropad: 'b' },
+          { color: '#f5944a', label: 'Fire R', retropad: 'a' },
+          { label: '✱', retropad: 'start' },
+          { label: '#', retropad: 'select' },
+        ],
         controls: 'colecovision',
         hints: 'colecovision',
         keyboard: 'colecovision',
