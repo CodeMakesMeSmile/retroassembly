@@ -13,13 +13,13 @@ export function GameStates() {
 
   return (
     <>
-      <h3 className='flex items-center gap-2 px-2 text-2xl font-semibold text-white'>
+      <h3 className='flex shrink-0 items-center gap-2 px-2 text-2xl font-semibold text-white'>
         <span className='icon-[mdi--database] size-7' />
         {t('emulator.savedStates')}
         <span className='flex-1' />
         <LoadExternalState />
       </h3>
-      <ScrollArea className='overflow-visible! lg:h-44! lg:overflow-hidden!' size='2'>
+      <ScrollArea className='shrink-0 overflow-visible! lg:h-44! lg:overflow-hidden!' size='2'>
         {manual && manual.length > 0 ? (
           <div className='flex flex-col flex-nowrap items-center gap-8 pb-4 lg:flex-row'>
             {manual.map((state) => (
@@ -36,11 +36,11 @@ export function GameStates() {
 
       {auto && auto.length > 0 ? (
         <>
-          <h3 className='mt-2 flex items-center gap-2 text-2xl font-semibold text-white'>
+          <h3 className='mt-2 flex shrink-0 items-center gap-2 text-2xl font-semibold text-white'>
             <span className='icon-[mdi--timer] size-7' />
             {t('emulator.autoSavedStates')}
           </h3>
-          <ScrollArea className='overflow-visible! lg:h-44! lg:overflow-hidden!' size='2'>
+          <ScrollArea className='shrink-0 overflow-visible! lg:h-44! lg:overflow-hidden!' size='2'>
             <div className='flex flex-col flex-nowrap items-center gap-8 pb-4 lg:flex-row'>
               {auto.map((state) => (
                 <GameState key={state.id} state={state} />
