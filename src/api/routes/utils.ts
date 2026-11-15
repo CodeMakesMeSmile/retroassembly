@@ -21,20 +21,17 @@ function getContentType(fileId: string) {
   }
 }
 
-export function createFileResponse(
-  object:
-    | { body: ReadableStream<Uint8Array>; httpEtag: string; range?: { end: number; offset: number }; size: number }
-    | R2ObjectBody,
-  fileId?: string,
-) {
+// A stored file, or the part of it a range request asked for
+export interface StoredFile {
+  body: ReadableStream<Uint8Array>
+  httpEtag: string
+  range?: { end: number; offset: number }
+  size: number
+}
+
+export function createFileResponse(object: StoredFile, fileId?: string) {
   const headers = new Headers()
-  // this may fail when using miniflare
-  if ('writeHttpMetadata' in object) {
-    try {
-      object.writeHttpMetadata(headers)
-    } catch {}
-  }
-  if (!headers.get('Content-Type') && fileId) {
+  if (fileId) {
     const contentType = getContentType(fileId)
     if (contentType) {
       headers.set('Content-Type', contentType)
@@ -44,14 +41,9 @@ export function createFileResponse(
   headers.set('Accept-Ranges', 'bytes')
   let start = 0
   let end = object.size - 1
-  const { range } = object
-  if (range && 'offset' in range && range.offset !== undefined) {
-    start = range.offset
-    if ('end' in range) {
-      ;({ end } = range)
-    } else if ('length' in range && range.length !== undefined) {
-      end = start + range.length - 1
-    }
+  if (object.range) {
+    start = object.range.offset
+    ;({ end } = object.range)
     headers.set('Content-Range', `bytes ${start}-${end}/${object.size}`)
   }
   headers.set('Content-Length', String(end - start + 1))

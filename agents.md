@@ -2,7 +2,7 @@
 
 ## Overview
 
-Browser-based retro gaming platform with dual-runtime architecture (Node.js + Cloudflare Workers).
+Self-hosted, browser-based retro gaming platform running on Node.js, with SQLite and files on local disk.
 
 **Tech Stack**: React, React Router, Radix Themes, Tailwind CSS, SWR, i18next | Hono, Drizzle, Argon2
 
@@ -32,8 +32,7 @@ Browser-based retro gaming platform with dual-runtime architecture (Node.js + Cl
 **Database migrations** (Drizzle):
 
 - Generate: `drizzle-kit generate`
-- Apply (Node): Runs automatically on serve
-- Apply (Workers): `wrangler d1 migrations apply retroassembly_library`
+- Apply: Runs automatically on serve
 
 ## Code Style
 
@@ -89,19 +88,12 @@ export async function myController() {
 }
 ```
 
-**Runtime detection**:
-
-```ts
-import { getRuntimeKey } from 'hono/adapter'
-const isWorkers = getRuntimeKey() === 'workerd'
-```
-
 **i18n** (12 languages: en, de, es, fr, it, ja, ko, pt, ru, cs, zh-cn, zh-tw):
 Add key to all locale files in `src/locales/`, use `t('key')` in components.
 
 ## Key Files
 
-- `src/constants/env.ts` - Runtime environment detection
+- `src/constants/env.ts` - Run-time settings from environment variables
 - `src/databases/schema.ts` - Database schema
 - `src/api/client.ts` - Type-safe API client
 - `src/api/app.ts` - Main API app, route registration

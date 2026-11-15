@@ -9,7 +9,7 @@ import fs from 'fs-extra'
 import { DateTime } from 'luxon'
 import devtoolsJson from 'vite-plugin-devtools-json'
 import { defineConfig, type Plugin, type UserConfig } from 'vite-plus'
-import { getTargetRuntime, logServerInfo, prepareWranglerConfig } from './scripts/utils.ts'
+import { logServerInfo } from './scripts/utils.ts'
 import { getDirectories } from './src/constants/env.ts'
 
 defaults(process.env, {
@@ -19,16 +19,7 @@ defaults(process.env, {
 })
 
 async function getVersion() {
-  return getEnvVersion() ?? (await getGitDescription()) ?? ''
-}
-
-function getEnvVersion() {
-  const envNames = ['WORKERS_CI_COMMIT_SHA']
-  for (const envName of envNames) {
-    if (process.env[envName]) {
-      return process.env[envName].slice(0, 7)
-    }
-  }
+  return (await getGitDescription()) ?? ''
 }
 
 async function getGitDescription() {
@@ -81,59 +72,37 @@ export default defineConfig(async (env) => {
       open: true,
       port,
     },
-    staged: {
-      'pnpm-lock.yaml': 'node --run=check-lockfile',
-    },
   }
 
-  if (getTargetRuntime() === 'workerd') {
-    if (env.command === 'serve') {
-      await $`wrangler d1 migrations apply retroassembly_library`
-    }
-    await prepareWranglerConfig()
-    const { cloudflare } = await import('@cloudflare/vite-plugin')
-    plugins.push(cloudflare({ viteEnvironment: { name: 'ssr' } }))
-    config.resolve = {
-      alias: {
-        '@entry.server.tsx': path.resolve(
-          'node_modules',
-          'react-router-hono-fullstack-template',
-          'app',
-          'entry.server.tsx',
-        ),
-      },
-    }
-  } else {
-    if (env.command === 'serve') {
-      const { storageDirectory } = getDirectories()
-      await fs.ensureDir(storageDirectory)
-      await execaNode`./src/utils/server/migration/initalization.ts`
-      const serverAdapterPlugin = devServer({
-        entry: path.resolve('src', 'server', 'node-dev.ts'),
-        exclude: [
-          ...defaultOptions.exclude,
-          /^\/src\/.+/u,
-          '/.well-known/appspecific/com.chrome.devtools.json',
-          /\?(?:inline|url|no-inline|raw|import(?:&(?:inline|url|no-inline|raw))*)$/u,
-        ],
-        injectClientScript: false,
-      })
-      delete serverAdapterPlugin.handleHotUpdate
-      plugins.push([serverAdapterPlugin])
-    }
-    config.resolve = {
-      alias: {
-        '@entry.server.tsx': path.resolve(
-          'node_modules',
-          '@react-router',
-          'dev',
-          'dist',
-          'config',
-          'defaults',
-          'entry.server.node.tsx',
-        ),
-      },
-    }
+  if (env.command === 'serve') {
+    const { storageDirectory } = getDirectories()
+    await fs.ensureDir(storageDirectory)
+    await execaNode`./src/utils/server/migration/initalization.ts`
+    const serverAdapterPlugin = devServer({
+      entry: path.resolve('src', 'server', 'node-dev.ts'),
+      exclude: [
+        ...defaultOptions.exclude,
+        /^\/src\/.+/u,
+        '/.well-known/appspecific/com.chrome.devtools.json',
+        /\?(?:inline|url|no-inline|raw|import(?:&(?:inline|url|no-inline|raw))*)$/u,
+      ],
+      injectClientScript: false,
+    })
+    delete serverAdapterPlugin.handleHotUpdate
+    plugins.push([serverAdapterPlugin])
+  }
+  config.resolve = {
+    alias: {
+      '@entry.server.tsx': path.resolve(
+        'node_modules',
+        '@react-router',
+        'dev',
+        'dist',
+        'config',
+        'defaults',
+        'entry.server.node.tsx',
+      ),
+    },
   }
 
   return createConfig(config)

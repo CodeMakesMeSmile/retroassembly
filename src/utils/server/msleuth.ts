@@ -1,19 +1,7 @@
 import { attemptAsync, compact } from 'es-toolkit'
-import { env } from 'hono/adapter'
-import { getContext } from 'hono/context-storage'
 import { type msleuth as client, createClient, type IdentifyParameter, type QueryParameter } from 'msleuth/client'
 import QuickLRU from 'quick-lru'
 import { getRunTimeEnv } from '#@/constants/env.ts'
-
-function getCFServiceBinding() {
-  const { RETROASSEMBLY_RUN_TIME_MSLEUTH_HOST } = getRunTimeEnv()
-  if (RETROASSEMBLY_RUN_TIME_MSLEUTH_HOST) {
-    return
-  }
-  const c = getContext()
-  const { MSLEUTH } = env<Env>(c)
-  return MSLEUTH.fetch.bind(MSLEUTH)
-}
 
 function createClients() {
   const runTimeEnv = getRunTimeEnv()
@@ -22,12 +10,6 @@ function createClients() {
     ...runTimeEnv.RETROASSEMBLY_RUN_TIME_MSLEUTH_FALLBACK_HOST.split(','),
   ])
   const clients = hosts.map((host) => createClient(host))
-
-  const cfServiceFetch = getCFServiceBinding()
-  if (cfServiceFetch) {
-    const cfServiceClient = createClient(runTimeEnv.RETROASSEMBLY_RUN_TIME_MSLEUTH_HOST, { fetch: cfServiceFetch })
-    clients.unshift(cfServiceClient)
-  }
 
   return clients
 }

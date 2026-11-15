@@ -1,6 +1,5 @@
 import { and, eq, isNull, or, sql } from 'drizzle-orm'
 import { attemptAsync, chunk } from 'es-toolkit'
-import { getRuntimeKey } from 'hono/adapter'
 import { romTable } from '#@/databases/schema.ts'
 import { createDrizzle } from '../drizzle.ts'
 import { msleuth } from '../msleuth.ts'
@@ -81,9 +80,6 @@ async function migrateRomMetadata({ library, roms }: MigrateRomMetadataOptions) 
 }
 
 async function main() {
-  if (getRuntimeKey() !== 'node') {
-    return
-  }
   const { library } = createDrizzle()
 
   // Check if migration is needed - find ROMs with launchboxGameId or libretroGameId but no rawGameMetadata

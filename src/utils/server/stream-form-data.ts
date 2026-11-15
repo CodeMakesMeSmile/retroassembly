@@ -3,7 +3,6 @@ import path from 'node:path'
 import { Readable } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { attempt, attemptAsync } from 'es-toolkit'
-import { getRuntimeKey } from 'hono/adapter'
 import { createMiddleware } from 'hono/factory'
 import { HTTPException } from 'hono/http-exception'
 import { getDirectories } from '#@/constants/env.ts'
@@ -47,7 +46,7 @@ export function streamFormData() {
   return createMiddleware(async (c, next) => {
     const contentType = c.req.header('Content-Type')
     const { body } = c.req.raw
-    if (getRuntimeKey() !== 'node' || !contentType || !multipartRegex.test(contentType) || !body) {
+    if (!contentType || !multipartRegex.test(contentType) || !body) {
       await next()
       return
     }

@@ -1,17 +1,9 @@
 import path from 'node:path'
 import type { ReadableStream as NodeReadableStream } from 'node:stream/web'
-import { env } from 'hono/adapter'
-import { getContext } from 'hono/context-storage'
 import { getDirectories } from '../../constants/env.ts'
 import { getStoragePath } from './storage-path.ts'
 
 export function createStorage() {
-  const c = getContext()
-  const { BUCKET } = env<Env>(c)
-  if (BUCKET) {
-    return BUCKET
-  }
-
   const { storageDirectory } = getDirectories()
 
   // Ids that would reach outside the storage directory are treated as files that don't exist, or refused when writing
@@ -56,8 +48,8 @@ export function createStorage() {
       }
     },
 
-    // Streams the file from disk as it's sent, so it never sits in memory whole whatever its size. Takes the same range
-    // option as an R2 bucket, for partial requests
+    // Streams the file from disk as it's sent, so it never sits in memory whole whatever its size. Takes a range, for
+    // partial requests
     async get(id: string, options?: { range?: { length?: number; offset: number } }) {
       const filePath = getStoragePath(storageDirectory, id)
       if (!filePath) {

@@ -1,21 +1,13 @@
-import { getConnInfo as getCloudflareWorkersConnInfo } from '@hono/cloudflare-workers'
 import { getConnInfo as getNodeConnInfo } from '@hono/node-server/conninfo'
 import type { Context } from 'hono'
-import { getRuntimeKey } from 'hono/adapter'
 import { getContext } from 'hono/context-storage'
 import { z } from 'zod'
 import { defaultRomsOrder, getDefaultRomsDirection, romsOrders } from '#@/constants/roms-order.ts'
 
 export function getConnInfo(context?: Context) {
   const c = context || getContext()
-  const runtimeKey = getRuntimeKey()
   try {
-    if (runtimeKey === 'node') {
-      return getNodeConnInfo(c)
-    }
-    if (runtimeKey === 'workerd') {
-      return getCloudflareWorkersConnInfo(c)
-    }
+    return getNodeConnInfo(c)
   } catch {}
 }
 

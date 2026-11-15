@@ -1,4 +1,3 @@
-import { getRuntimeKey } from 'hono/adapter'
 import { getContext } from 'hono/context-storage'
 import { getCookie } from 'hono/cookie'
 import { getRunTimeEnv } from '#@/constants/env.ts'
@@ -22,7 +21,6 @@ export function getCommonLoaderData<T>(data: T = {} as T) {
     RETROASSEMBLY_RUN_TIME_MAX_UPLOAD_AT_ONCE: runTimeEnv.RETROASSEMBLY_RUN_TIME_MAX_UPLOAD_AT_ONCE,
   }
   const isLikelyDesktop = c.req.header('sec-ch-ua-mobile') !== '?1'
-  const runtimeKey = getRuntimeKey()
   const { host } = new URL(c.req.url)
   const isOfficialHost = host === officialHost || host.endsWith('-retroassembly.arianrhodsandlot.workers.dev')
 
@@ -36,7 +34,6 @@ export function getCommonLoaderData<T>(data: T = {} as T) {
     isOfficialHost,
     language,
     preference,
-    runtimeKey,
     title: '',
     ...data,
   }

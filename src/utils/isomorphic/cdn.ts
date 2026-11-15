@@ -1,4 +1,3 @@
-import { getRuntimeKey } from 'hono/adapter'
 import { encodeRFC3986URIComponent } from './misc.ts'
 
 export const repositoryVersions = {
@@ -44,13 +43,13 @@ export const repositoryVersions = {
 export const cdnHost = 'https://cdn.jsdelivr.net/'
 export const libretroThumbnailsHost = 'https://thumbnails.libretro.com/'
 
-// With `RETROASSEMBLY_RUN_TIME_CDN_CACHE=true` on Node, files from these hosts are served through the server's
+// With `RETROASSEMBLY_RUN_TIME_CDN_CACHE=true`, files from these hosts are served through the server's
 // `/cdn/` route, which caches them in the data directory so they keep working without internet access.
 export const cdnCacheHosts = { jsdelivr: cdnHost, 'libretro-thumbnails': libretroThumbnailsHost }
 
 export function isCDNCacheEnabled() {
   if (typeof document === 'undefined') {
-    return getRuntimeKey() === 'node' && globalThis.process?.env.RETROASSEMBLY_RUN_TIME_CDN_CACHE === 'true'
+    return globalThis.process?.env.RETROASSEMBLY_RUN_TIME_CDN_CACHE === 'true'
   }
   return globalThis.RETROASSEMBLY_CDN_CACHE === true
 }

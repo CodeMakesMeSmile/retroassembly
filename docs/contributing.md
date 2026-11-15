@@ -48,7 +48,7 @@ Simply run following commands in a terminal then a development server will be la
 
 #### Infrastructure
 
-[Node.js](https://nodejs.org/) / [Cloudflare Workers](https://workers.cloudflare.com/), [SQLite](https://sqlite.org/) / [Cloudflare D1](https://www.cloudflare.com/developer-platform/products/d1/), [Cloudflare R2](https://www.cloudflare.com/developer-platform/products/r2/)
+[Node.js](https://nodejs.org/), [SQLite](https://sqlite.org/)
 
 #### External Services
 
