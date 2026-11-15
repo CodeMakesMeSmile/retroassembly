@@ -2,11 +2,11 @@ import { noop } from 'es-toolkit'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { useRomCover } from '#@/pages/library/hooks/use-rom-cover.ts'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
 import { focus, offCancel, onCancel } from '#@/pages/library/utils/spatial-navigation.ts'
 import { getRomGoodcodes } from '#@/utils/client/library.ts'
-import { useEmulator } from '../hooks/use-emulator.ts'
 import { useGameOverlay } from '../hooks/use-game-overlay.ts'
 import { ControllerButton } from './controller-button.tsx'
 import { GameInputMessage } from './game-input-message.tsx'
@@ -29,7 +29,7 @@ export function GameOverlayContent() {
   const { hide, visible } = useGameOverlay()
   const goodcodes = getRomGoodcodes(rom)
   const { data: cover } = useRomCover(rom)
-  const { emulator, isFullscreen, toggleFullscreen } = useEmulator()
+  const { emulator, isFullscreen, toggleFullscreen } = useSession()
 
   useEffect(() => {
     const status = emulator?.getStatus()

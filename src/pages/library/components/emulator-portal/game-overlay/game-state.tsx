@@ -5,11 +5,11 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import useSWRMutation from 'swr/mutation'
 import type { client } from '#@/api/client.ts'
+import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { usePreference } from '#@/pages/library/hooks/use-preference.ts'
 import { getFileUrl } from '#@/pages/library/utils/file.ts'
 import { dateFormatMap } from '#@/utils/isomorphic/i18n.ts'
 import { humanizeDate } from '#@/utils/isomorphic/misc.ts'
-import { useEmulator } from '../hooks/use-emulator.ts'
 import { useGameOverlay } from '../hooks/use-game-overlay.ts'
 import { GameStateDelete } from './game-state-delete.tsx'
 
@@ -19,7 +19,7 @@ export function GameState({
   const { i18n, t } = useTranslation()
   const { preference } = usePreference()
   const { hide, setIsPending } = useGameOverlay()
-  const { core, emulator } = useEmulator()
+  const { core, emulator } = useSession()
   const [loaded, setLoaded] = useState(false)
   const [errored, setErrored] = useState(false)
   const { isMutating, trigger: loadState } = useSWRMutation(

@@ -5,10 +5,10 @@ import { twMerge } from 'tailwind-merge'
 import { resolveConsole } from '#@/consoles/registry.ts'
 import type { RetroPadButton } from '#@/input/retropad.ts'
 import { useEmulatorLaunched } from '#@/pages/library/atoms.ts'
+import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { useGamepads } from '#@/pages/library/hooks/use-gamepads.ts'
 import { usePreference } from '#@/pages/library/hooks/use-preference.ts'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
-import { useEmulator } from '../hooks/use-emulator.ts'
 import { useGameOverlay } from '../hooks/use-game-overlay.ts'
 import { ArcadeControls } from './arcade-controls.tsx'
 import { Atari2600Controls } from './atari2600-controls.tsx'
@@ -56,7 +56,7 @@ function VirtualGamepadCommandButton({
   command,
   title,
 }: Readonly<VirtualGamepadCommandButtonProps>) {
-  const { emulator } = useEmulator()
+  const { emulator } = useSession()
   const commandLoop = useRef<Promise<void> | undefined>(undefined)
   const pressing = useRef(false)
 
@@ -105,7 +105,7 @@ function VirtualGamepadCommandButton({
 // screen while they're hidden. Only the element's CSS height is set: RetroArch sizes the picture from it in device
 // pixels, and resizing the picture here as well leaves the two out of step, which zooms the game in.
 function useFitGameAboveControls(enabled: boolean, controls: RefObject<HTMLDivElement | null>) {
-  const { emulator } = useEmulator()
+  const { emulator } = useSession()
 
   useEffect(() => {
     const canvas = emulator?.getCanvas()
@@ -273,7 +273,7 @@ export function GameOverlayVirtualGamepad() {
   const { preference } = usePreference()
   const rewindEnabled = rom ? preference.emulator.platform[rom.platform].rewindEnabled : true
   const { t } = useTranslation()
-  const { core } = useEmulator()
+  const { core } = useSession()
   // Which controls this game gets, and whether Select inserts a coin, are set per console and emulator in the console
   // registry (src/consoles)
   const { coin: isArcade, controls } = rom ? resolveConsole(rom.platform, core) : { coin: false, controls: 'generic' }

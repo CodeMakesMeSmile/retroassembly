@@ -2,8 +2,8 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useEmulatorLaunched } from '#@/pages/library/atoms.ts'
+import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
-import { useEmulator } from '../hooks/use-emulator.ts'
 import { useGameOverlay } from '../hooks/use-game-overlay.ts'
 import { useMouseIdle } from '../hooks/use-mouse-idle.ts'
 import { ControllerButton } from './controller-button.tsx'
@@ -17,7 +17,7 @@ export function GameOverlayController() {
   }
   const idle = useMouseIdle(3000)
   const { hide, show, visible } = useGameOverlay()
-  const { emulator, exit, isFullscreen, toggleFullscreen } = useEmulator()
+  const { emulator, exit, isFullscreen, toggleFullscreen } = useSession()
   const [launched] = useEmulatorLaunched()
 
   async function handleClickExit() {

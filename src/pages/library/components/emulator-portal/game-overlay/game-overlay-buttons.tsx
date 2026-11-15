@@ -1,13 +1,13 @@
 import { useTranslation } from 'react-i18next'
+import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { focus } from '#@/pages/library/utils/spatial-navigation.ts'
-import { useEmulator } from '../hooks/use-emulator.ts'
 import { useGameOverlay } from '../hooks/use-game-overlay.ts'
 import { useGameStates } from '../hooks/use-game-states.ts'
 import { GameOverlayButton } from './game-overlay-button.tsx'
 
 export function GameOverlayButtons() {
   const { t } = useTranslation()
-  const { emulator, exit } = useEmulator()
+  const { emulator, exit } = useSession()
   const { saveManualState } = useGameStates()
   const { hide, isPending, setIsPending } = useGameOverlay()
 

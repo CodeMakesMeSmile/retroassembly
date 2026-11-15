@@ -3,8 +3,8 @@ import useSWRImmutable from 'swr/immutable'
 import useSWRMutation from 'swr/mutation'
 import { client, parseResponse } from '#@/api/client.ts'
 import { useShowGameOverlayContent } from '#@/pages/library/atoms.ts'
+import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
-import { useEmulator } from './use-emulator.ts'
 
 const { $get, $post } = client.states
 
@@ -63,7 +63,7 @@ export async function forceGetEmulatorThumbnail(emulator: Nostalgist, resolution
 
 export function useGameStates() {
   const rom = useRom()
-  const { core, emulator } = useEmulator()
+  const { core, emulator } = useSession()
   const [showGameOverlay] = useShowGameOverlayContent()
 
   const {

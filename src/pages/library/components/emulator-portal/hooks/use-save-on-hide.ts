@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
 import { saveStateImmediately } from '#@/emulator/adapter.ts'
 import { useEmulatorLaunched } from '#@/pages/library/atoms.ts'
+import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
 import { putPendingSave, uploadPendingSave } from '#@/pages/library/utils/pending-saves.ts'
-import { useEmulator } from './use-emulator.ts'
 import { forceGetEmulatorThumbnail, useGameStates } from './use-game-states.ts'
 
 interface SavedState {
@@ -14,7 +14,7 @@ interface SavedState {
 // Mobile browsers often unload a page soon after you switch to another app, which loses the game. When the page is
 // hidden, pause the game and save it, first in the browser and then to the server, and resume it if the page comes back.
 export function useSaveOnHide() {
-  const { core, emulator } = useEmulator()
+  const { core, emulator } = useSession()
   const rom = useRom()
   const [launched] = useEmulatorLaunched()
   const { reloadAutoStates } = useGameStates()

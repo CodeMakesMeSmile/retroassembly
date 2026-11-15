@@ -1,13 +1,13 @@
 import { delay } from 'es-toolkit'
 import { useIsGameOverlayPendingAtom, useShowGameOverlayContent } from '#@/pages/library/atoms.ts'
+import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { focus } from '#@/pages/library/utils/spatial-navigation.ts'
-import { useEmulator } from './use-emulator.ts'
 import { useGameStates } from './use-game-states.ts'
 
 export function useGameOverlay() {
   const [visible, setVisible] = useShowGameOverlayContent()
   const [isPending, setIsPending] = useIsGameOverlayPendingAtom()
-  const { emulator } = useEmulator()
+  const { emulator } = useSession()
   const { reloadStates } = useGameStates()
 
   async function show() {

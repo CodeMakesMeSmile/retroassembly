@@ -2,13 +2,13 @@ import { delay } from 'es-toolkit'
 import { isMatch } from 'es-toolkit/compat'
 import { AnimatePresence, motion, type TargetAndTransition } from 'motion/react'
 import { useEffect, useRef } from 'react'
+import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { useLaunchButton } from '../../atoms.ts'
 import { useAutosave } from './hooks/use-autosave.ts'
-import { useEmulator } from './hooks/use-emulator.ts'
 import { useSaveOnHide } from './hooks/use-save-on-hide.ts'
 
 export function GameAnimatePresence() {
-  const { emulator, launched, start } = useEmulator()
+  const { emulator, launched, start } = useSession()
   // Whether a game is running right now, not when this render happened
   const launchedRef = useRef(launched)
   useEffect(() => {

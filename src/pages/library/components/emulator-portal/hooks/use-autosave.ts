@@ -1,11 +1,11 @@
 import { useEffect, useRef } from 'react'
 import { useShowGameOverlayContent, useEmulatorLaunched } from '#@/pages/library/atoms.ts'
+import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { usePreference } from '#@/pages/library/hooks/use-preference.ts'
-import { useEmulator } from './use-emulator.ts'
 import { useGameStates } from './use-game-states.ts'
 
 export function useAutosave() {
-  const { emulator } = useEmulator()
+  const { emulator } = useSession()
   const { preference } = usePreference()
   const { saveAutoState } = useGameStates()
   const showGameOverlay = useShowGameOverlayContent()

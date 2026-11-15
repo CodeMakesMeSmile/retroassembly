@@ -1,7 +1,7 @@
 import { attemptAsync, delay, noop } from 'es-toolkit'
 import NoSleep from 'nosleep.js'
 import { Nostalgist } from 'nostalgist'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLoaderData } from 'react-router'
 import { unstable_serialize, useSWRConfig } from 'swr'
 import useSWRImmutable from 'swr/immutable'
@@ -24,7 +24,7 @@ import { attachVirtualGamepad } from '#@/pages/library/utils/virtual-gamepad.ts'
 import type { loader } from '#@/pages/routes/library-platform-rom.tsx'
 import { getGlobalCSSVars } from '#@/utils/isomorphic/misc.ts'
 import { usePreference } from '../../../hooks/use-preference.ts'
-import { useEmulatorGamepadMapping, useEmulatorLazy } from '../emulator-session-provider.tsx'
+import type { useEmulatorGamepadMapping } from '../emulator-session-provider.tsx'
 
 type NostalgistOption = Parameters<typeof Nostalgist.prepare>[0]
 type RetroarchConfig = Partial<NostalgistOption['retroarchConfig']>
@@ -51,15 +51,46 @@ function hasAnalogStickOnScreen() {
   return globalThis.matchMedia?.('(pointer: coarse)').matches ?? false
 }
 
-let noSleep: NoSleep
-// One exit at a time: a double-click on the exit button would otherwise start a second exit while the first runs
-let exiting = false
-export function useEmulator() {
+/** What a game session is doing: downloading, ready to start, running, or shutting down */
+export type SessionPhase = 'exiting' | 'preparing' | 'ready' | 'running'
+
+export function getSessionPhase({
+  exiting,
+  launched,
+  preparing,
+}: {
+  exiting: boolean
+  launched: boolean
+  preparing: boolean
+}): SessionPhase {
+  if (exiting) {
+    return 'exiting'
+  }
+  if (launched) {
+    return 'running'
+  }
+  return preparing ? 'preparing' : 'ready'
+}
+
+/**
+ * Runs one game: prepares it, launches and starts it, saves and exits it. Used once per game, by the session provider
+ * around it; components read it with useSession()
+ */
+export function useEmulatorSessionController({
+  emulatorGamepadMapping,
+  lazy,
+}: {
+  emulatorGamepadMapping: ReturnType<typeof useEmulatorGamepadMapping>
+  lazy: boolean
+}) {
   const rom: Rom = useRom()
   const { state } = useLoaderData<typeof loader>()
   const { preference } = usePreference()
-  const emulatorGamepadMapping = useEmulatorGamepadMapping()
-  const lazy = useEmulatorLazy()
+  // The wake lock that keeps the screen on while playing
+  const noSleep = useRef<NoSleep | undefined>(undefined)
+  // One exit at a time: a double-click on the exit button would otherwise start a second exit while the first runs
+  const exitingRef = useRef(false)
+  const [exiting, setExiting] = useState(false)
   const [launched, setLaunched] = useEmulatorLaunched()
   const { reload } = useRouter()
   const [isFullscreen, setIsFullscreen] = useIsFullscreen()
@@ -109,9 +140,8 @@ export function useEmulator() {
     [romObject, bios, core, preference, emulatorGamepadMapping, shader, state?.fileId, rom.platform, launchProfile],
   )
 
-  // Many parts of the game screen use this hook, and some appear only once the game is running. Preparing again each
-  // time one appears would swap the running game for a fresh copy, which exit would then find not running and leave
-  // alone. So a game is prepared on mount only when there's none yet, or the last one has been shut down
+  // A game is prepared on mount only when there's none yet, or the last one has been shut down. Preparing again while
+  // one runs would swap the running game for a fresh copy, which exit would then find not running and leave alone
   const { cache } = useSWRConfig()
   const cached = (cache.get(unstable_serialize(options)) as undefined | { data?: Nostalgist })?.data
   const {
@@ -202,8 +232,8 @@ export function useEmulator() {
       await toggleFullscreen()
     }
     onCancel(noop)
-    noSleep ||= new NoSleep()
-    await noSleep.enable()
+    noSleep.current ||= new NoSleep()
+    await noSleep.current.enable()
 
     // ad-hoc patch for mupen64plus_next
     if (launchProfile.nudgeAfterStart) {
@@ -216,10 +246,11 @@ export function useEmulator() {
 
   async function exit({ reloadAfterExit = false } = {}) {
     const status = emulator?.getStatus() || ''
-    if (exiting || !['paused', 'running'].includes(status)) {
+    if (exitingRef.current || !['paused', 'running'].includes(status)) {
       return
     }
-    exiting = true
+    exitingRef.current = true
+    setExiting(true)
     try {
       try {
         emulator?.exit()
@@ -230,7 +261,7 @@ export function useEmulator() {
       }
       // Otherwise the browser would keep the shut-down emulator, and the game in its memory, for as long as the page is open
       await attemptAsync(closeAudioContexts)
-      noSleep.disable()
+      noSleep.current?.disable()
       const promises: Promise<void>[] = []
       if (document.fullscreenElement) {
         promises.push(document.exitFullscreen())
@@ -246,7 +277,8 @@ export function useEmulator() {
         await reload()
       }
     } finally {
-      exiting = false
+      exitingRef.current = false
+      setExiting(false)
     }
   }
 
@@ -290,6 +322,7 @@ export function useEmulator() {
     isPreparing,
     launch,
     launched,
+    phase: getSessionPhase({ exiting, launched, preparing: isDownloading }),
     prepare,
     setLaunched,
     start,

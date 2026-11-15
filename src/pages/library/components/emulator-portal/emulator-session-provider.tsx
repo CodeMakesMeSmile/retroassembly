@@ -1,9 +1,18 @@
 import { createContext, type ReactNode, useContext, useReducer } from 'react'
 import { useGamepadMapping, type GamepadMapping } from '#@/pages/library/hooks/use-gamepad-mapping.ts'
+import { useEmulatorSessionController } from './hooks/use-emulator.ts'
 
 const EmulatorGamepadMappingContext = createContext<GamepadMapping | null>(null)
 // A lazy session downloads the game and emulator only when the game is launched, instead of when the page opens
 const EmulatorLazyContext = createContext(false)
+const SessionContext = createContext<null | ReturnType<typeof useEmulatorSessionController>>(null)
+
+// One game session: the game, its emulator and everything about playing it, shared by every part of the game screen
+function Session({ children, lazy }: Readonly<{ children: ReactNode; lazy: boolean }>) {
+  const emulatorGamepadMapping = useEmulatorGamepadMapping()
+  const session = useEmulatorSessionController({ emulatorGamepadMapping, lazy })
+  return <SessionContext.Provider value={session}>{children}</SessionContext.Provider>
+}
 
 export function EmulatorSessionProvider({ children, lazy = false }: Readonly<{ children: ReactNode; lazy?: boolean }>) {
   const gamepadMapping = useGamepadMapping()
@@ -11,7 +20,9 @@ export function EmulatorSessionProvider({ children, lazy = false }: Readonly<{ c
 
   return (
     <EmulatorGamepadMappingContext.Provider value={emulatorGamepadMapping}>
-      <EmulatorLazyContext.Provider value={lazy}>{children}</EmulatorLazyContext.Provider>
+      <EmulatorLazyContext.Provider value={lazy}>
+        <Session lazy={lazy}>{children}</Session>
+      </EmulatorLazyContext.Provider>
     </EmulatorGamepadMappingContext.Provider>
   )
 }
@@ -27,4 +38,13 @@ export function useEmulatorGamepadMapping() {
   }
 
   return gamepadMapping
+}
+
+/** The game session around this component */
+export function useSession() {
+  const session = useContext(SessionContext)
+  if (!session) {
+    throw new Error('useSession must be used within EmulatorSessionProvider')
+  }
+  return session
 }

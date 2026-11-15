@@ -3,7 +3,7 @@ import { fileOpen } from 'browser-fs-access'
 import { delay, range } from 'es-toolkit'
 import { useTranslation } from 'react-i18next'
 import useSWRMutation from 'swr/mutation'
-import { useEmulator } from '../hooks/use-emulator.ts'
+import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { useGameOverlay } from '../hooks/use-game-overlay.ts'
 import { useGameStates } from '../hooks/use-game-states.ts'
 
@@ -11,7 +11,7 @@ export function LoadExternalState() {
   const { t } = useTranslation()
   const { saveManualState } = useGameStates()
   const { hide } = useGameOverlay()
-  const { emulator } = useEmulator()
+  const { emulator } = useSession()
 
   async function saveState(state: File) {
     if (!emulator) {

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useLoaderData } from 'react-router'
 import { platformMap } from '#@/constants/platform.ts'
 import { useLaunchButton } from '#@/pages/library/atoms.ts'
-import { useEmulator } from '#@/pages/library/components/emulator-portal/hooks/use-emulator.ts'
+import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { useFocusIndicator } from '#@/pages/library/hooks/use-focus-indicator.ts'
 import { usePreference } from '#@/pages/library/hooks/use-preference.ts'
 import { getFileUrl } from '#@/pages/library/utils/file.ts'
@@ -44,7 +44,7 @@ export function GameButtons({ lazy = false }: Readonly<{ lazy?: boolean }>) {
 function GameButtonsContent() {
   const { rom, state } = useLoaderData()
   const { t } = useTranslation()
-  const { error, isDownloading, isPreparing, launch, prepare, warmUp } = useEmulator()
+  const { error, isDownloading, isPreparing, launch, prepare, warmUp } = useSession()
   const [, setLaunchButton] = useLaunchButton()
   const { syncStyle } = useFocusIndicator()
   const { preference } = usePreference()

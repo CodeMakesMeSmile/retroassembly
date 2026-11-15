@@ -2,8 +2,8 @@ import { clsx } from 'clsx'
 import { type CSSProperties, type KeyboardEvent, type PointerEvent, useRef, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { sendKey } from '#@/emulator/adapter.ts'
+import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { useControlsScale } from '#@/pages/library/hooks/use-controls-scale.ts'
-import { useEmulator } from '../hooks/use-emulator.ts'
 import { Joystick } from './joystick.tsx'
 import { VirtualGamepadButton } from './virtual-gamepad-button.tsx'
 
@@ -55,7 +55,7 @@ export function Odyssey2Controls({ visible }: Readonly<{ visible: boolean }>) {
   // Each side's controls are about 160 points wide; on smaller screens they shrink towards their corner. Each group
   // hangs off a point with no size at its corner, which is where it shrinks towards
   const scale = useControlsScale(160)
-  const { emulator } = useEmulator()
+  const { emulator } = useSession()
   const field = useRef<HTMLInputElement>(null)
   const [typing, setTyping] = useState(false)
   // Keys typed quickly are pressed one after another, each held long enough for the game to see it

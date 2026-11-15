@@ -2,7 +2,7 @@ import { clsx } from 'clsx'
 import { type ButtonHTMLAttributes, type PointerEvent, useEffect, useId, useMemo, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import type { RetroPadButton } from '#@/input/retropad.ts'
-import { useEmulator } from '../hooks/use-emulator.ts'
+import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 
 interface VirtualGamepadButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   buttonName?: RetroPadButton
@@ -156,7 +156,7 @@ export function VirtualGamepadButton({
   onVirtualPressStart,
   ...props
 }: Readonly<VirtualGamepadButtonProps>) {
-  const { emulator } = useEmulator()
+  const { emulator } = useSession()
   const [touching, setTouching] = useState(false)
   const id = useId()
 
