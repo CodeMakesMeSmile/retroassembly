@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 
-// A game on several discs: its discs, under the volume and in the same style, with the one in the drive filled in.
+// A game on several discs: its discs, beside the volume and in the same style, with the one in the drive filled in.
 // Choosing another puts it in; with a gamepad or the keyboard, left and right move between them
 export function GameOverlayDiscs() {
   const { t } = useTranslation()

@@ -48,7 +48,7 @@ export function GameOverlayVolume() {
   return (
     <div
       className={clsx(
-        'flex h-12 w-full shrink-0 items-center gap-3 rounded-full border border-solid border-white bg-black/30 pr-5 pl-1.5 text-white lg:w-md',
+        'flex h-12 w-full shrink-0 items-center gap-3 rounded-full border border-solid border-white bg-black/30 pr-5 pl-1.5 text-white lg:w-auto lg:min-w-44 lg:flex-[0_1_28rem]',
         'transition-colors duration-300 has-[input:focus]:bg-white/20',
       )}
     >

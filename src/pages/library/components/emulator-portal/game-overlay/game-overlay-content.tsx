@@ -1,3 +1,4 @@
+import { clsx } from 'clsx'
 import { noop } from 'es-toolkit'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect } from 'react'
@@ -12,8 +13,9 @@ import { ControllerButton } from './controller-button.tsx'
 import { GameInputMessage } from './game-input-message.tsx'
 import { GameOverlayButtons } from './game-overlay-buttons.tsx'
 import { GameOverlayDiscs } from './game-overlay-discs.tsx'
+import { GameOverlaySavesButton } from './game-overlay-saves-button.tsx'
+import { GameOverlaySaves } from './game-overlay-saves.tsx'
 import { GameOverlayVolume } from './game-overlay-volume.tsx'
-import { GameStates } from './game-states.tsx'
 
 function handleAnimationComplete(animation) {
   if (animation.opacity === 1) {
@@ -27,7 +29,8 @@ export function GameOverlayContent() {
   if (!rom) {
     throw new Error('No rom found')
   }
-  const { hide, visible } = useGameOverlay()
+  const { back, hide, page, visible } = useGameOverlay()
+  const onSaves = page === 'saves'
   const goodcodes = getRomGoodcodes(rom)
   const { data: cover } = useRomCover(rom)
   const { emulator, isFullscreen, toggleFullscreen } = useSession()
@@ -35,14 +38,15 @@ export function GameOverlayContent() {
   useEffect(() => {
     const status = emulator?.getStatus()
     if (visible) {
-      onCancel(hide)
+      // Back from the saves goes to the menu; from the menu it resumes the game
+      onCancel(onSaves ? back : hide)
     } else if (status === 'running') {
       onCancel(noop)
     } else {
       offCancel()
     }
     return offCancel
-  }, [visible, emulator, hide])
+  }, [visible, emulator, hide, back, onSaves])
 
   return (
     <AnimatePresence>
@@ -55,26 +59,49 @@ export function GameOverlayContent() {
           onAnimationComplete={handleAnimationComplete}
           transition={{ duration: 0.2 }}
         >
-          <div className='to-text-transparent h-4 w-full bg-linear-to-b from-black lg:h-32' />
+          <div
+            className={clsx(
+              'to-text-transparent h-4 w-full shrink-0 bg-linear-to-b from-black',
+              onSaves ? 'lg:h-8' : 'lg:h-32',
+            )}
+          />
 
-          <div className='flex w-full flex-1 flex-col gap-8 overflow-auto px-4 lg:mx-auto lg:w-[min(72rem,calc(100%-4rem))] lg:px-0'>
-            <div className='hidden items-center gap-4 lg:flex'>
-              <div className='size-30 shrink-0'>
-                {cover ? (
-                  <img alt={goodcodes.rom} className='size-30 object-contain object-center' src={cover.src} />
-                ) : null}
-              </div>
-              <div className='text-3xl font-semibold'>{goodcodes.rom}</div>
-            </div>
-            <div className='game-overlay-buttons flex flex-col gap-5 lg:flex-row'>
-              <GameOverlayButtons />
-            </div>
-            <GameOverlayVolume />
-            <GameOverlayDiscs />
-            <GameStates />
+          <div
+            className={clsx(
+              'flex w-full flex-1 flex-col overflow-auto px-4 lg:mx-auto lg:w-[min(72rem,calc(100%-4rem))] lg:px-0',
+              onSaves ? 'gap-3' : 'gap-8',
+            )}
+          >
+            {onSaves ? (
+              <GameOverlaySaves />
+            ) : (
+              <>
+                <div className='hidden items-center gap-4 lg:flex'>
+                  <div className='size-30 shrink-0'>
+                    {cover ? (
+                      <img alt={goodcodes.rom} className='size-30 object-contain object-center' src={cover.src} />
+                    ) : null}
+                  </div>
+                  <div className='text-3xl font-semibold'>{goodcodes.rom}</div>
+                </div>
+                <div className='game-overlay-buttons flex flex-col gap-5 lg:flex-row'>
+                  <GameOverlayButtons />
+                </div>
+                <div className='flex shrink-0 flex-col gap-5 lg:flex-row lg:items-center lg:gap-4'>
+                  <GameOverlayVolume />
+                  <GameOverlayDiscs />
+                  <GameOverlaySavesButton />
+                </div>
+              </>
+            )}
           </div>
 
-          <div className='h-4 w-full bg-linear-to-b from-transparent to-black text-transparent lg:h-32' />
+          <div
+            className={clsx(
+              'h-4 w-full shrink-0 bg-linear-to-b from-transparent to-black text-transparent',
+              onSaves ? 'lg:h-20' : 'lg:h-32',
+            )}
+          />
 
           <div className='absolute bottom-0 hidden h-20 w-full flex-1 items-center justify-end gap-4 px-4 lg:flex'>
             <div className='hidden flex-1 items-center justify-center gap-4 lg:flex'>
