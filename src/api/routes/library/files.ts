@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { getRunTimeEnv } from '#@/constants/env.ts'
+import { canReadFile } from '#@/controllers/files/can-read-file.ts'
 import { getFileContent } from '#@/utils/server/misc.ts'
 import { createFileResponse } from '../utils.ts'
 
@@ -19,6 +20,10 @@ function parseRange(header?: string) {
 
 export const files = new Hono().get(':id{.+}', async (c) => {
   const id = c.req.param('id')
+  // Someone else's file is answered as if it didn't exist
+  if (!(await canReadFile(id))) {
+    return c.notFound()
+  }
   const runTimeEnv = getRunTimeEnv()
   if (runTimeEnv.RETROASSEMBLY_RUN_TIME_STORAGE_HOST) {
     return c.redirect(new URL(id, runTimeEnv.RETROASSEMBLY_RUN_TIME_STORAGE_HOST))
