@@ -1,0 +1,857 @@
+{
+  "arcade/fbneo": {
+    "coin": true,
+    "controls": "arcade",
+    "hints": "arcade",
+    "keyboard": "arcade",
+    "launch": {
+      "attachVirtualGamepad": true,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "arcade/mame2003_plus": {
+    "coin": true,
+    "controls": "generic",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "atari2600/stella2014": {
+    "coin": false,
+    "controls": "atari2600",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": true,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "atari5200/a5200": {
+    "coin": false,
+    "controls": "atari5200",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": true,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": "both"
+    }
+  },
+  "atari7800/prosystem": {
+    "coin": false,
+    "controls": "atari7800",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": true,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "atarilynx/mednafen_lynx": {
+    "coin": false,
+    "controls": "lynx",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "channelf/freechaf": {
+    "coin": false,
+    "controls": "channelf",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": true,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "colecovision/gearcoleco": {
+    "coin": false,
+    "controls": "colecovision",
+    "hints": "colecovision",
+    "keyboard": "colecovision",
+    "launch": {
+      "attachVirtualGamepad": true,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": "left"
+    }
+  },
+  "famicom/fceumm": {
+    "coin": false,
+    "controls": "nes",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "famicom/nestopia": {
+    "coin": false,
+    "controls": "nes",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "famicom/quicknes": {
+    "coin": false,
+    "controls": "nes",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "fds/fceumm": {
+    "coin": false,
+    "controls": "fds",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": true,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "fds/nestopia": {
+    "coin": false,
+    "controls": "fds",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": true,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "gameandwatch/gw": {
+    "coin": false,
+    "controls": "gw",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "gamegear/genesis_plus_gx": {
+    "coin": false,
+    "controls": "gamegear",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "gamegear/gearsystem": {
+    "coin": false,
+    "controls": "gamegear",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "gb/mgba": {
+    "coin": false,
+    "controls": "gb",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "gb/gearboy": {
+    "coin": false,
+    "controls": "gb",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "gb/gambatte": {
+    "coin": false,
+    "controls": "gb",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "gb/tgbdual": {
+    "coin": false,
+    "controls": "gb",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "gba/mgba": {
+    "coin": false,
+    "controls": "gba",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "gba/vba_next": {
+    "coin": false,
+    "controls": "gba",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "gbc/mgba": {
+    "coin": false,
+    "controls": "gb",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "gbc/gearboy": {
+    "coin": false,
+    "controls": "gb",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "gbc/gambatte": {
+    "coin": false,
+    "controls": "gb",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "gbc/tgbdual": {
+    "coin": false,
+    "controls": "gb",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "genesis/genesis_plus_gx": {
+    "coin": false,
+    "controls": "genesis",
+    "hints": "genesis",
+    "keyboard": "genesis",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "genesis/picodrive": {
+    "coin": false,
+    "controls": "generic",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "megadrive/genesis_plus_gx": {
+    "coin": false,
+    "controls": "genesis",
+    "hints": "genesis",
+    "keyboard": "genesis",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "megadrive/picodrive": {
+    "coin": false,
+    "controls": "generic",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "n64/mupen64plus_next": {
+    "coin": false,
+    "controls": "n64",
+    "hints": "n64",
+    "keyboard": "n64",
+    "launch": {
+      "attachVirtualGamepad": true,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": true,
+      "rewindBufferSize": 100,
+      "runAhead": false,
+      "stickAxes": "both"
+    }
+  },
+  "nds/desmume2015": {
+    "coin": false,
+    "controls": "ds",
+    "hints": "generic",
+    "keyboard": "ds",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": 160,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 100,
+      "runAhead": false,
+      "stickAxes": null
+    }
+  },
+  "nes/fceumm": {
+    "coin": false,
+    "controls": "nes",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "nes/nestopia": {
+    "coin": false,
+    "controls": "nes",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "nes/quicknes": {
+    "coin": false,
+    "controls": "nes",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "ngp/mednafen_ngp": {
+    "coin": false,
+    "controls": "ngp",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "ngpc/mednafen_ngp": {
+    "coin": false,
+    "controls": "ngp",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "odyssey2/o2em": {
+    "coin": false,
+    "controls": "odyssey2",
+    "hints": "generic",
+    "keyboard": "odyssey2",
+    "launch": {
+      "attachVirtualGamepad": true,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "pcengine/mednafen_pce_fast": {
+    "coin": false,
+    "controls": "pcengine",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "psx/pcsx_rearmed": {
+    "coin": false,
+    "controls": "psx",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": true,
+      "audioLatency": null,
+      "dualShockRemap": true,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 100,
+      "runAhead": false,
+      "stickAxes": "both"
+    }
+  },
+  "sega32x/picodrive": {
+    "coin": false,
+    "controls": "genesis",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "sfc/snes9x": {
+    "coin": false,
+    "controls": "snes",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "sfc/snes9x2002": {
+    "coin": false,
+    "controls": "snes",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "sfc/snes9x2005": {
+    "coin": false,
+    "controls": "snes",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "sfc/snes9x2010": {
+    "coin": false,
+    "controls": "snes",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "sg-1000/gearsystem": {
+    "coin": false,
+    "controls": "mastersystem",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "sms/genesis_plus_gx": {
+    "coin": false,
+    "controls": "mastersystem",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "sms/picodrive": {
+    "coin": false,
+    "controls": "mastersystem",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "sms/gearsystem": {
+    "coin": false,
+    "controls": "mastersystem",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "snes/snes9x": {
+    "coin": false,
+    "controls": "snes",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "snes/snes9x2002": {
+    "coin": false,
+    "controls": "snes",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "snes/snes9x2005": {
+    "coin": false,
+    "controls": "snes",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "snes/snes9x2010": {
+    "coin": false,
+    "controls": "snes",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "vb/mednafen_vb": {
+    "coin": false,
+    "controls": "vb",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": true,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "videopac/o2em": {
+    "coin": false,
+    "controls": "odyssey2",
+    "hints": "generic",
+    "keyboard": "odyssey2",
+    "launch": {
+      "attachVirtualGamepad": true,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "wonderswan/mednafen_wswan": {
+    "coin": false,
+    "controls": "wonderswan",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  },
+  "wonderswancolor/mednafen_wswan": {
+    "coin": false,
+    "controls": "wonderswan",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": false,
+      "audioLatency": null,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 20,
+      "runAhead": true,
+      "stickAxes": null
+    }
+  }
+}
