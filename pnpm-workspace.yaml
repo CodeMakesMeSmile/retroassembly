@@ -1,7 +1,6 @@
 dangerouslyAllowAllBuilds: true
 minimumReleaseAge: 0
 patchedDependencies:
-  '@microsoft/clarity@1.0.2': 'patches/@microsoft__clarity.patch'
   'goodcodes-parser@2.5.0': 'patches/goodcodes-parser.patch'
   nostalgist@0.23.0: patches/nostalgist@0.23.0.patch
   'selector-set@1.1.5': 'patches/selector-set.patch'
