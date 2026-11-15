@@ -1,6 +1,6 @@
 import { ScrollArea } from '@radix-ui/themes'
 import { clsx } from 'clsx'
-import { useEffect, useState, type PropsWithChildren } from 'react'
+import type { PropsWithChildren } from 'react'
 import { Link, useLoaderData } from 'react-router'
 import { metadata } from '#@/constants/metadata.ts'
 import { Logo } from '#@/pages/components/logo.tsx'
@@ -20,7 +20,6 @@ import { SearchModal } from './search-modal/search-modal.tsx'
 import { SidebarContainer } from './sidebar-container.tsx'
 import '../../utils/nostalgist.ts'
 import { SidebarLinks } from './sidebar-links/sidebar-links.tsx'
-import { SponsorMessage } from './sponsor-message.tsx'
 import { StatusBar } from './status-bar.tsx'
 
 function getPostfixedTitle(title: string) {
@@ -28,33 +27,10 @@ function getPostfixedTitle(title: string) {
 }
 
 export default function LibraryLayout({ children }: Readonly<PropsWithChildren>) {
-  const { language, title, recentlyLaunchedRoms } = useLoaderData<typeof getLibraryLoaderData>()
+  const { language, title } = useLoaderData<typeof getLibraryLoaderData>()
   useUploadPendingSaves()
   const isDemo = useIsDemo()
   const { isLargeScreen } = useViewport()
-
-  const [isSponsorMessageVisible, setIsSponsorMessageVisible] = useState(false)
-
-  useEffect(() => {
-    const abortController = new AbortController()
-    if (recentlyLaunchedRoms?.length > 5 && !localStorage.getItem('supress-sponsor-message')) {
-      queueMicrotask(() => {
-        if (!abortController.signal.aborted) {
-          setIsSponsorMessageVisible(true)
-        }
-      })
-    }
-    globalThis.addEventListener(
-      'supress-sponsor-message',
-      () => {
-        setIsSponsorMessageVisible(false)
-      },
-      { signal: abortController.signal },
-    )
-    return () => {
-      abortController.abort()
-    }
-  }, [recentlyLaunchedRoms])
 
   useFocusRestoration()
 
@@ -80,7 +56,6 @@ export default function LibraryLayout({ children }: Readonly<PropsWithChildren>)
           {isDemo ? null : (
             <div className='flex items-center justify-between border-t border-t-white/30 py-2'>
               {isLargeScreen ? <LayoutMenu /> : null}
-              {isSponsorMessageVisible ? <SponsorMessage /> : null}
             </div>
           )}
         </SidebarContainer>

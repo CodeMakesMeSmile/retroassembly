@@ -2,7 +2,6 @@ import { Hono } from 'hono'
 import { compress } from 'hono/compress'
 import { contextStorage } from 'hono/context-storage'
 import { app as api } from '#@/api/app.ts'
-import { getRunTimeEnv } from '#@/constants/env.ts'
 import { auth } from '#@/middlewares/auth.ts'
 import { cdnCache } from '#@/middlewares/cdn-cache.ts'
 import { globals } from '#@/middlewares/globals.ts'
@@ -20,12 +19,7 @@ app.use(contextStorage())
 app.use(vendors(), globals(), auth(), logger())
 app.get('/cdn/*', cdnCache())
 app.route('', api)
-app.get('/robots.txt', (c) => {
-  const allowCrawler = getRunTimeEnv().RETROASSEMBLY_RUN_TIME_ALLOW_CRAWLER === 'true'
-  const allow = ['User-agent: *', 'Allow: /'].join('\n')
-  const disallow = ['User-agent: *', 'Disallow: /'].join('\n')
-  const content = allowCrawler ? allow : disallow
-  return c.text(content)
-})
+// A private library, kept out of search engines
+app.get('/robots.txt', (c) => c.text('User-agent: *\nDisallow: /'))
 
 export default app

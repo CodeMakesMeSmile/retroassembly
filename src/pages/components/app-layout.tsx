@@ -5,13 +5,12 @@ import { HydrationBoundary } from 'jotai-ssr'
 import { ThemeProvider } from 'next-themes'
 import { type ReactNode, useEffect } from 'react'
 import { I18nextProvider } from 'react-i18next'
-import { Scripts, ScrollRestoration, useLoaderData, useRouteError } from 'react-router'
+import { Scripts, ScrollRestoration, useLoaderData } from 'react-router'
 import type { loader } from '#@/pages/root.tsx'
 import { isCDNCacheEnabled } from '#@/utils/isomorphic/cdn.ts'
 import { i18n } from '#@/utils/isomorphic/i18n.ts'
 import { getGlobalCSSVars } from '#@/utils/isomorphic/misc.ts'
 import { preferenceAtom } from '../atoms.ts'
-import { CookieConsent } from './cookie-consent.tsx'
 import { Head } from './head.tsx'
 import { RadixTheme } from './radix-theme.tsx'
 
@@ -22,8 +21,7 @@ if (isBrowser()) {
 }
 
 export function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
-  const error = useRouteError()
-  const { currentUser, isHome, language, preference } = useLoaderData<typeof loader>() || {}
+  const { isHome, language, preference } = useLoaderData<typeof loader>() || {}
   const hydrateAtom = [preferenceAtom, preference] as const
   const hydrateAtoms = [hydrateAtom]
 
@@ -43,19 +41,13 @@ export function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
           <RadixTheme>
             <ThemeProvider attribute='class'>
               <Provider>
-                <HydrationBoundary hydrateAtoms={hydrateAtoms}>
-                  {children}
-                  {error ? null : <CookieConsent />}
-                </HydrationBoundary>
+                <HydrationBoundary hydrateAtoms={hydrateAtoms}>{children}</HydrationBoundary>
               </Provider>
             </ThemeProvider>
           </RadixTheme>
         </I18nextProvider>
         {isCDNCacheEnabled() ? (
           <script dangerouslySetInnerHTML={{ __html: 'globalThis.RETROASSEMBLY_CDN_CACHE=true' }} />
-        ) : null}
-        {currentUser ? (
-          <script dangerouslySetInnerHTML={{ __html: `globalThis.CURRENT_USER=${JSON.stringify(currentUser)}` }} />
         ) : null}
         <ScrollRestoration getKey={({ pathname, search }) => `${pathname}${search}`} />
         <Scripts />

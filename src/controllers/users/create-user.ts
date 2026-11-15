@@ -42,9 +42,6 @@ export async function createUser({
   }
 
   const authMode = getAuthMode()
-  if (authMode === 'supabase') {
-    throw new HTTPException(403, { message: 'Local user creation is unavailable' })
-  }
   if (authMode === 'local' && !password) {
     throw new HTTPException(400, { message: 'Password is required' })
   }

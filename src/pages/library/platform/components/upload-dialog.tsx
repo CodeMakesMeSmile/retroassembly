@@ -4,7 +4,6 @@ import confetti from 'canvas-confetti'
 import { clsx } from 'clsx'
 import { isPlainObject } from 'es-toolkit'
 import { isMatch } from 'es-toolkit/compat'
-import { DateTime } from 'luxon'
 import { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useTranslation } from 'react-i18next'
@@ -18,16 +17,9 @@ import { UploadProgress } from './upload-progress.tsx'
 
 export function UploadDialog({ platform, toggleOpen }: Readonly<{ platform: PlatformName; toggleOpen: () => void }>) {
   const { t } = useTranslation()
-  const { currentUser, env, isOfficialHost } = useGlobalLoaderData()
+  const { env } = useGlobalLoaderData()
   const maxFiles = Math.trunc(Number(env.RETROASSEMBLY_RUN_TIME_MAX_UPLOAD_AT_ONCE)) || 1000
-  const cutoffDate = DateTime.fromISO('2026-01-01')
-  let maxRomCount = Math.trunc(Number(env.RETROASSEMBLY_RUN_TIME_MAX_ROM_COUNT)) || Infinity
-  if (currentUser && 'created_at' in currentUser && typeof currentUser.created_at === 'string') {
-    const createdAt = DateTime.fromISO(currentUser.created_at)
-    if (createdAt.isValid && createdAt >= cutoffDate) {
-      maxRomCount = Math.trunc(Number(env.RETROASSEMBLY_RUN_TIME_MAX_ROM_COUNT_2026)) || maxRomCount
-    }
-  }
+  const maxRomCount = Math.trunc(Number(env.RETROASSEMBLY_RUN_TIME_MAX_ROM_COUNT)) || Infinity
 
   const { reload } = useRouter()
   const { getRootProps, isDragActive } = useDropzone({ onDrop })
@@ -164,28 +156,6 @@ export function UploadDialog({ platform, toggleOpen }: Readonly<{ platform: Plat
                   </>
                 )}
               </div>
-
-              {isOfficialHost ? (
-                <div className='mt-4 flex flex-col gap-1 text-xs text-(--accent-9)'>
-                  <p>{t('upload.legalDisclaimer')}</p>
-                  <p>
-                    {t('home.dumpingRomsLinks')}{' '}
-                    <a className='underline' href='https://dumping.guide/' rel='noreferrer noopener' target='_blank'>
-                      dumping.guide
-                    </a>
-                    ,{' '}
-                    <a
-                      className='underline'
-                      href='https://emulation.gametechwiki.com/index.php/Ripping_games'
-                      rel='noreferrer noopener'
-                      target='_blank'
-                    >
-                      Ripping games - Emulation General Wiki
-                    </a>
-                    .
-                  </p>
-                </div>
-              ) : null}
 
               <div className='mt-4 flex justify-end'>
                 <Dialog.Close>

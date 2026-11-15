@@ -52,7 +52,7 @@ Simply run following commands in a terminal then a development server will be la
 
 #### External Services
 
-[jsDelivr](https://www.jsdelivr.com/), [Supabase Auth](https://supabase.com/auth), [msleuth](https://github.com/arianrhodsandlot/msleuth)
+[jsDelivr](https://www.jsdelivr.com/), [msleuth](https://github.com/arianrhodsandlot/msleuth)
 
 ### License
 

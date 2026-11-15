@@ -1,27 +1,12 @@
 import { and, eq, gt } from 'drizzle-orm'
 import { getContext } from 'hono/context-storage'
 import { DateTime } from 'luxon'
-import { authenticationMethodEnum, libraryModeEnum, sessionTable, statusEnum, userTable } from '#@/databases/schema.ts'
+import { authenticationMethodEnum, sessionTable, statusEnum, userTable } from '#@/databases/schema.ts'
 import { getAuthMode } from '#@/utils/server/auth.ts'
 
 export async function getCurrentUser() {
   const c = getContext()
   const authMode = getAuthMode()
-  if (authMode === 'supabase') {
-    const { supabase } = c.var
-    if (!supabase) {
-      return
-    }
-    try {
-      const { data } = await supabase.auth.getUser()
-      if (data?.user) {
-        return { ...data.user, libraryMode: libraryModeEnum.isolated }
-      }
-    } catch {
-      return
-    }
-  }
-
   const { db, token } = c.var
 
   if (!token) {

@@ -7,11 +7,7 @@ export function logger() {
     await next()
 
     const remoteAddr =
-      c.req.header('X-Forwarded-For') ||
-      c.req.header('X-Real-IP') ||
-      c.env?.CF_CONNECTING_IP ||
-      getConnInfo()?.remote.address ||
-      '-'
+      c.req.header('X-Forwarded-For') || c.req.header('X-Real-IP') || getConnInfo()?.remote.address || '-'
     const timestamp = DateTime.now().setZone('utc').toISO()
     const { method, url } = c.req
     const httpVersion = c.req.header('HTTP-Version') || c.env?.HTTP_VERSION || 'HTTP/1.1'

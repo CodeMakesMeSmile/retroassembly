@@ -67,14 +67,7 @@ export async function createRom({ file, md5, platform }: { file: File; md5?: str
     throw new HTTPException(403, { message: t('error.sharedLibraryReadOnly') })
   }
 
-  const cutoffDate = DateTime.fromISO('2026-01-01')
-  let maxRomCount = Math.trunc(Number(env.RETROASSEMBLY_RUN_TIME_MAX_ROM_COUNT)) || Infinity
-  if (currentUser && 'created_at' in currentUser && typeof currentUser.created_at === 'string') {
-    const createdAt = DateTime.fromISO(currentUser.created_at)
-    if (createdAt.isValid && createdAt >= cutoffDate) {
-      maxRomCount = Math.trunc(Number(env.RETROASSEMBLY_RUN_TIME_MAX_ROM_COUNT_2026)) || maxRomCount
-    }
-  }
+  const maxRomCount = Math.trunc(Number(env.RETROASSEMBLY_RUN_TIME_MAX_ROM_COUNT)) || Infinity
   const romCount = await countRoms()
   if (romCount + 1 > maxRomCount) {
     throw new HTTPException(400, {

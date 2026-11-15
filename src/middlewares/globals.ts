@@ -4,7 +4,6 @@ import { accepts } from 'hono/accepts'
 import { getCookie } from 'hono/cookie'
 import { createMiddleware } from 'hono/factory'
 import { match } from 'path-to-regexp'
-import { getRunTimeEnv } from '#@/constants/env.ts'
 import type { ResolvedPreference } from '#@/constants/preference.ts'
 import { getPreference } from '#@/controllers/preference/get-preference.ts'
 import { getCurrentUser } from '#@/controllers/users/get-current-user.ts'
@@ -63,36 +62,12 @@ function getLanguage(c: Context) {
   return language
 }
 
-async function getTempUserOrCurrentUser(c: Context) {
-  const runtimeEnv = getRunTimeEnv()
-
-  let currentUser = await getCurrentUser()
-
-  const isSupervisor =
-    currentUser?.id && runtimeEnv.RETROASSEMBLY_RUN_TIME_SUPERVISER_USER_IDS.split(',').includes(currentUser?.id)
-
-  if (isSupervisor) {
-    const tempUserId = getCookie(c, 'temp-user-id') || c.req.query('temp-user-id')
-    if (tempUserId) {
-      if (c.var.supabase) {
-        const { data } = await c.var.supabase.auth.admin.getUserById(tempUserId)
-        if (data.user) {
-          currentUser = { ...data.user, libraryMode: libraryModeEnum.isolated }
-        }
-      } else {
-        currentUser = { id: tempUserId, libraryMode: libraryModeEnum.isolated, username: '' }
-      }
-    }
-  }
-  return currentUser
-}
-
 export function globals() {
   return createMiddleware(async (c, next) => {
     const token = c.req.header('Authorization')?.replace('Bearer ', '') || getCookie(c, 'token') || ''
     c.set('token', token)
 
-    const currentUser = await getTempUserOrCurrentUser(c)
+    const currentUser = await getCurrentUser()
     c.set('authorized', Boolean(currentUser))
     c.set('unauthorized', !currentUser)
     if (currentUser) {

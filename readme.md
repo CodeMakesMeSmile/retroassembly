@@ -110,7 +110,7 @@ The following settings are optional:
 | `RETROASSEMBLY_RUN_TIME_OIDC_SCOPES`          | `openid profile email` | Space-separated scopes                              |
 | `RETROASSEMBLY_RUN_TIME_OIDC_SESSION_MAX_AGE` | `28800000`             | OIDC session lifetime in milliseconds               |
 
-OIDC and Supabase authentication cannot be enabled together. OIDC is not available in the Cloudflare Workers build. Before enabling OIDC on an existing instance, confirm that the first local user's username matches the intended OIDC administrator; the oldest active local user remains RetroAssembly's super user.-->
+Before enabling OIDC on an existing instance, confirm that the first local user's username matches the intended OIDC administrator; the oldest active local user remains RetroAssembly's super user.-->
 
 ## Supported Platforms
 

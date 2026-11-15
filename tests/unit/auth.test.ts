@@ -42,48 +42,19 @@ await describe('authentication helpers', async () => {
   })
 
   await it('selects authentication by deployment configuration', () => {
-    assert.equal(resolveAuthMode({}, 'node'), 'local')
+    assert.equal(resolveAuthMode({}), 'local')
     assert.equal(
-      resolveAuthMode(
-        {
-          RETROASSEMBLY_RUN_TIME_SUPABASE_ANON_KEY: 'key',
-          RETROASSEMBLY_RUN_TIME_SUPABASE_URL: 'https://supabase.example',
-        },
-        'workerd',
-      ),
-      'supabase',
-    )
-    assert.equal(
-      resolveAuthMode(
-        {
-          RETROASSEMBLY_RUN_TIME_OIDC_CLIENT_ID: 'retroassembly',
-          RETROASSEMBLY_RUN_TIME_OIDC_CLIENT_SECRET: 'secret',
-          RETROASSEMBLY_RUN_TIME_OIDC_ISSUER: 'https://id.example',
-        },
-        'node',
-      ),
+      resolveAuthMode({
+        RETROASSEMBLY_RUN_TIME_OIDC_CLIENT_ID: 'retroassembly',
+        RETROASSEMBLY_RUN_TIME_OIDC_CLIENT_SECRET: 'secret',
+        RETROASSEMBLY_RUN_TIME_OIDC_ISSUER: 'https://id.example',
+      }),
       'oidc',
     )
   })
 
-  await it('rejects incomplete, conflicting, and Workers OIDC configuration', () => {
-    const oidc = {
-      RETROASSEMBLY_RUN_TIME_OIDC_CLIENT_ID: 'retroassembly',
-      RETROASSEMBLY_RUN_TIME_OIDC_CLIENT_SECRET: 'secret',
-      RETROASSEMBLY_RUN_TIME_OIDC_ISSUER: 'https://id.example',
-    }
-    assert.throws(() => resolveAuthMode({ RETROASSEMBLY_RUN_TIME_OIDC_ISSUER: 'https://id.example' }, 'node'))
-    assert.throws(() => resolveAuthMode(oidc, 'workerd'))
-    assert.throws(() =>
-      resolveAuthMode(
-        {
-          ...oidc,
-          RETROASSEMBLY_RUN_TIME_SUPABASE_ANON_KEY: 'key',
-          RETROASSEMBLY_RUN_TIME_SUPABASE_URL: 'https://supabase.example',
-        },
-        'node',
-      ),
-    )
+  await it('rejects incomplete OIDC configuration', () => {
+    assert.throws(() => resolveAuthMode({ RETROASSEMBLY_RUN_TIME_OIDC_ISSUER: 'https://id.example' }))
   })
 
   await it('reads OIDC usernames and role arrays', () => {

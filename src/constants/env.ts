@@ -7,11 +7,9 @@ export function getRunTimeEnv() {
   return defaults(
     { ...runTimeEnv },
     {
-      RETROASSEMBLY_RUN_TIME_ALLOW_CRAWLER: 'false',
       RETROASSEMBLY_RUN_TIME_DATA_DIRECTORY: path.resolve('data'),
       RETROASSEMBLY_RUN_TIME_MAX_AUTO_STATES_PER_ROM: '20',
       RETROASSEMBLY_RUN_TIME_MAX_ROM_COUNT: '',
-      RETROASSEMBLY_RUN_TIME_MAX_ROM_COUNT_2026: '',
       RETROASSEMBLY_RUN_TIME_MAX_UPLOAD_AT_ONCE: '1000',
       RETROASSEMBLY_RUN_TIME_MSLEUTH_FALLBACK_HOST: 'https://msleuth.fly.dev/',
       RETROASSEMBLY_RUN_TIME_MSLEUTH_HOST: 'https://msleuth.arianrhodsandlot.workers.dev/',
@@ -26,9 +24,6 @@ export function getRunTimeEnv() {
       RETROASSEMBLY_RUN_TIME_SKIP_HOME_IF_LOGGED_IN: 'true',
       RETROASSEMBLY_RUN_TIME_STORAGE_DIRECTORY: path.resolve('data', 'storage'),
       RETROASSEMBLY_RUN_TIME_STORAGE_HOST: '',
-      RETROASSEMBLY_RUN_TIME_SUPABASE_ANON_KEY: '',
-      RETROASSEMBLY_RUN_TIME_SUPABASE_URL: '',
-      RETROASSEMBLY_RUN_TIME_SUPERVISER_USER_IDS: '',
     },
   )
 }

@@ -5,11 +5,7 @@ import { invalidateSession } from '#@/controllers/sessions/invalidate-session.ts
 export async function loader() {
   const c = getContext()
 
-  const { supabase, token } = c.var
-
-  if (supabase) {
-    await supabase.auth.signOut()
-  }
+  const { token } = c.var
 
   if (token) {
     await invalidateSession()

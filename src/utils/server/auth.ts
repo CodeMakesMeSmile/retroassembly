@@ -1,13 +1,12 @@
 import assert from 'node:assert'
-import { getRuntimeKey } from 'hono/adapter'
 import { defaultRedirectTo, type AuthMode } from '#@/constants/auth.ts'
 import { getRunTimeEnv } from '#@/constants/env.ts'
 
 export function getAuthMode(): AuthMode {
-  return resolveAuthMode(getRunTimeEnv(), getRuntimeKey())
+  return resolveAuthMode(getRunTimeEnv())
 }
 
-export function resolveAuthMode(env: Record<string, unknown>, runtimeKey: string): AuthMode {
+export function resolveAuthMode(env: Record<string, unknown>): AuthMode {
   const oidcValues = [
     env.RETROASSEMBLY_RUN_TIME_OIDC_ISSUER,
     env.RETROASSEMBLY_RUN_TIME_OIDC_CLIENT_ID,
@@ -16,18 +15,10 @@ export function resolveAuthMode(env: Record<string, unknown>, runtimeKey: string
   const hasOidcConfiguration = oidcValues.some(Boolean)
 
   if (hasOidcConfiguration) {
-    assert.ok(runtimeKey === 'node', 'OIDC authentication is only supported by the Node.js runtime')
     assert.ok(oidcValues.every(Boolean), 'OIDC issuer, client ID, and client secret must all be set')
-    assert.ok(
-      !env.RETROASSEMBLY_RUN_TIME_SUPABASE_ANON_KEY && !env.RETROASSEMBLY_RUN_TIME_SUPABASE_URL,
-      'OIDC and Supabase authentication cannot be enabled together',
-    )
     return 'oidc'
   }
 
-  if (env.RETROASSEMBLY_RUN_TIME_SUPABASE_ANON_KEY && env.RETROASSEMBLY_RUN_TIME_SUPABASE_URL) {
-    return 'supabase'
-  }
   return 'local'
 }
 
