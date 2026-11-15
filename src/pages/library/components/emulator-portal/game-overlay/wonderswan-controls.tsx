@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import type { CSSProperties, RefObject } from 'react'
 import { twMerge } from 'tailwind-merge'
+import type { RetroPadButton } from '#@/input/retropad.ts'
 import { useControlsScale } from '#@/pages/library/hooks/use-controls-scale.ts'
 import { DPad } from './dpad.tsx'
 import { refitGame } from './refit-game.ts'
@@ -24,7 +25,7 @@ const plain = twMerge(
 const plainStyle: CSSProperties = { background: 'linear-gradient(#3a3a3d, #202022)' }
 
 // The Y pad: each button's RetroPad button and its place in portrait and in landscape
-const yButtons: [label: string, buttonName: string, className: string][] = [
+const yButtons: [label: string, buttonName: RetroPadButton, className: string][] = [
   ['Y1', 'r2', 'left-[75px] bottom-[335px] landscape:left-[45px] landscape:bottom-[240px]'],
   ['Y2', 'r', 'left-[121px] bottom-[289px] landscape:left-[81px] landscape:bottom-[204px]'],
   ['Y3', 'l2', 'left-[75px] bottom-[243px] landscape:left-[45px] landscape:bottom-[168px]'],

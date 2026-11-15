@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import type { CSSProperties } from 'react'
 import { twMerge } from 'tailwind-merge'
+import type { RetroPadButton } from '#@/input/retropad.ts'
 import { DPad } from './dpad.tsx'
 import { VirtualGamepadButton } from './virtual-gamepad-button.tsx'
 
@@ -54,7 +55,7 @@ function FaceButton({
   buttonName,
   hidden,
   label,
-}: Readonly<{ buttonName: string; hidden: string; label: keyof typeof places }>) {
+}: Readonly<{ buttonName: RetroPadButton; hidden: string; label: keyof typeof places }>) {
   return (
     <VirtualGamepadButton
       buttonName={buttonName}

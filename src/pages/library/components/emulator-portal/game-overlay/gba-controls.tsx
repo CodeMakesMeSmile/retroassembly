@@ -1,5 +1,6 @@
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import type { RetroPadButton } from '#@/input/retropad.ts'
 import { useControlsScale } from '#@/pages/library/hooks/use-controls-scale.ts'
 import { DPad } from './dpad.tsx'
 import { VirtualGamepadButton } from './virtual-gamepad-button.tsx'
@@ -21,7 +22,7 @@ const face = twMerge(
   'absolute size-18 rounded-full text-2xl font-extrabold text-[#3a3a40] shadow-[0_3px_4px_#000a,inset_0_-3px_0_#0002] landscape:size-13.5 landscape:text-lg',
 )
 
-function Pill({ buttonName, label }: Readonly<{ buttonName: string; label: string }>) {
+function Pill({ buttonName, label }: Readonly<{ buttonName: RetroPadButton; label: string }>) {
   return (
     <VirtualGamepadButton
       buttonName={buttonName}

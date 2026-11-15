@@ -2,6 +2,7 @@ import { clsx } from 'clsx'
 import type { CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import { twMerge } from 'tailwind-merge'
+import type { RetroPadButton } from '#@/input/retropad.ts'
 import { useControlsScale } from '#@/pages/library/hooks/use-controls-scale.ts'
 import { Joystick } from './joystick.tsx'
 import { VirtualGamepadButton } from './virtual-gamepad-button.tsx'
@@ -23,7 +24,7 @@ function colored([light, middle, dark]: [string, string, string], text: string):
 }
 
 // Each button: its RetroPad button, its colour, and its place in portrait and in landscape
-const buttons: [label: string, buttonName: string, style: CSSProperties, className: string][] = [
+const buttons: [label: string, buttonName: RetroPadButton, style: CSSProperties, className: string][] = [
   [
     '1',
     'b',

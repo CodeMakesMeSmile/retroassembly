@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import type { CSSProperties } from 'react'
 import { twMerge } from 'tailwind-merge'
+import type { RetroPadButton } from '#@/input/retropad.ts'
 import { useControlsScale } from '#@/pages/library/hooks/use-controls-scale.ts'
 import { DPad } from './dpad.tsx'
 import { Thumbstick } from './thumbstick.tsx'
@@ -15,7 +16,7 @@ const pressed = 'data-[touching=true]:brightness-125 data-[touching=true]:scale-
 
 // Each face button: its symbol and colour, and its place in the diamond in portrait and in landscape. The diamond, like
 // the d-pad, sits midway between the bumpers above and the sticks below
-const faceButtons: [label: string, buttonName: string, color: string, className: string][] = [
+const faceButtons: [label: string, buttonName: RetroPadButton, color: string, className: string][] = [
   ['△', 'x', '#3fcf8e', 'right-[64px] bottom-[267px] landscape:right-[48px] landscape:bottom-[227px]'],
   ['□', 'y', '#e88ac8', 'right-[112px] bottom-[219px] landscape:right-[86px] landscape:bottom-[189px]'],
   ['○', 'a', '#ff5a5a', 'right-[16px] bottom-[219px] landscape:right-[10px] landscape:bottom-[189px]'],

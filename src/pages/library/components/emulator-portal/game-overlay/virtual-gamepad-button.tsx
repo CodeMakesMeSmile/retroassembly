@@ -1,11 +1,12 @@
 import { clsx } from 'clsx'
 import { type ButtonHTMLAttributes, type PointerEvent, useEffect, useId, useMemo, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
+import type { RetroPadButton } from '#@/input/retropad.ts'
 import { useEmulator } from '../hooks/use-emulator.ts'
 
 interface VirtualGamepadButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  buttonName?: string
-  buttonNames?: string[]
+  buttonName?: RetroPadButton
+  buttonNames?: RetroPadButton[]
   // A finger can slide between buttons of the same group, like the d-pad's directions, but not onto another button
   group?: string
   onVirtualPressEnd?: () => void
@@ -14,12 +15,12 @@ interface VirtualGamepadButtonProps extends ButtonHTMLAttributes<HTMLButtonEleme
 
 interface VirtualGamepadButtonRegistration {
   activePointerIds: Set<number>
-  buttonNames: string[]
+  buttonNames: RetroPadButton[]
   group: string
   emulator?: {
     getStatus: () => string
-    pressDown: (buttonName: string) => void
-    pressUp: (buttonName: string) => void
+    pressDown: (buttonName: RetroPadButton) => void
+    pressUp: (buttonName: RetroPadButton) => void
   }
   onVirtualPressEnd?: () => void
   onVirtualPressStart?: () => void

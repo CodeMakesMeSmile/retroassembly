@@ -89,7 +89,13 @@ export function DPad({
           const className = directions.length === 1 ? twMerge(arm, armRounding[directions[0]]) : corner
           if (!gamepadButtons) {
             return directions.length === 1 ? (
-              <VirtualGamepadButton buttonName={title} className={className} group={group} key={title} title={title} />
+              <VirtualGamepadButton
+                buttonName={directions[0]}
+                className={className}
+                group={group}
+                key={title}
+                title={title}
+              />
             ) : (
               <VirtualGamepadButton
                 buttonNames={directions}

@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import type { CSSProperties } from 'react'
 import { twMerge } from 'tailwind-merge'
+import type { RetroPadButton } from '#@/input/retropad.ts'
 import { useControlsScale } from '#@/pages/library/hooks/use-controls-scale.ts'
 import { setVirtualGamepadAxis, setVirtualGamepadButton } from '#@/pages/library/utils/virtual-gamepad.ts'
 import { Thumbstick } from './thumbstick.tsx'
@@ -42,7 +43,7 @@ function holdButton(index: number) {
     handleStart: () => setVirtualGamepadButton(index, true),
   }
 }
-const keypadKeys: [string, { buttonName: string } | { handleEnd: () => void; handleStart: () => void }][] = [
+const keypadKeys: [string, { buttonName: RetroPadButton } | { handleEnd: () => void; handleStart: () => void }][] = [
   ['1', holdRightStick(-1, -1)],
   ['2', holdRightStick(0, -1)],
   ['3', holdRightStick(1, -1)],

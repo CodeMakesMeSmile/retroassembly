@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import type { CSSProperties } from 'react'
 import { twMerge } from 'tailwind-merge'
+import type { RetroPadButton } from '#@/input/retropad.ts'
 import { useControlsScale } from '#@/pages/library/hooks/use-controls-scale.ts'
 import { DPad } from './dpad.tsx'
 import { VirtualGamepadButton } from './virtual-gamepad-button.tsx'
@@ -18,7 +19,7 @@ function colored(light: string, middle: string, dark: string) {
 }
 
 // Each face button: its colour, text colour, and place in the diamond in portrait and in landscape
-const faceButtons: [label: string, buttonName: string, style: CSSProperties, className: string][] = [
+const faceButtons: [label: string, buttonName: RetroPadButton, style: CSSProperties, className: string][] = [
   [
     'X',
     'x',
@@ -52,7 +53,7 @@ const shoulder = twMerge(
 )
 const shoulderStyle: CSSProperties = { background: 'linear-gradient(#e2e2e6, #a8a8b0)' }
 
-function Pill({ buttonName, label }: Readonly<{ buttonName: string; label: string }>) {
+function Pill({ buttonName, label }: Readonly<{ buttonName: RetroPadButton; label: string }>) {
   return (
     <VirtualGamepadButton
       buttonName={buttonName}

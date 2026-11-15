@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import { type CSSProperties, useRef } from 'react'
 import { twMerge } from 'tailwind-merge'
+import type { RetroPadButton } from '#@/input/retropad.ts'
 import { useControlsScale } from '#@/pages/library/hooks/use-controls-scale.ts'
 import { setVirtualGamepadButton } from '#@/pages/library/utils/virtual-gamepad.ts'
 import { DPad } from './dpad.tsx'
@@ -16,7 +17,7 @@ const red = '#e0242a'
 
 const pressed = 'data-[touching=true]:brightness-90 data-[touching=true]:scale-95'
 
-function Pill({ buttonName, label }: Readonly<{ buttonName: string; label: string }>) {
+function Pill({ buttonName, label }: Readonly<{ buttonName: RetroPadButton; label: string }>) {
   return (
     <VirtualGamepadButton
       buttonName={buttonName}

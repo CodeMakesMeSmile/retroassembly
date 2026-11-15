@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import type { CSSProperties } from 'react'
 import { twMerge } from 'tailwind-merge'
+import type { RetroPadButton } from '#@/input/retropad.ts'
 import { useControlsScale } from '#@/pages/library/hooks/use-controls-scale.ts'
 import { Joystick } from './joystick.tsx'
 import { VirtualGamepadButton } from './virtual-gamepad-button.tsx'
@@ -23,7 +24,7 @@ const plain = twMerge(
 const plainStyle: CSSProperties = { background: 'linear-gradient(#3a3a3d, #202022)' }
 
 // Each move: its arrow, name, RetroPad button and place in the diamond in portrait and in landscape
-const moves: [arrow: string, name: string, buttonName: string, className: string][] = [
+const moves: [arrow: string, name: string, buttonName: RetroPadButton, className: string][] = [
   ['↑', 'Pull', 'x', 'right-[75px] bottom-[169px] landscape:right-[61px] landscape:bottom-[155px]'],
   ['↺', 'Twist left', 'y', 'right-[131px] bottom-[113px] landscape:right-[107px] landscape:bottom-[109px]'],
   ['↻', 'Twist right', 'a', 'right-[19px] bottom-[113px] landscape:right-[15px] landscape:bottom-[109px]'],

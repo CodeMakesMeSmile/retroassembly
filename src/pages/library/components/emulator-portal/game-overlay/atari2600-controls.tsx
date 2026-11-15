@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import type { CSSProperties } from 'react'
 import { twMerge } from 'tailwind-merge'
+import type { RetroPadButton } from '#@/input/retropad.ts'
 import { useControlsScale } from '#@/pages/library/hooks/use-controls-scale.ts'
 import { Joystick } from './joystick.tsx'
 import { VirtualGamepadButton } from './virtual-gamepad-button.tsx'
@@ -10,7 +11,7 @@ import { VirtualGamepadButton } from './virtual-gamepad-button.tsx'
 // landscape. Stella reads the joystick as the d-pad, fire as B, and the two switches as Select and Start.
 const pressed = 'data-[touching=true]:brightness-90 data-[touching=true]:scale-95'
 
-function ConsoleSwitch({ buttonName, label }: Readonly<{ buttonName: string; label: string }>) {
+function ConsoleSwitch({ buttonName, label }: Readonly<{ buttonName: RetroPadButton; label: string }>) {
   return (
     <VirtualGamepadButton
       buttonName={buttonName}
