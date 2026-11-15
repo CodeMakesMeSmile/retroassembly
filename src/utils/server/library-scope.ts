@@ -1,4 +1,4 @@
-import { and, asc, eq, type SQL } from 'drizzle-orm'
+import { and, asc, eq, type SQL, sql } from 'drizzle-orm'
 import type { SQLiteColumn } from 'drizzle-orm/sqlite-core'
 import { getContext } from 'hono/context-storage'
 import { libraryModeEnum, romTable, statusEnum, userTable } from '#@/databases/schema.ts'
@@ -44,6 +44,30 @@ export function live(table: { status: SQLiteColumn }) {
 /** The games in the library the user sees */
 export function romsOf(scope: LibraryScope, ...conditions: (SQL | undefined)[]) {
   return and(eq(romTable.userId, scope.libraryOwnerId), live(romTable), ...conditions)
+}
+
+// The disc that stands for a game on several discs: the lowest-numbered one in the library
+function standingDisc() {
+  return sql`(
+    SELECT first.id FROM roms first
+    WHERE first.user_id = ${romTable.userId} AND first.platform = ${romTable.platform}
+      AND first.disc_group = ${romTable.discGroup} AND first.status = 1
+    ORDER BY first.disc_number, first.created_at LIMIT 1
+  )`
+}
+
+/** Games as the library lists them: a game on several discs once, by the disc that stands for it */
+export function listedOnce() {
+  return sql`(${romTable.discGroup} IS NULL OR ${romTable.id} = ${standingDisc()})`
+}
+
+/** How many discs a game has in the library: 1 for a game that isn't on several */
+export function discCount() {
+  return sql<number>`CASE WHEN ${romTable.discGroup} IS NULL THEN 1 ELSE (
+    SELECT count(*) FROM roms disc
+    WHERE disc.user_id = ${romTable.userId} AND disc.platform = ${romTable.platform}
+      AND disc.disc_group = ${romTable.discGroup} AND disc.status = 1
+  ) END`
 }
 
 /** The user's own rows of personal data */

@@ -33,6 +33,8 @@ export const states = new Hono()
       z.object({
         clientId: z.string().min(1).max(64).optional(),
         core: z.string(),
+        // The disc in the drive, for a game on several discs
+        disc: z.coerce.number().int().min(1).optional(),
         rom: z.string(),
         state: z.instanceof(Blob),
         thumbnail: z.instanceof(Blob),

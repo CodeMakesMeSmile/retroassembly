@@ -3,6 +3,7 @@ import type { ConsoleDefinition } from './types.ts'
 // Sony
 export const sonyConsoles = {
   psx: {
+    multiDisc: true,
     bioses: [
       {
         md5: '6e3735ff4c7dc899ee98981385f6f3d0',

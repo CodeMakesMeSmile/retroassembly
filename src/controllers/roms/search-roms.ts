@@ -3,7 +3,7 @@ import Fuse from 'fuse.js'
 import type { PlatformName } from '#@/constants/platform.ts'
 import { favoriteTable, romTable, statusEnum } from '#@/databases/schema.ts'
 import { getSearchTitle, scoreRom } from '#@/utils/isomorphic/search.ts'
-import type { LibraryScope } from '#@/utils/server/library-scope.ts'
+import { discCount, type LibraryScope, listedOnce } from '#@/utils/server/library-scope.ts'
 import { addCoverCandidates } from '#@/utils/server/rom-cover-candidates.ts'
 
 type SearchRomsReturning = Awaited<ReturnType<typeof searchRoms>>
@@ -75,6 +75,7 @@ export async function searchRoms(
     eq(romTable.userId, effectiveLibraryUserId),
     eq(romTable.status, statusEnum.normal),
     platform ? eq(romTable.platform, platform) : inArray(romTable.platform, preference.ui.platforms),
+    listedOnce(),
   ]
   const trimmedQuery = query.trim().replaceAll(/\s+/gu, ' ')
   const where = and(...conditions)
@@ -114,12 +115,14 @@ export async function searchRoms(
   const pageIds = ranked.slice(offset, offset + pageSize).map(({ id }) => id)
   const pageRows = pageIds.length
     ? await library
-        .select({ isFavorite, rom: romTable })
+        .select({ discCount: discCount(), isFavorite, rom: romTable })
         .from(romTable)
         .leftJoin(favoriteTable, favoriteJoinCondition)
         .where(inArray(romTable.id, pageIds))
     : []
-  const byId = new Map(pageRows.map(({ isFavorite, rom }) => [rom.id, Object.assign(rom, { isFavorite })]))
+  const byId = new Map(
+    pageRows.map(({ discCount, isFavorite, rom }) => [rom.id, Object.assign(rom, { discCount, isFavorite })]),
+  )
   const roms = pageIds.map((id) => byId.get(id)).filter((rom) => rom !== undefined)
 
   const total = ranked.length

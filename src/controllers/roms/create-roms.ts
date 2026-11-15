@@ -5,6 +5,7 @@ import { DateTime } from 'luxon'
 import { getRunTimeEnv } from '#@/constants/env.ts'
 import { platformMap, type PlatformName } from '#@/constants/platform.ts'
 import { romTable, statusEnum } from '#@/databases/schema.ts'
+import { getDiscFields, updateDiscGroups } from '#@/utils/server/disc-groups.ts'
 import { DomainError } from '#@/utils/server/domain-error.ts'
 import { getFilePartialDigest } from '#@/utils/server/file.ts'
 import { assertCanWriteLibrary, type LibraryScope } from '#@/utils/server/library-scope.ts'
@@ -109,6 +110,7 @@ export async function createRom(
   }
 
   const romData: InferInsertModel<typeof romTable> = {
+    ...getDiscFields(platform, file.name),
     fileId,
     fileName: file.name,
     gameDeveloper: launchbox?.developer || libretro?.developer,
@@ -139,12 +141,16 @@ export async function createRom(
     )
     .limit(1)
 
+  let result: typeof romTable.$inferSelect
   if (existingRom) {
     const updateData = omit(romData, ['id'])
-    const [result] = await library.update(romTable).set(updateData).where(eq(romTable.id, existingRom.id)).returning()
-    return result
+    ;[result] = await library.update(romTable).set(updateData).where(eq(romTable.id, existingRom.id)).returning()
+  } else {
+    ;[result] = await library.insert(romTable).values(romData).returning()
   }
-
-  const [result] = await library.insert(romTable).values(romData).returning()
+  // A new disc of a game may stand for it now (disc 1 added after disc 2), so its saves and history follow
+  if (result.discGroup) {
+    updateDiscGroups(library)
+  }
   return result
 }

@@ -1,6 +1,6 @@
 import { and, count, countDistinct, desc, eq, inArray, max } from 'drizzle-orm'
 import { favoriteTable, launchRecordTable, romTable, statusEnum } from '#@/databases/schema.ts'
-import type { LibraryScope } from '#@/utils/server/library-scope.ts'
+import { discCount, type LibraryScope } from '#@/utils/server/library-scope.ts'
 import { addCoverCandidates } from '#@/utils/server/rom-cover-candidates.ts'
 
 export async function getLaunchRecords(
@@ -27,6 +27,7 @@ export async function getLaunchRecords(
       lastLaunched: max(launchRecordTable.createdAt),
       platform: launchRecordTable.platform,
 
+      discCount: discCount(),
       fileId: romTable.fileId,
       fileName: romTable.fileName,
       gameBoxartFileIds: romTable.gameBoxartFileIds,

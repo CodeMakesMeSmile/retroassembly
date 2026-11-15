@@ -2,6 +2,7 @@ import { migrate } from 'drizzle-orm/better-sqlite3/migrator'
 import fs from 'fs-extra'
 import isDocker from 'is-docker'
 import { getDirectories } from '../../../constants/env.ts'
+import { updateDiscGroups } from '../disc-groups.ts'
 import { getDatabase } from '../drizzle.ts'
 
 async function testDataDirectory() {
@@ -36,4 +37,5 @@ function migrateDatabase() {
 export async function initializeDatabase() {
   await testDataDirectory()
   migrateDatabase()
+  updateDiscGroups(getDatabase().library)
 }

@@ -10,6 +10,7 @@ interface CreateStateParams {
   /** The browser's id for this save; a save already stored under it isn't stored again */
   clientId?: string
   core: string
+  disc?: number
   rom: string
   state: Blob
   thumbnail: Blob
@@ -27,7 +28,7 @@ async function findByClientId(scope: LibraryScope, clientId: string) {
 
 export async function createState(
   scope: LibraryScope,
-  { clientId, core, rom, state, thumbnail, type }: CreateStateParams,
+  { clientId, core, disc, rom, state, thumbnail, type }: CreateStateParams,
 ) {
   const { user: currentUser, storage } = scope
   const romResult = await findRom(scope, rom)
@@ -50,6 +51,7 @@ export async function createState(
       .values({
         clientId,
         core,
+        disc,
         fileId: stateFileId,
         platform: romResult.platform,
         romId: romResult.id,

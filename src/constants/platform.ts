@@ -6,13 +6,13 @@ import type { ConsoleDefinition } from '../consoles/types.ts'
 
 export type PlatformName = ConsoleName
 
-export interface Platform extends Omit<ConsoleDefinition, 'attachVirtualGamepad' | 'coin' | 'setups'> {
+export interface Platform extends Omit<ConsoleDefinition, 'attachVirtualGamepad' | 'coin' | 'multiDisc' | 'setups'> {
   name: PlatformName
 }
 
 export const platformMap: Record<PlatformName, Platform> = mapValues(
   consoles as Record<PlatformName, ConsoleDefinition>,
-  (definition, name) => ({ name, ...omit(definition, ['attachVirtualGamepad', 'coin', 'setups']) }),
+  (definition, name) => ({ name, ...omit(definition, ['attachVirtualGamepad', 'coin', 'multiDisc', 'setups']) }),
 )
 
 export const platforms = sortBy(Object.values(platformMap), ['displayNameI18nKey'])

@@ -83,6 +83,9 @@ export const oidcIdentityTable = sqliteTable(
 export const romTable = sqliteTable(
   'roms',
   {
+    // A game on several discs is listed once: its discs share a group, and the lowest-numbered one stands for the game
+    discGroup: text(),
+    discNumber: integer(),
     fileName: text().notNull(),
     gameBoxartFileIds: text(),
     gameDescription: text(),
@@ -114,6 +117,7 @@ export const romTable = sqliteTable(
     index('idx_roms_file_status').on(table.fileId, table.status),
     // For get-rom.ts: lookup ROM by filename when ID not provided
     index('idx_roms_user_platform_filename').on(table.userId, table.platform, table.fileName),
+    index('idx_roms_user_platform_disc_group').on(table.userId, table.platform, table.discGroup),
   ],
 )
 
@@ -123,6 +127,8 @@ export const stateTable = sqliteTable(
     // An id the browser gives a save, so a save uploaded again after a dropped connection is stored only once
     clientId: text(),
     core: text().notNull(),
+    // The disc in the drive when it was saved, for a game on several discs
+    disc: integer(),
     platform: text().notNull(),
     romId: text().notNull(),
     thumbnailFileId: text().notNull(),

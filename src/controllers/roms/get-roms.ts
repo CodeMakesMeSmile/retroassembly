@@ -2,7 +2,7 @@ import { and, count, desc, eq, inArray, isNotNull, max, sql } from 'drizzle-orm'
 import type { PlatformName } from '#@/constants/platform.ts'
 import type { RomsOrder } from '#@/constants/roms-order.ts'
 import { favoriteTable, launchRecordTable, romTable, statusEnum } from '#@/databases/schema.ts'
-import type { LibraryScope } from '#@/utils/server/library-scope.ts'
+import { discCount, type LibraryScope, listedOnce } from '#@/utils/server/library-scope.ts'
 import { addCoverCandidates } from '#@/utils/server/rom-cover-candidates.ts'
 
 type GetRomsReturning = Awaited<ReturnType<typeof getRoms>>
@@ -37,6 +37,8 @@ export async function getRoms(
   const conditions = [eq(romTable.userId, effectiveLibraryUserId), eq(romTable.status, statusEnum.normal)]
   if (id) {
     conditions.push(eq(romTable.id, id))
+  } else {
+    conditions.push(listedOnce())
   }
   if (platform) {
     conditions.push(eq(romTable.platform, platform))
@@ -82,6 +84,7 @@ export async function getRoms(
 
   const baseQuery = library
     .select({
+      discCount: discCount(),
       isFavorite: sql<boolean>`CASE WHEN ${favoriteTable.id} IS NOT NULL THEN 1 ELSE 0 END`,
       rom: romTable,
     })
@@ -97,7 +100,7 @@ export async function getRoms(
     .offset(offset)
     .limit(pageSize)
 
-  const roms = romsRaw.map(({ isFavorite, rom }) => Object.assign(rom, { isFavorite }))
+  const roms = romsRaw.map(({ discCount, isFavorite, rom }) => Object.assign(rom, { discCount, isFavorite }))
 
   const [{ total }] = await library
     .select({ total: count() })

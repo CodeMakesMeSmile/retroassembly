@@ -67,6 +67,8 @@ export interface ConsoleDefinition {
   bioses?: Bios[]
   /** Select inserts a coin */
   coin?: boolean
+  /** Games come on several discs, named "… (Disc 1)", "… (Disc 2)" and so on, which are listed and played as one */
+  multiDisc?: boolean
   /** The emulators that play it, the default first */
   cores: CoreName[]
   displayNameI18nKey: string

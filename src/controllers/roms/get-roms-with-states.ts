@@ -1,6 +1,6 @@
 import { and, count, countDistinct, desc, eq, gte, inArray, max } from 'drizzle-orm'
 import { favoriteTable, romTable, stateTable, statusEnum } from '#@/databases/schema.ts'
-import type { LibraryScope } from '#@/utils/server/library-scope.ts'
+import { discCount, type LibraryScope, listedOnce } from '#@/utils/server/library-scope.ts'
 import { addCoverCandidates } from '#@/utils/server/rom-cover-candidates.ts'
 
 export async function getRomsWithStates(scope: LibraryScope, { page = 1, pageSize = 20 } = {}) {
@@ -17,6 +17,7 @@ export async function getRomsWithStates(scope: LibraryScope, { page = 1, pageSiz
   const romsRaw = await library
     .select({
       createdAt: romTable.createdAt,
+      discCount: discCount(),
       fileId: romTable.fileId,
       fileName: romTable.fileName,
       gameBoxartFileIds: romTable.gameBoxartFileIds,
@@ -43,6 +44,7 @@ export async function getRomsWithStates(scope: LibraryScope, { page = 1, pageSiz
         eq(romTable.userId, effectiveLibraryUserId),
         eq(romTable.status, statusEnum.normal),
         inArray(romTable.platform, preference.ui.platforms),
+        listedOnce(),
       ),
     )
     .groupBy(
@@ -66,6 +68,7 @@ export async function getRomsWithStates(scope: LibraryScope, { page = 1, pageSiz
     eq(romTable.userId, effectiveLibraryUserId),
     eq(romTable.status, statusEnum.normal),
     inArray(romTable.platform, preference.ui.platforms),
+    listedOnce(),
   )
   const res = await library
     .select({ total: countDistinct(romTable.id) })
