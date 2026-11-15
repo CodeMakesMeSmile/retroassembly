@@ -48,7 +48,7 @@ export function DeviceInfo({ platform }: Readonly<{ platform: string }>) {
         <div className='rounded bg-(--gray-a3) p-4 lg:px-8'>
           <div className='flex flex-col gap-8 lg:flex-row lg:*:min-w-36'>
             <div>
-              <div className='flex h-6 items-center gap-2 font-semibold'>
+              <div className='flex min-h-6 items-center gap-2 font-semibold'>
                 <span className='icon-[mdi--calendar]' />
                 <span>{t('common.released')}</span>
               </div>
@@ -66,7 +66,7 @@ export function DeviceInfo({ platform }: Readonly<{ platform: string }>) {
 
             {manufacturer === developer ? (
               <div>
-                <div className='flex h-6 items-center gap-2 font-semibold'>
+                <div className='flex min-h-6 items-center gap-2 font-semibold'>
                   <span className='icon-[mdi--factory]' />
                   <span>
                     {t('common.developer')} & {t('common.manufacturer')}
@@ -79,7 +79,7 @@ export function DeviceInfo({ platform }: Readonly<{ platform: string }>) {
             ) : (
               <>
                 <div>
-                  <div className='flex h-6 items-center gap-2 font-semibold'>
+                  <div className='flex min-h-6 items-center gap-2 font-semibold'>
                     <span className='icon-[mdi--factory]' />
                     <span>{t('common.developer')}</span>
                   </div>
@@ -88,7 +88,7 @@ export function DeviceInfo({ platform }: Readonly<{ platform: string }>) {
                   </div>
                 </div>
                 <div>
-                  <div className='flex h-6 items-center gap-2 font-semibold'>
+                  <div className='flex min-h-6 items-center gap-2 font-semibold'>
                     <span className='icon-[mdi--factory]' />
                     <span>{t('common.manufacturer')}</span>
                   </div>
