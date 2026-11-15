@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { libraryModeEnum } from '#@/databases/schema.ts'
 import { useGlobalLoaderData } from '#@/pages/hooks/use-global-loader-data.ts'
 import { DialogRoot } from '#@/pages/library/components/dialog-root.tsx'
+import { useLibraryRefresh } from '#@/pages/library/hooks/use-library-refresh.ts'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
-import { useRouter } from '#@/pages/library/hooks/use-router.ts'
 import { getRomGoodcodes } from '#@/utils/client/library.ts'
 import { GameMediaBoxart } from './game-media-boxart.tsx'
 import { GameMediaImages } from './game-media-images.tsx'
@@ -13,7 +13,7 @@ import { GameMediaImages } from './game-media-images.tsx'
 export function GameMediaDialog({ children }: Readonly<PropsWithChildren>) {
   const { t } = useTranslation()
   const rom = useRom()
-  const { reload } = useRouter()
+  const refresh = useLibraryRefresh()
   const { currentUser } = useGlobalLoaderData()
 
   const [open, setOpen] = useState(false)
@@ -21,7 +21,7 @@ export function GameMediaDialog({ children }: Readonly<PropsWithChildren>) {
   async function handleOpenChange(open: boolean) {
     setOpen(open)
     if (!open) {
-      await reload()
+      await refresh()
     }
   }
 

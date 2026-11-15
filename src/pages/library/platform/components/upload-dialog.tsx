@@ -2,15 +2,12 @@ import { Button, Dialog } from '@radix-ui/themes'
 import { fileOpen } from 'browser-fs-access'
 import confetti from 'canvas-confetti'
 import { clsx } from 'clsx'
-import { isPlainObject } from 'es-toolkit'
-import { isMatch } from 'es-toolkit/compat'
 import { useEffect, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { useTranslation } from 'react-i18next'
-import { mutate } from 'swr'
 import { platformMap, type PlatformName } from '#@/constants/platform.ts'
 import { useGlobalLoaderData } from '#@/pages/hooks/use-global-loader-data.ts'
-import { useRouter } from '../../hooks/use-router.ts'
+import { useLibraryRefresh } from '../../hooks/use-library-refresh.ts'
 import { type UploadFailure, type UploadSnapshot, uploadRoms } from '../../utils/upload-roms.ts'
 import { UploadInstruction } from './upload-instruction.tsx'
 import { UploadProgress } from './upload-progress.tsx'
@@ -21,7 +18,7 @@ export function UploadDialog({ platform, toggleOpen }: Readonly<{ platform: Plat
   const maxFiles = Math.trunc(Number(env.RETROASSEMBLY_RUN_TIME_MAX_UPLOAD_AT_ONCE)) || 1000
   const maxRomCount = Math.trunc(Number(env.RETROASSEMBLY_RUN_TIME_MAX_ROM_COUNT)) || Infinity
 
-  const { reload } = useRouter()
+  const refresh = useLibraryRefresh()
   const { getRootProps, isDragActive } = useDropzone({ onDrop })
 
   const [files, setFiles] = useState<File[]>([])
@@ -43,8 +40,7 @@ export function UploadDialog({ platform, toggleOpen }: Readonly<{ platform: Plat
   }, [status])
 
   async function refreshLibrary() {
-    await reload()
-    await mutate((key) => isPlainObject(key) && isMatch(key, { endpoint: 'roms/search' }), false)
+    await refresh()
   }
 
   async function upload(files: File[]) {

@@ -1,6 +1,9 @@
 import { clsx } from 'clsx'
+import { delay } from 'es-toolkit'
 import { useState } from 'react'
-import { DeleteDialog } from './delete-dialog.tsx'
+import { useTranslation } from 'react-i18next'
+import { client, parseResponse } from '#@/api/client.ts'
+import { DeleteDialog } from '../delete-dialog.tsx'
 import { FilterActions } from './filter-actions.tsx'
 import { SelectionActions } from './selection-actions.tsx'
 import { SelectionInfo } from './selection-info.tsx'
@@ -11,6 +14,7 @@ export function GameListActions() {
     useGameListActions()
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const { t } = useTranslation()
 
   if (shouldHideActions) {
     return
@@ -35,7 +39,20 @@ export function GameListActions() {
             onDelete={() => setDeleteDialogOpen(true)}
             onCancel={() => setSelectedGames([])}
           />
-          <DeleteDialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen} />
+          <DeleteDialog
+            description={t('dialog.confirmDeleteRomsMessage')}
+            onConfirm={() => parseResponse(client.roms.$delete({ query: { ids: selectedGames.join(',') } }))}
+            onDeleted={async () => {
+              await delay(500) // waiting for the animation
+              setSelectedGames([])
+            }}
+            onOpenChange={setDeleteDialogOpen}
+            open={deleteDialogOpen}
+            title={t('game.deleteSelectedItems', {
+              count: selectedGames.length,
+              items: t('game.rom', { count: selectedGames.length }),
+            })}
+          />
         </>
       ) : (
         <FilterActions />

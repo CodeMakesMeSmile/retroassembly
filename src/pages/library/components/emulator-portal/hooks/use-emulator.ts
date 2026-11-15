@@ -18,8 +18,8 @@ import {
   useLaunchButton,
   useSpatialNavigationPaused,
 } from '#@/pages/library/atoms.ts'
+import { useLibraryRefresh } from '#@/pages/library/hooks/use-library-refresh.ts'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
-import { useRouter } from '#@/pages/library/hooks/use-router.ts'
 import { getFileUrl } from '#@/pages/library/utils/file.ts'
 import { focus, offCancel, onCancel } from '#@/pages/library/utils/spatial-navigation.ts'
 import type { loader } from '#@/pages/routes/library-platform-rom.tsx'
@@ -74,7 +74,7 @@ export function useEmulatorSessionController({
   const gamepad = useRef<ReturnType<typeof connectOnScreenGamepad> | undefined>(undefined)
   const [exiting, setExiting] = useState(false)
   const [launched, setLaunched] = useEmulatorLaunched()
-  const { reload } = useRouter()
+  const refresh = useLibraryRefresh()
   const [isFullscreen, setIsFullscreen] = useIsFullscreen()
   const [launchButton] = useLaunchButton()
   const [, setSpatialNavigationPaused] = useSpatialNavigationPaused()
@@ -258,7 +258,7 @@ export function useEmulatorSessionController({
       // The game is let go, to be downloaded again when it's next started
       await (lazy ? prepare(undefined, { revalidate: false }) : attemptAsync(prepare))
       if (reloadAfterExit) {
-        await reload()
+        await refresh()
       }
     } finally {
       exitingRef.current = false

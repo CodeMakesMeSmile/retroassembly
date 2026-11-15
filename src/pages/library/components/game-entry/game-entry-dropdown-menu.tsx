@@ -2,12 +2,13 @@ import { Checkbox, DropdownMenu, IconButton } from '@radix-ui/themes'
 import { clsx } from 'clsx'
 import { useState } from 'react'
 import { useLocation } from 'react-router'
+import { client, parseResponse } from '#@/api/client.ts'
 import { libraryModeEnum } from '#@/databases/schema.ts'
 import { useGlobalLoaderData } from '#@/pages/hooks/use-global-loader-data.ts'
 import { routes } from '#@/pages/routes.ts'
 import { useSelectedGames } from '../../atoms.ts'
 import { useGameActions } from '../../hooks/use-game-actions.ts'
-import { DeleteDialog } from './delete-dialog.tsx'
+import { DeleteDialog } from '../delete-dialog.tsx'
 
 export function GameEntryDropdownMenu({ rom }) {
   const { pathname } = useLocation()
@@ -16,6 +17,16 @@ export function GameEntryDropdownMenu({ rom }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [selectedGames, setSelectedGames] = useSelectedGames()
+  // Deleting the game, or on the history page removing it from the history
+  const deleteAction = actions.find(({ name }) => name === 'delete')
+
+  async function deleteGame() {
+    const param = { id: rom.id }
+    const romEndpoint = client.roms[':id']
+    await (deleteAction?.type === 'launch_records'
+      ? parseResponse(romEndpoint.launch_records.$delete({ param }))
+      : parseResponse(romEndpoint.$delete({ param })))
+  }
 
   function handleCheckedChange(checked: boolean) {
     setSelectedGames(checked ? [...selectedGames, rom.id] : selectedGames.filter((id) => id !== rom.id))
@@ -75,7 +86,15 @@ export function GameEntryDropdownMenu({ rom }) {
         </DropdownMenu.Content>
       </DropdownMenu.Root>
 
-      <DeleteDialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen} rom={rom} />
+      {deleteAction ? (
+        <DeleteDialog
+          description={deleteAction.confirmDescription}
+          onConfirm={deleteGame}
+          onOpenChange={setDeleteDialogOpen}
+          open={deleteDialogOpen}
+          title={deleteAction.text}
+        />
+      ) : null}
     </>
   )
 }

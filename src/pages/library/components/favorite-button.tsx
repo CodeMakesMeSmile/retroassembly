@@ -6,7 +6,7 @@ import useSWRMutation from 'swr/mutation'
 import { client } from '#@/api/client.ts'
 import { metadata } from '#@/constants/metadata.ts'
 import type { Rom } from '#@/controllers/roms/get-roms.ts'
-import { useRouter } from '../hooks/use-router.ts'
+import { useLibraryRefresh } from '../hooks/use-library-refresh.ts'
 
 interface FavoriteButtonProps {
   rom: Rom
@@ -38,7 +38,7 @@ function showConfetti(element: HTMLElement, isTop: boolean) {
 }
 export function FavoriteButton({ rom, variant }: Readonly<FavoriteButtonProps>) {
   const { t } = useTranslation()
-  const { reload } = useRouter()
+  const refresh = useLibraryRefresh()
   const isOverlay = variant === 'overlay'
   const [isPending, startTransition] = useTransition()
   const [optimisticIsFavorite, setOptimisticIsFavorite] = useOptimistic(
@@ -68,7 +68,7 @@ export function FavoriteButton({ rom, variant }: Readonly<FavoriteButtonProps>) 
       setOptimisticIsFavorite(nextFavorite)
       const prommise = rom.isFavorite ? remove() : add()
       await prommise
-      await reload()
+      await refresh()
     })
   }
 
