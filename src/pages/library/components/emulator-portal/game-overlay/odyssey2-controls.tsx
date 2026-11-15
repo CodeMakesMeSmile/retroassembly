@@ -1,6 +1,7 @@
 import { clsx } from 'clsx'
 import { type CSSProperties, type KeyboardEvent, type PointerEvent, useRef, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
+import { sendKey } from '#@/emulator/adapter.ts'
 import { useControlsScale } from '#@/pages/library/hooks/use-controls-scale.ts'
 import { useEmulator } from '../hooks/use-emulator.ts'
 import { Joystick } from './joystick.tsx'
@@ -67,15 +68,7 @@ export function Odyssey2Controls({ visible }: Readonly<{ visible: boolean }>) {
     if (!emulator) {
       return
     }
-    const { JSEvents } = emulator.getEmscripten()
-    const target = emulator.getCanvas()
-    for (const { eventListenerFunc, eventTypeString } of JSEvents.eventHandlers) {
-      if (eventTypeString === type) {
-        try {
-          eventListenerFunc({ code, target })
-        } catch {}
-      }
-    }
+    sendKey(emulator, type, code)
   }
 
   // Presses the next key waiting, holds it, and lets go long enough for the game to notice before the one after

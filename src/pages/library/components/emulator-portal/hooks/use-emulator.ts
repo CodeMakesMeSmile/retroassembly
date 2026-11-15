@@ -8,6 +8,7 @@ import useSWRImmutable from 'swr/immutable'
 import { client } from '#@/api/client.ts'
 import { resolveConsole } from '#@/consoles/registry.ts'
 import type { Rom } from '#@/controllers/roms/get-roms.ts'
+import { closeAudioContexts, setDualShockController, skipAutoState, startWithoutCamera } from '#@/emulator/adapter.ts'
 import { buildInputConfig } from '#@/input/build-input-config.ts'
 import {
   useEmulatorLaunched,
@@ -17,7 +18,6 @@ import {
 } from '#@/pages/library/atoms.ts'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
 import { useRouter } from '#@/pages/library/hooks/use-router.ts'
-import { closeAudioContexts } from '#@/pages/library/utils/audio-contexts.ts'
 import { getFileUrl } from '#@/pages/library/utils/file.ts'
 import { focus, offCancel, onCancel } from '#@/pages/library/utils/spatial-navigation.ts'
 import { attachVirtualGamepad } from '#@/pages/library/utils/virtual-gamepad.ts'
@@ -45,18 +45,7 @@ const defaultRetroarchConfig: RetroarchConfig = {
 // Start button, a finger touches it, or it's pressed. Browsing past games downloads none of them
 const preparations = new Map<string, Promise<Nostalgist | undefined>>()
 
-// The on-screen controls show on touch screens; the N64's have an analog stick
-// PCSX ReARMed's DualShock: libretro's analog controller (5), the second of its kinds, as RetroArch numbers it.
-// RetroArch only takes a controller type for a core from its remap file, which is written before each launch
-const dualShock = 517
 const remapDirectory = '/home/web_user/retroarch/userdata/config/remaps'
-
-function writeDualShockRemap(emulator: Nostalgist) {
-  const fs = emulator.getEmscriptenFS()
-  const directory = `${remapDirectory}/PCSX-ReARMed`
-  fs.mkdirTree(directory)
-  fs.writeFile(`${directory}/PCSX-ReARMed.rmp`, `input_libretro_device_p1 = "${dualShock}"\n`)
-}
 
 function hasAnalogStickOnScreen() {
   return globalThis.matchMedia?.('(pointer: coarse)').matches ?? false
@@ -65,7 +54,6 @@ function hasAnalogStickOnScreen() {
 let noSleep: NoSleep
 // One exit at a time: a double-click on the exit button would otherwise start a second exit while the first runs
 let exiting = false
-const originalGetUserMedia = globalThis.navigator?.mediaDevices?.getUserMedia?.bind(globalThis.navigator.mediaDevices)
 export function useEmulator() {
   const rom: Rom = useRom()
   const { state } = useLoaderData<typeof loader>()
@@ -172,16 +160,11 @@ export function useEmulator() {
     }
 
     if (!withState) {
-      emulator.getEmulator().on('beforeLaunch', () => {
-        try {
-          //@ts-expect-error Using an undocumented API here. There should be a way to do this.
-          emulator.getEmscriptenFS().unlink(`${emulator.getEmulator().stateFilePath}.auto`)
-        } catch {}
-      })
+      skipAutoState(emulator)
     }
 
     if (launchProfile.dualShockRemap && hasAnalogStickOnScreen()) {
-      emulator.getEmulator().on('beforeLaunch', () => writeDualShockRemap(emulator))
+      setDualShockController(emulator, remapDirectory)
     }
 
     const canvas = emulator.getCanvas()
@@ -198,14 +181,7 @@ export function useEmulator() {
     if (!emulator || !rom) {
       return
     }
-    try {
-      // @ts-expect-error an ad-hoc patch for disabling request for camera access
-      globalThis.navigator.mediaDevices.getUserMedia = null
-    } catch {}
-    await emulator.start()
-    try {
-      globalThis.navigator.mediaDevices.getUserMedia = originalGetUserMedia
-    } catch {}
+    await startWithoutCamera(emulator)
     // The on-screen controls that need more than key presses: the N64's analog stick, the ColecoVision's joystick and
     // keypad, the arcade, Atari and Channel F sticks, the Atari 5200's keypad, the PlayStation's two analog sticks,
     // the Virtual Boy's right d-pad, the Disk System's flip disk button and the Odyssey²'s joystick

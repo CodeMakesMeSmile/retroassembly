@@ -1,5 +1,5 @@
-import type { Nostalgist } from 'nostalgist'
 import { useEffect } from 'react'
+import { saveStateImmediately } from '#@/emulator/adapter.ts'
 import { useEmulatorLaunched } from '#@/pages/library/atoms.ts'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
 import { putPendingSave, uploadPendingSave } from '#@/pages/library/utils/pending-saves.ts'
@@ -9,57 +9,6 @@ import { forceGetEmulatorThumbnail, useGameStates } from './use-game-states.ts'
 interface SavedState {
   state: Blob
   thumbnail: Blob
-}
-
-// Browsers stop the animation frames that drive the emulator as soon as a page is hidden, so a normal save would only
-// finish once the page is shown again, if it still exists by then. Cores built for this fork (DS) let the page run the
-// main loop itself, so the save can finish right away, before the page is gone.
-function saveStateNow(emulator: Nostalgist): SavedState | undefined {
-  const { Module } = emulator.getEmscripten() as { Module: { runMainLoopIterations?: (count: number) => boolean } }
-  const { runMainLoopIterations } = Module
-  if (!runMainLoopIterations) {
-    return
-  }
-
-  const inner = emulator.getEmulator() as unknown as {
-    clearStateFile: () => void
-    sendCommand: (command: string) => void
-    stateFilePath: string
-    stateThumbnailFilePath: string
-  }
-  const fs = emulator.getEmscriptenFS()
-  function sizeOf(filePath: string) {
-    try {
-      return Number(fs.stat(filePath).size)
-    } catch {
-      return 0
-    }
-  }
-
-  inner.clearStateFile()
-  inner.sendCommand('SAVE_STATE')
-  const files = [inner.stateFilePath, inner.stateThumbnailFilePath]
-  let lastSizes = ''
-  const deadline = performance.now() + 2000
-  while (performance.now() < deadline) {
-    if (!runMainLoopIterations(1)) {
-      return
-    }
-    // A file is done once it exists and stops growing between iterations
-    const sizes = files.map((file) => sizeOf(file))
-    const key = sizes.join(',')
-    if (sizes.every(Boolean) && key === lastSizes) {
-      const [state, thumbnail] = files.map(
-        (file) =>
-          new Blob([fs.readFile(file) as Uint8Array<ArrayBuffer>], {
-            type: file.endsWith('.png') ? 'image/png' : 'application/octet-stream',
-          }),
-      )
-      inner.clearStateFile()
-      return { state, thumbnail }
-    }
-    lastSizes = key
-  }
 }
 
 // Mobile browsers often unload a page soon after you switch to another app, which loses the game. When the page is
@@ -119,7 +68,7 @@ export function useSaveOnHide() {
         pausedOnHide = true
         let saved: SavedState | undefined
         try {
-          saved = saveStateNow(emulator)
+          saved = saveStateImmediately(emulator)
         } catch {}
         saving = persistQuietly(saved)
         return

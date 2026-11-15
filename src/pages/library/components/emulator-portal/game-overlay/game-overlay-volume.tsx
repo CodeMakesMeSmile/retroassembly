@@ -1,7 +1,7 @@
 import { clsx } from 'clsx'
 import { type MouseEvent, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { applyVolume, getVolume, type Volume } from '#@/pages/library/utils/audio-contexts.ts'
+import { applyVolume, getVolume, type Volume } from '#@/emulator/adapter.ts'
 
 // The volume, under the pause menu's buttons and in their style: a speaker that mutes, a slider and how loud it is.
 // With a gamepad or the keyboard the slider is one stop, like a button, with the focus drawn around the whole row:

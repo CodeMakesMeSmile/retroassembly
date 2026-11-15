@@ -1,6 +1,7 @@
 import { BlobReader, BlobWriter, ZipReader } from '@zip.js/zip.js'
 import { isBrowser } from 'es-toolkit'
 import { Nostalgist } from 'nostalgist'
+import { relocateShaderFiles } from '#@/emulator/adapter.ts'
 import { toCDNCacheUrl } from '#@/utils/isomorphic/cdn.ts'
 import { getCoreUrl, getShaderUrls } from '#@/utils/isomorphic/emulator-files.ts'
 import { bundledCoreUrls } from './bundled-cores.ts'
@@ -58,37 +59,7 @@ if (isBrowser()) {
   const { path } = Nostalgist.vendors
   Nostalgist.configure({
     beforeLaunch(nostalgist) {
-      const FS = nostalgist.getEmscriptenFS()
-      const options = nostalgist.getOptions()
-      const shadersDirectory = '/home/web_user/retroarch/bundle/shaders/shaders_glsl/shaders'
-      switch (options.shader) {
-        case 'crt/crt-easymode-halation':
-          FS.mkdirTree(path.join(shadersDirectory, 'crt-easymode-halation'))
-          for (const name of ['linearize', 'blur_horiz', 'blur_vert', 'threshold', 'crt-easymode-halation']) {
-            FS.rename(
-              path.join(shadersDirectory, `${name}.glsl`),
-              path.join(shadersDirectory, 'crt-easymode-halation', `${name}.glsl`),
-            )
-          }
-
-          break
-
-        case 'crt/crt-interlaced-halation':
-          FS.mkdirTree(path.join(shadersDirectory, 'crt-interlaced-halation'))
-          for (const n of [0, 1, 2]) {
-            FS.rename(
-              path.join(shadersDirectory, `crt-interlaced-halation-pass${n}.glsl`),
-              path.join(shadersDirectory, 'crt-interlaced-halation', `crt-interlaced-halation-pass${n}.glsl`),
-            )
-          }
-          FS.mkdirTree('/home/web_user/retroarch/bundle/shaders/interpolation/shaders')
-          FS.rename(
-            path.join(shadersDirectory, 'quilez.glsl'),
-            path.join('/home/web_user/retroarch/bundle/shaders/interpolation/shaders/quilez.glsl'),
-          )
-
-          break
-      }
+      relocateShaderFiles(nostalgist, path)
     },
     cache: true,
     async resolveCoreJs(core) {

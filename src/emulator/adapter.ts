@@ -1,0 +1,208 @@
+import type { Nostalgist } from 'nostalgist'
+
+// The only module that reaches into the emulator's internals: Nostalgist's private emulator, the Emscripten file system
+// and Module, and JSEvents, the emulator's own input handlers. Everything else goes through these functions
+
+export { applyVolume, closeAudioContexts, getVolume, type Volume } from './audio.ts'
+
+// Nostalgist's emulator, with the private members used here
+interface InnerEmulator {
+  clearStateFile: () => void
+  on: (event: 'beforeLaunch', listener: () => void) => void
+  sendCommand: (command: string) => void
+  stateFilePath: string
+  stateThumbnailFilePath: string
+}
+
+function getInner(emulator: Nostalgist) {
+  return emulator.getEmulator() as unknown as InnerEmulator
+}
+
+/** Starts the game without the state RetroArch saved automatically last time, which would otherwise be loaded */
+export function skipAutoState(emulator: Nostalgist) {
+  getInner(emulator).on('beforeLaunch', () => {
+    try {
+      emulator.getEmscriptenFS().unlink(`${getInner(emulator).stateFilePath}.auto`)
+    } catch {}
+  })
+}
+
+// PCSX ReARMed's DualShock: libretro's analog controller (5), the second of its kinds, as RetroArch numbers it.
+// RetroArch only takes a controller type for a core from its remap file, which is written before each launch
+const dualShock = 517
+
+/** Tells the PlayStation's emulator its controller is a DualShock, with a remap file written before it launches */
+export function setDualShockController(emulator: Nostalgist, remapDirectory: string) {
+  getInner(emulator).on('beforeLaunch', () => {
+    const fs = emulator.getEmscriptenFS()
+    const directory = `${remapDirectory}/PCSX-ReARMed`
+    fs.mkdirTree(directory)
+    fs.writeFile(`${directory}/PCSX-ReARMed.rmp`, `input_libretro_device_p1 = "${dualShock}"\n`)
+  })
+}
+
+/** Starts the emulator with the camera blocked, which some cores would otherwise ask for, and unblocks it after */
+export async function startWithoutCamera(emulator: Nostalgist) {
+  const mediaDevices = globalThis.navigator?.mediaDevices
+  const getUserMedia = mediaDevices?.getUserMedia
+  try {
+    // @ts-expect-error blocking the camera request by removing the function the core would call
+    mediaDevices.getUserMedia = null
+  } catch {}
+  try {
+    await emulator.start()
+  } finally {
+    try {
+      if (mediaDevices) {
+        mediaDevices.getUserMedia = getUserMedia
+      }
+    } catch {}
+  }
+}
+
+/**
+ * Saves the game straight away, for a page being hidden. Browsers stop the animation frames that drive the emulator as
+ * soon as a page is hidden, so a normal save would only finish once the page is shown again, if it still exists by
+ * then. Cores built for this fork (DS) let the page run the main loop itself, so the save can finish right away.
+ * Returns nothing for other cores.
+ */
+export function saveStateImmediately(emulator: Nostalgist): undefined | { state: Blob; thumbnail: Blob } {
+  const { Module } = emulator.getEmscripten() as { Module: { runMainLoopIterations?: (count: number) => boolean } }
+  const { runMainLoopIterations } = Module
+  if (!runMainLoopIterations) {
+    return
+  }
+  const inner = getInner(emulator)
+  const fs = emulator.getEmscriptenFS()
+  function sizeOf(filePath: string) {
+    try {
+      return Number(fs.stat(filePath).size)
+    } catch {
+      return 0
+    }
+  }
+  inner.clearStateFile()
+  inner.sendCommand('SAVE_STATE')
+  const files = [inner.stateFilePath, inner.stateThumbnailFilePath]
+  let lastSizes = ''
+  const deadline = performance.now() + 2000
+  while (performance.now() < deadline) {
+    if (!runMainLoopIterations(1)) {
+      return
+    }
+    // A file is done once it exists and stops growing between iterations
+    const sizes = files.map((file) => sizeOf(file))
+    const key = sizes.join(',')
+    if (sizes.every(Boolean) && key === lastSizes) {
+      const [state, thumbnail] = files.map(
+        (file) =>
+          new Blob([fs.readFile(file) as Uint8Array<ArrayBuffer>], {
+            type: file.endsWith('.png') ? 'image/png' : 'application/octet-stream',
+          }),
+      )
+      inner.clearStateFile()
+      return { state, thumbnail }
+    }
+    lastSizes = key
+  }
+}
+
+/**
+ * Sends a key to RetroArch the way the emulator's own buttons do: straight to its keyboard handlers, as if from the
+ * game's canvas. A real key press in a text field isn't seen by RetroArch, which ignores text fields
+ */
+export function sendKey(emulator: Nostalgist, type: 'keydown' | 'keyup', code: string) {
+  const { JSEvents } = emulator.getEmscripten() as {
+    JSEvents: { eventHandlers: { eventListenerFunc: (event: unknown) => void; eventTypeString: string }[] }
+  }
+  const target = emulator.getCanvas()
+  for (const { eventListenerFunc, eventTypeString } of JSEvents.eventHandlers) {
+    if (eventTypeString === type) {
+      try {
+        eventListenerFunc({ code, target })
+      } catch {}
+    }
+  }
+}
+
+/** A gamepad the emulator reads alongside real ones, as the browser's Gamepad API describes one */
+export interface EmulatorGamepad {
+  axes: number[]
+  buttons: { pressed: boolean; touched: boolean; value: number }[]
+  connected: boolean
+  id: string
+  index: number
+  mapping: string
+  timestamp: number
+}
+
+/**
+ * Lets the emulator read `gamepad` as its first controller, unless a real controller is there. It's added to the
+ * gamepads the emulator reads each frame, not to navigator.getGamepads(), so the rest of the page doesn't take it for a
+ * real controller
+ */
+export function attachGamepad(emulator: Nostalgist, gamepad: EmulatorGamepad) {
+  const { JSEvents } = emulator.getEmscripten() as { JSEvents?: Record<string, unknown> }
+  if (!JSEvents) {
+    return
+  }
+  function withGamepad(gamepads: (Gamepad | null)[] | null | undefined) {
+    const list: unknown[] = gamepads ? [...gamepads] : []
+    // A real controller in the first slot is the one being played with; the on-screen controls are hidden then
+    if (list[0]) {
+      return list
+    }
+    gamepad.timestamp = performance.now()
+    list[0] = gamepad
+    return list
+  }
+  // Each frame the emulator stores what navigator.getGamepads() returns here, then reads its gamepads from it
+  let gamepads: unknown
+  Object.defineProperty(JSEvents, 'lastGamepadState', {
+    configurable: true,
+    get: () => gamepads,
+    set: (value) => {
+      gamepads = withGamepad(value)
+    },
+  })
+  // The emulator only starts reading a gamepad once it's told one is connected. A real GamepadEvent can't carry an
+  // object that isn't a real gamepad, so a plain event with the same shape is sent; the emulator only reads its gamepad
+  const event = new Event('gamepadconnected')
+  Object.defineProperty(event, 'gamepad', { value: gamepad })
+  globalThis.dispatchEvent(event)
+}
+
+/** Moves a few shaders' files to where their presets look for them, before the emulator launches */
+export function relocateShaderFiles(nostalgist: Nostalgist, path: { join: (...parts: string[]) => string }) {
+  const FS = nostalgist.getEmscriptenFS()
+  const options = nostalgist.getOptions()
+  const shadersDirectory = '/home/web_user/retroarch/bundle/shaders/shaders_glsl/shaders'
+  switch (options.shader) {
+    case 'crt/crt-easymode-halation':
+      FS.mkdirTree(path.join(shadersDirectory, 'crt-easymode-halation'))
+      for (const name of ['linearize', 'blur_horiz', 'blur_vert', 'threshold', 'crt-easymode-halation']) {
+        FS.rename(
+          path.join(shadersDirectory, `${name}.glsl`),
+          path.join(shadersDirectory, 'crt-easymode-halation', `${name}.glsl`),
+        )
+      }
+
+      break
+
+    case 'crt/crt-interlaced-halation':
+      FS.mkdirTree(path.join(shadersDirectory, 'crt-interlaced-halation'))
+      for (const n of [0, 1, 2]) {
+        FS.rename(
+          path.join(shadersDirectory, `crt-interlaced-halation-pass${n}.glsl`),
+          path.join(shadersDirectory, 'crt-interlaced-halation', `crt-interlaced-halation-pass${n}.glsl`),
+        )
+      }
+      FS.mkdirTree('/home/web_user/retroarch/bundle/shaders/interpolation/shaders')
+      FS.rename(
+        path.join(shadersDirectory, 'quilez.glsl'),
+        path.join('/home/web_user/retroarch/bundle/shaders/interpolation/shaders/quilez.glsl'),
+      )
+
+      break
+  }
+}
