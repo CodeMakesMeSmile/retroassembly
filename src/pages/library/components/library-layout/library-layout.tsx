@@ -1,10 +1,10 @@
 import { ScrollArea } from '@radix-ui/themes'
 import { clsx } from 'clsx'
 import type { PropsWithChildren } from 'react'
-import { Link, useLoaderData } from 'react-router'
+import { Link } from 'react-router'
 import { metadata } from '#@/constants/metadata.ts'
 import { Logo } from '#@/pages/components/logo.tsx'
-import type { getLibraryLoaderData } from '#@/utils/server/loader-data.ts'
+import { usePageTitle } from '#@/pages/library/hooks/use-library-data.ts'
 import { useFocusRestoration } from '../../hooks/use-focus-restoration.ts'
 import { useUploadPendingSaves } from '../../hooks/use-upload-pending-saves.ts'
 import { useViewport } from '../../hooks/use-viewport.ts'
@@ -24,7 +24,7 @@ function getPostfixedTitle(title: string) {
 }
 
 export default function LibraryLayout({ children }: Readonly<PropsWithChildren>) {
-  const { title } = useLoaderData<typeof getLibraryLoaderData>()
+  const title = usePageTitle()
   useUploadPendingSaves()
   const { isLargeScreen } = useViewport()
 

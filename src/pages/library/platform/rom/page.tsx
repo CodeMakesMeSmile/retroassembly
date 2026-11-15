@@ -4,7 +4,6 @@ import type { loader } from '#@/pages/routes/library-platform-rom.tsx'
 import { getRomGoodcodes } from '#@/utils/client/library.ts'
 import { FavoriteButton } from '../../components/favorite-button.tsx'
 import { GameButtons } from '../../components/game-buttons/game-buttons.tsx'
-import LibraryLayout from '../../components/library-layout/library-layout.tsx'
 import { PageBreadcrumb } from '../../components/page-breadcrumb.tsx'
 import { RomBackground } from '../../components/rom-background.tsx'
 import { useViewport } from '../../hooks/use-viewport.ts'
@@ -26,7 +25,7 @@ export default function RomPage() {
   const overview = rom.gameDescription || launchboxGame?.overview
 
   return (
-    <LibraryLayout>
+    <>
       <RomBackground rom={rom} />
 
       <div className='relative'>
@@ -80,6 +79,6 @@ export default function RomPage() {
           </div>
         </div>
       </div>
-    </LibraryLayout>
+    </>
   )
 }

@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { generatePath, useLoaderData } from 'react-router'
+import { useLibraryData } from '#@/pages/library/hooks/use-library-data.ts'
 import { routes } from '#@/pages/routes.ts'
 import type { loader } from '#@/pages/routes/library-home.tsx'
-import LibraryLayout from '../components/library-layout/library-layout.tsx'
 import { UploadSelectButton } from '../platform/components/upload-select-button.tsx'
 import { GeneralSection } from './components/general-section.tsx'
 import { HomeEmpty } from './components/home-empty.tsx'
@@ -10,20 +10,17 @@ import { JumpBackInSection } from './components/jump-back-in-section.tsx'
 
 export function LibraryHomePage() {
   const { t } = useTranslation()
-  const { favoriteRoms, newAddedRoms, recentlyLaunchedRoms } = useLoaderData<typeof loader>()
+  const { favoriteRoms, newAddedRoms } = useLoaderData<typeof loader>()
+  const { recentlyLaunchedRoms } = useLibraryData()
 
   const isEmpty = newAddedRoms.length === 0
 
   if (isEmpty) {
-    return (
-      <LibraryLayout>
-        <HomeEmpty />
-      </LibraryLayout>
-    )
+    return <HomeEmpty />
   }
 
   return (
-    <LibraryLayout>
+    <>
       <div>
         <JumpBackInSection />
 
@@ -53,6 +50,6 @@ export function LibraryHomePage() {
           <GeneralSection className='py-4' key={props.title} {...props} />
         ))}
       </div>
-    </LibraryLayout>
+    </>
   )
 }

@@ -5,7 +5,6 @@ import { getRom } from '#@/controllers/roms/get-rom.ts'
 import { getStates } from '#@/controllers/states/get-states.ts'
 import { getRomGoodcodes } from '#@/utils/client/library.ts'
 import { getLibraryScope } from '#@/utils/server/library-scope.ts'
-import { getLibraryLoaderData } from '#@/utils/server/loader-data.ts'
 import RomPage from '../library/platform/rom/page.tsx'
 import type { Route } from './+types/library-platform-rom.ts'
 
@@ -20,7 +19,7 @@ export async function loader({ params }: Route.LoaderArgs) {
   const { preference } = getContext().var
   const core = preference.emulator.platform[rom.platform]?.core
   const [state] = await getStates(getLibraryScope(), { core, limit: 1, rom: rom?.id, type: 'any' })
-  return await getLibraryLoaderData({ rom, state, title: getRomGoodcodes(rom).rom })
+  return { rom, state, title: getRomGoodcodes(rom).rom }
 }
 
 export default function LibraryPlatformRomRoute() {

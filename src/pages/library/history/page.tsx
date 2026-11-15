@@ -2,7 +2,6 @@ import { Trans, useTranslation } from 'react-i18next'
 import { useLoaderData } from 'react-router'
 import type { loader } from '#@/pages/routes/library-history.tsx'
 import { GameListMain } from '../components/game-list-main.tsx'
-import LibraryLayout from '../components/library-layout/library-layout.tsx'
 import { PageStats } from '../components/page-stats.tsx'
 
 export default function HistoryPage() {
@@ -15,23 +14,21 @@ export default function HistoryPage() {
   }
 
   return (
-    <LibraryLayout>
-      <GameListMain>
-        <h1 className='text-5xl font-semibold'>{title}</h1>
-        <PageStats>
-          <span className='icon-[mdi--bar-chart] text-(--color-text)' />
-          <Trans
-            components={{
-              1: <span className='font-bold text-(--accent-9)' />,
-            }}
-            i18nKey='stats.playedGames'
-            values={{
-              game: gameLabel,
-              gameCount: pagination.total,
-            }}
-          />
-        </PageStats>
-      </GameListMain>
-    </LibraryLayout>
+    <GameListMain>
+      <h1 className='text-5xl font-semibold'>{title}</h1>
+      <PageStats>
+        <span className='icon-[mdi--bar-chart] text-(--color-text)' />
+        <Trans
+          components={{
+            1: <span className='font-bold text-(--accent-9)' />,
+          }}
+          i18nKey='stats.playedGames'
+          values={{
+            game: gameLabel,
+            gameCount: pagination.total,
+          }}
+        />
+      </PageStats>
+    </GameListMain>
   )
 }

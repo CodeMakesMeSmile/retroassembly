@@ -2,7 +2,6 @@ import { type Handler, Hono } from 'hono'
 import { compress } from 'hono/compress'
 import { contextStorage } from 'hono/context-storage'
 import { app as api } from '#@/api/app.ts'
-import { auth } from '#@/middlewares/auth.ts'
 import { cdnCache } from '#@/middlewares/cdn-cache.ts'
 import { globals } from '#@/middlewares/globals.ts'
 import { logger } from '#@/middlewares/logger.ts'
@@ -39,7 +38,7 @@ export function createServer({ client, pages }: ServerOptions) {
     app.use(...staticFiles(client.root))
   }
 
-  app.use(vendors(), globals(), auth(), logger())
+  app.use(vendors(), globals(), logger())
   // Some cached CDN files are for signed-in users only
   app.get('/cdn/*', cdnCache())
 

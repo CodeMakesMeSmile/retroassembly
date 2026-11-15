@@ -5,7 +5,6 @@ import { platformMap } from '#@/constants/platform.ts'
 import type { loader } from '#@/pages/routes/library-platform.tsx'
 import { DeviceInfo } from '../components/device-info/device-info.tsx'
 import { GameListMain } from '../components/game-list-main.tsx'
-import LibraryLayout from '../components/library-layout/library-layout.tsx'
 import { PageStats } from '../components/page-stats.tsx'
 import { PlatformBackground } from './components/platform-background.tsx'
 import { UploadButton } from './components/upload-button.tsx'
@@ -24,7 +23,7 @@ export default function PlatformPage() {
   }
 
   return (
-    <LibraryLayout>
+    <>
       <PlatformBackground />
 
       <div className='relative'>
@@ -49,6 +48,6 @@ export default function PlatformPage() {
           </div>
         </GameListMain>
       </div>
-    </LibraryLayout>
+    </>
   )
 }

@@ -1,4 +1,4 @@
-import { route, type RouteConfig } from '@react-router/dev/routes'
+import { index, route, type RouteConfig } from '@react-router/dev/routes'
 
 export const routes = {
   home: '/',
@@ -15,13 +15,16 @@ export const routes = {
 } as const
 
 export default [
-  route(routes.libraryFavorites, 'routes/library-favorites.tsx'),
-  route(routes.libraryRoms, 'routes/library-roms.tsx'),
   route(routes.home, 'routes/home.ts'),
-  route(routes.libraryHistory, 'routes/library-history.tsx'),
-  route(routes.libraryHome, 'routes/library-home.tsx'),
-  route(routes.libraryPlatform, 'routes/library-platform.tsx'),
-  route(routes.libraryPlatformRom, 'routes/library-platform-rom.tsx'),
+  // The library's pages share one layout, which checks the user is signed in and loads what every page needs
+  route(routes.libraryHome, 'routes/library-layout.tsx', { id: 'library' }, [
+    index('routes/library-home.tsx'),
+    route('roms', 'routes/library-roms.tsx'),
+    route('favorites', 'routes/library-favorites.tsx'),
+    route('history', 'routes/library-history.tsx'),
+    route('platform/:platform', 'routes/library-platform.tsx'),
+    route('platform/:platform/rom/:fileName', 'routes/library-platform-rom.tsx'),
+  ]),
   route(routes.login, 'routes/login.tsx'),
   route(routes.loginOidc, 'routes/login-oidc.ts'),
   route(routes.loginOidcCallback, 'routes/login-oidc-callback.ts'),

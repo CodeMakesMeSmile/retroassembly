@@ -1,24 +1,9 @@
-import { getContext } from 'hono/context-storage'
-import { platformMap, type PlatformName } from '#@/constants/platform.ts'
-import { getRoms } from '#@/controllers/roms/get-roms.ts'
-import { getLibraryScope } from '#@/utils/server/library-scope.ts'
-import { getLibraryLoaderData } from '#@/utils/server/loader-data.ts'
-import { getRomsQuery } from '#@/utils/server/misc.ts'
+import { loadPlatformPage } from '#@/utils/server/list-page.ts'
 import PlatformPage from '../library/platform/page.tsx'
 import type { Route } from './+types/library-platform.ts'
 
-export async function loader({ params }: Route.LoaderArgs) {
-  const { t } = getContext().var
-  const platform = params.platform as PlatformName
-  const romsQuery = getRomsQuery()
-  const { pagination, roms } = await getRoms(getLibraryScope(), { ...romsQuery, platform })
-  return await getLibraryLoaderData({
-    favorite: romsQuery.favorite,
-    pagination,
-    platform,
-    roms,
-    title: t(platformMap[platform].displayNameI18nKey),
-  })
+export function loader({ params }: Route.LoaderArgs) {
+  return loadPlatformPage(params.platform)
 }
 
 export default function LibraryPlatformRoute() {

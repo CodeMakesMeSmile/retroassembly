@@ -1,8 +1,6 @@
 import { getContext } from 'hono/context-storage'
 import { getRunTimeEnv } from '#@/constants/env.ts'
-import { getLaunchRecords } from '#@/controllers/launch-records/get-launch-records.ts'
 import { getAuthMode } from '#@/utils/server/auth.ts'
-import { getLibraryScope } from '#@/utils/server/library-scope.ts'
 
 /* Used for non-library routes */
 export function getCommonLoaderData<T>(data: T = {} as T) {
@@ -27,10 +25,4 @@ export function getCommonLoaderData<T>(data: T = {} as T) {
     title: '',
     ...data,
   }
-}
-
-/* Used for routes under /library and needing recently launched ROMs */
-export async function getLibraryLoaderData<T>(data: T = {} as T) {
-  const { roms: recentlyLaunchedRoms } = await getLaunchRecords(getLibraryScope(), { pageSize: 20 })
-  return getCommonLoaderData({ ...data, recentlyLaunchedRoms })
 }

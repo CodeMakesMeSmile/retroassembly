@@ -49,14 +49,13 @@ await describe('server routes', async () => {
     await rm(directory, { force: true, recursive: true })
   })
 
+  // Which library pages need signing in is checked by the library layout; library-routes.test.ts covers it
   const cases: { path: string; signedIn?: boolean; status: number; location?: string }[] = [
     { path: '/robots.txt', status: 200 },
     { path: '/build-version', status: 200 },
     { path: '/assets/entry-AbCd1234.js', status: 200 },
     { path: '/favicon.png', status: 200 },
     { path: '/login', status: 200 },
-    { location: '/login', path: '/library', status: 302 },
-    { location: '/login?redirect_to=%2Flibrary%2Froms', path: '/library/roms', status: 302 },
     { path: '/api/v1/roms', status: 401 },
     { path: '/api/v1/files/roms%2Fnes%2Fgame.nes', status: 401 },
     { path: '/library', signedIn: true, status: 200 },

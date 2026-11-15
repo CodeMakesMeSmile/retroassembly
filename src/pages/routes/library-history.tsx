@@ -1,17 +1,8 @@
-import { getContext } from 'hono/context-storage'
-import { getLaunchRecords } from '#@/controllers/launch-records/get-launch-records.ts'
-import { getLibraryScope } from '#@/utils/server/library-scope.ts'
-import { getLibraryLoaderData } from '#@/utils/server/loader-data.ts'
+import { loadHistoryPage } from '#@/utils/server/list-page.ts'
 import HistoryPage from '../library/history/page.tsx'
-import type { Route } from './+types/library-history.ts'
 
-export async function loader({ request }: Route.LoaderArgs) {
-  const { t } = getContext().var
-  const url = new URL(request.url)
-  const query = url.searchParams
-  const page = Math.trunc(Number(new URLSearchParams(query).get('page') || '')) || 1
-  const { pagination, roms } = await getLaunchRecords(getLibraryScope(), { page })
-  return await getLibraryLoaderData({ page, pagination, roms, title: t('nav.history') })
+export function loader() {
+  return loadHistoryPage()
 }
 
 export default function LibraryHistoryRoute() {
