@@ -221,6 +221,27 @@ await describe('permissions', async () => {
     assert.equal(await status('admin', `/api/v1/states/${ids.adminState}`, { method: 'DELETE' }), 200)
   })
 
+  await it('stores a save sent again with the same id only once, per account', async () => {
+    const save = (as: Account) =>
+      form({
+        clientId: 'save-1',
+        core: 'fceumm',
+        rom: ids.adminRom,
+        state: new Blob(['s']),
+        thumbnail: new Blob(['p']),
+        type: 'auto',
+      })
+    const first = await json('admin', '/api/v1/states', { body: save('admin'), method: 'POST' })
+    const again = await json('admin', '/api/v1/states', { body: save('admin'), method: 'POST' })
+    assert.equal(again.id, first.id)
+    const autos = await json('admin', `/api/v1/states?rom=${ids.adminRom}&type=auto`)
+    assert.equal(autos.filter(({ id }: { id: string }) => id === first.id).length, 1)
+    assert.equal(autos.length, 1)
+    // Another account's save with the same id is its own
+    const sharers = await json('sharer', '/api/v1/states', { body: save('sharer'), method: 'POST' })
+    assert.notEqual(sharers.id, first.id)
+  })
+
   await it('only the admin manages accounts', async () => {
     const shareLibrary = { body: form({ libraryMode: '1' }), method: 'PATCH' }
     assert.equal(await status('sharer', `/api/v1/users/${ids.other}`, shareLibrary), 403)

@@ -31,6 +31,7 @@ export const states = new Hono()
     zValidator(
       'form',
       z.object({
+        clientId: z.string().min(1).max(64).optional(),
         core: z.string(),
         rom: z.string(),
         state: z.instanceof(Blob),

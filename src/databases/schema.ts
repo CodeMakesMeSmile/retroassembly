@@ -120,6 +120,8 @@ export const romTable = sqliteTable(
 export const stateTable = sqliteTable(
   'states',
   {
+    // An id the browser gives a save, so a save uploaded again after a dropped connection is stored only once
+    clientId: text(),
     core: text().notNull(),
     platform: text().notNull(),
     romId: text().notNull(),
@@ -132,6 +134,7 @@ export const stateTable = sqliteTable(
     index('idx_states_user_status').on(table.userId, table.status),
     // For get-states.ts: filter states by romId + type (manual/auto)
     index('idx_states_user_rom_status_type').on(table.userId, table.romId, table.status, table.type),
+    uniqueIndex('idx_states_user_client_id').on(table.userId, table.clientId),
   ],
 )
 
