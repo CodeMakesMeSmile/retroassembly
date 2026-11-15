@@ -11,8 +11,9 @@ import { resolveCDNCacheTarget } from '#@/utils/server/cdn-cache.ts'
 // Checks every console in the registry hangs together, so adding or changing one can't leave a piece out
 const entries = Object.entries(consoles as Record<string, ConsoleDefinition>)
 const localesDirectory = new URL('../../src/locales/', import.meta.url)
+const localeFiles = await readdir(localesDirectory)
 const locales = await Promise.all(
-  (await readdir(localesDirectory))
+  localeFiles
     .filter((file) => file.endsWith('.json'))
     .map(async (file) => ({ file, strings: JSON.parse(await readFile(new URL(file, localesDirectory), 'utf8')) })),
 )
