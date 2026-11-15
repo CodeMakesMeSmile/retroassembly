@@ -3,7 +3,6 @@ import type { ConsoleDefinition } from './types.ts'
 // Sony
 export const sonyConsoles = {
   psx: {
-    multiDisc: true,
     bioses: [
       {
         md5: '6e3735ff4c7dc899ee98981385f6f3d0',
@@ -32,6 +31,7 @@ export const sonyConsoles = {
       releaseDate: '1994-12-03T00:00:00-08:00',
     },
     libretroName: 'Sony - PlayStation',
+    multiDisc: true,
     // PCSX ReARMed is told it has a DualShock, whose sticks the on-screen gamepad tilts
     setups: [
       {
