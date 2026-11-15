@@ -2,7 +2,7 @@ import { migrate } from 'drizzle-orm/better-sqlite3/migrator'
 import fs from 'fs-extra'
 import isDocker from 'is-docker'
 import { getDirectories } from '../../../constants/env.ts'
-import { createDrizzle } from '../drizzle.ts'
+import { getDatabase } from '../drizzle.ts'
 
 async function testDataDirectory() {
   const { dataDirectory } = getDirectories()
@@ -25,16 +25,15 @@ async function testDataDirectory() {
 }
 
 function migrateDatabase() {
-  const db = createDrizzle().library
+  const db = getDatabase().library
   migrate(db, {
     migrationsFolder: 'src/databases/migrations',
     migrationsSchema: 'src/databases/schema.ts',
   })
 }
 
-async function main() {
+// Run before the server starts: checks the data directory is there and brings the database up to date
+export async function initializeDatabase() {
   await testDataDirectory()
   migrateDatabase()
 }
-
-await main()

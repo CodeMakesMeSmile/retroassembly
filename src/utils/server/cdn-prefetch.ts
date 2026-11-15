@@ -13,7 +13,7 @@ import {
   type LibretroThumbnailType,
 } from '#@/utils/isomorphic/libretro-thumbnail.ts'
 import { getCachedFile, resolveCDNCacheTarget } from './cdn-cache.ts'
-import { createDrizzle } from './drizzle.ts'
+import { getDatabase } from './drizzle.ts'
 
 // `all` leaves out `thumbnails`: box art and screenshots for every ROM in the library can take several GB
 const categories = ['cores', 'shaders', 'assets', 'thumbnails'] as const
@@ -68,7 +68,7 @@ async function getPrefetchUrls(selected: Set<Category>) {
   }
   if (selected.has('thumbnails')) {
     // The same URLs the library and game pages request, for every ROM of every user
-    const { library } = createDrizzle()
+    const { library } = getDatabase()
     const roms = await library
       .select({ fileName: romTable.fileName, platform: romTable.platform, rawGameMetadata: romTable.rawGameMetadata })
       .from(romTable)

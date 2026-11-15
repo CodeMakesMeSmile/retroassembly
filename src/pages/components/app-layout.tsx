@@ -2,7 +2,7 @@ import { isBrowser } from 'es-toolkit'
 import { Provider } from 'jotai'
 import { HydrationBoundary } from 'jotai-ssr'
 import { ThemeProvider } from 'next-themes'
-import { type ReactNode, useEffect } from 'react'
+import { type ReactNode, useEffect, useMemo } from 'react'
 import { I18nextProvider } from 'react-i18next'
 import { Scripts, ScrollRestoration, useLoaderData } from 'react-router'
 import type { loader } from '#@/pages/root.tsx'
@@ -21,6 +21,8 @@ if (isBrowser()) {
 
 export function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
   const { language, preference } = useLoaderData<typeof loader>() || {}
+  // On the server several pages may render at once, each in its own language, so each render gets its own copy
+  const translations = useMemo(() => (isBrowser() ? i18n : i18n.cloneInstance({ lng: language })), [language])
   const hydrateAtom = [preferenceAtom, preference] as const
   const hydrateAtoms = [hydrateAtom]
 
@@ -32,11 +34,11 @@ export function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
 
   return (
     <html lang={language} prefix='og: https://ogp.me/ns#' suppressHydrationWarning>
-      <I18nextProvider i18n={i18n}>
+      <I18nextProvider i18n={translations}>
         <Head />
       </I18nextProvider>
       <body className='bg-(--primary) 2xl:bg-none' style={getGlobalCSSVars(preference)}>
-        <I18nextProvider i18n={i18n}>
+        <I18nextProvider i18n={translations}>
           <RadixTheme>
             <ThemeProvider attribute='class'>
               <Provider>

@@ -17,10 +17,9 @@ declare module 'hono' {
     currentUser: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
     detectedLanguage: string
     effectiveLibraryUserId: string
-    i18n: typeof i18n
     language: string
     preference: ResolvedPreference
-    t: typeof i18n.t
+    t: ReturnType<typeof i18n.getFixedT>
     token: string
     unauthorized: boolean
   }
@@ -88,10 +87,9 @@ export function globals() {
     c.set('detectedLanguage', getDetectedLanguage(c))
 
     const language = getLanguage(c)
-    await i18n.changeLanguage(language)
     c.set('language', language)
-    c.set('i18n', i18n)
-    c.set('t', i18n.t)
+    // Each request gets its own translations, so requests in different languages can't swap them mid-way
+    c.set('t', i18n.getFixedT(language))
 
     await next()
   })

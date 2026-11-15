@@ -1,9 +1,11 @@
 import { attemptAsync, compact } from 'es-toolkit'
-import { type msleuth as client, createClient, type IdentifyParameter, type QueryParameter } from 'msleuth/client'
+import type { msleuth as client, IdentifyParameter, QueryParameter } from 'msleuth/client'
 import QuickLRU from 'quick-lru'
 import { getRunTimeEnv } from '#@/constants/env.ts'
 
-function createClients() {
+// Loaded when first needed, since it ships as TypeScript that only the bundler can load
+async function createClients() {
+  const { createClient } = await import('msleuth/client')
   const runTimeEnv = getRunTimeEnv()
   const hosts = compact([
     runTimeEnv.RETROASSEMBLY_RUN_TIME_MSLEUTH_HOST,
@@ -21,7 +23,7 @@ async function query(json: QueryParameter) {
     return queryCache.get(cacheKey)
   }
 
-  for (const client of createClients()) {
+  for (const client of await createClients()) {
     const [, result] = await attemptAsync(() => client.query(json))
     if (result) {
       return result
@@ -30,7 +32,7 @@ async function query(json: QueryParameter) {
 }
 
 async function identify(json: IdentifyParameter) {
-  for (const client of createClients()) {
+  for (const client of await createClients()) {
     const [, result] = await attemptAsync(() => client.identify(json))
     if (result) {
       return result

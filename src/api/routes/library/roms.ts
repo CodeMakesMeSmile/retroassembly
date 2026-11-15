@@ -77,10 +77,10 @@ export const roms = new Hono()
     ),
 
     async (c) => {
-      const { i18n, preference } = c.var
+      const { language, preference } = c.var
       const form = c.req.valid('form')
       const id = c.req.param('id')
-      const dateFormat = preference.ui.dateFormat === 'auto' ? dateFormatMap[i18n.language] : preference.ui.dateFormat
+      const dateFormat = preference.ui.dateFormat === 'auto' ? dateFormatMap[language] : preference.ui.dateFormat
       const gameReleaseDate = form.gameReleaseDate
         ? DateTime.fromFormat(form.gameReleaseDate, dateFormat, { zone: 'utc' }).setZone('utc').toJSDate() || null
         : null

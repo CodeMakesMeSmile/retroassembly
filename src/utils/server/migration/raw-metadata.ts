@@ -1,7 +1,7 @@
 import { and, eq, isNull, or, sql } from 'drizzle-orm'
 import { attemptAsync, chunk } from 'es-toolkit'
 import { romTable } from '#@/databases/schema.ts'
-import { createDrizzle } from '../drizzle.ts'
+import { getDatabase } from '../drizzle.ts'
 import { msleuth } from '../msleuth.ts'
 
 interface MigrateRomMetadataOptions {
@@ -79,8 +79,10 @@ async function migrateRomMetadata({ library, roms }: MigrateRomMetadataOptions) 
   console.info(`Failed: ${totalFailed} ROMs`)
 }
 
-async function main() {
-  const { library } = createDrizzle()
+// Stores the game info for ROMs matched before it was kept in the database. Asks msleuth over the internet, so it runs
+// in the background after the server has started
+export async function backfillRawMetadata() {
+  const { library } = getDatabase()
 
   // Check if migration is needed - find ROMs with launchboxGameId or libretroGameId but no rawGameMetadata
   const romsNeedingMigration = await library
@@ -106,5 +108,3 @@ async function main() {
 
   await migrateRomMetadata({ library, roms: romsNeedingMigration })
 }
-
-await main()

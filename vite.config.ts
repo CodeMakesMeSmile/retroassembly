@@ -77,7 +77,7 @@ export default defineConfig(async (env) => {
   if (env.command === 'serve') {
     const { storageDirectory } = getDirectories()
     await fs.ensureDir(storageDirectory)
-    await execaNode`./src/utils/server/migration/initalization.ts`
+    await execaNode`./scripts/migrate.ts`
     const serverAdapterPlugin = devServer({
       entry: path.resolve('src', 'server', 'node-dev.ts'),
       exclude: [
