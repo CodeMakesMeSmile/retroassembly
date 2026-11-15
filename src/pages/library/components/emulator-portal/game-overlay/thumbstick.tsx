@@ -1,6 +1,6 @@
 import { type PointerEvent, useRef } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { setVirtualGamepadAxis } from '#@/pages/library/utils/virtual-gamepad.ts'
+import { setVirtualGamepadAxis } from '#@/emulator/on-screen-gamepad.ts'
 
 const sticks = {
   // The gamepad's axes 0 and 1

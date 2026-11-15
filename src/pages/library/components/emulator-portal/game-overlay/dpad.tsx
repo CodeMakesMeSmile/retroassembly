@@ -1,6 +1,6 @@
 import { useId } from 'react'
 import { twMerge } from 'tailwind-merge'
-import { setVirtualGamepadButton } from '#@/pages/library/utils/virtual-gamepad.ts'
+import { setVirtualGamepadButton } from '#@/emulator/on-screen-gamepad.ts'
 import { VirtualGamepadButton } from './virtual-gamepad-button.tsx'
 
 // The d-pad every console's on-screen controls use: one solid dark cross, drawn as a single shape so it reads as one

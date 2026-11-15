@@ -1,5 +1,5 @@
 import { type PointerEvent, useRef } from 'react'
-import { setVirtualGamepadButton } from '#@/pages/library/utils/virtual-gamepad.ts'
+import { setVirtualGamepadButton } from '#@/emulator/on-screen-gamepad.ts'
 
 // The joystick's directions, as the gamepad's d-pad buttons
 const directionButtons = { down: 13, left: 14, right: 15, up: 12 }

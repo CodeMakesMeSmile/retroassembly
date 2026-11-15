@@ -1,9 +1,9 @@
 import { clsx } from 'clsx'
 import type { CSSProperties } from 'react'
 import { twMerge } from 'tailwind-merge'
+import { setVirtualGamepadAxis, setVirtualGamepadButton } from '#@/emulator/on-screen-gamepad.ts'
 import type { RetroPadButton } from '#@/input/retropad.ts'
 import { useControlsScale } from '#@/pages/library/hooks/use-controls-scale.ts'
-import { setVirtualGamepadAxis, setVirtualGamepadButton } from '#@/pages/library/utils/virtual-gamepad.ts'
 import { Joystick } from './joystick.tsx'
 import { VirtualGamepadButton } from './virtual-gamepad-button.tsx'
 

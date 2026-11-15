@@ -9,6 +9,7 @@ import { client } from '#@/api/client.ts'
 import { resolveConsole } from '#@/consoles/registry.ts'
 import type { Rom } from '#@/controllers/roms/get-roms.ts'
 import { closeAudioContexts, setDualShockController, skipAutoState, startWithoutCamera } from '#@/emulator/adapter.ts'
+import { connectOnScreenGamepad, disconnectOnScreenGamepad } from '#@/emulator/on-screen-gamepad.ts'
 import { buildInputConfig } from '#@/input/build-input-config.ts'
 import {
   useEmulatorLaunched,
@@ -20,7 +21,6 @@ import { useRom } from '#@/pages/library/hooks/use-rom.ts'
 import { useRouter } from '#@/pages/library/hooks/use-router.ts'
 import { getFileUrl } from '#@/pages/library/utils/file.ts'
 import { focus, offCancel, onCancel } from '#@/pages/library/utils/spatial-navigation.ts'
-import { attachVirtualGamepad } from '#@/pages/library/utils/virtual-gamepad.ts'
 import type { loader } from '#@/pages/routes/library-platform-rom.tsx'
 import { getGlobalCSSVars } from '#@/utils/isomorphic/misc.ts'
 import { usePreference } from '../../../hooks/use-preference.ts'
@@ -90,6 +90,8 @@ export function useEmulatorSessionController({
   const noSleep = useRef<NoSleep | undefined>(undefined)
   // One exit at a time: a double-click on the exit button would otherwise start a second exit while the first runs
   const exitingRef = useRef(false)
+  // This session's on-screen gamepad, while the game runs
+  const gamepad = useRef<ReturnType<typeof connectOnScreenGamepad> | undefined>(undefined)
   const [exiting, setExiting] = useState(false)
   const [launched, setLaunched] = useEmulatorLaunched()
   const { reload } = useRouter()
@@ -216,7 +218,7 @@ export function useEmulatorSessionController({
     // keypad, the arcade, Atari and Channel F sticks, the Atari 5200's keypad, the PlayStation's two analog sticks,
     // the Virtual Boy's right d-pad, the Disk System's flip disk button and the Odyssey²'s joystick
     if (launchProfile.attachVirtualGamepad) {
-      attachVirtualGamepad(emulator)
+      gamepad.current = connectOnScreenGamepad(emulator)
     }
     const canvas = emulator.getCanvas()
     if (canvas) {
@@ -260,6 +262,8 @@ export function useEmulatorSessionController({
         setLaunched(false)
       }
       // Otherwise the browser would keep the shut-down emulator, and the game in its memory, for as long as the page is open
+      disconnectOnScreenGamepad(gamepad.current)
+      gamepad.current = undefined
       await attemptAsync(closeAudioContexts)
       noSleep.current?.disable()
       const promises: Promise<void>[] = []
