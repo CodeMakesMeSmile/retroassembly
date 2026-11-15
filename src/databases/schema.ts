@@ -144,6 +144,27 @@ export const stateTable = sqliteTable(
   ],
 )
 
+// A game's own save (a memory card or a cartridge's battery save), as the emulator writes it, kept per player, game and
+// emulator. Each upload is a version; the latest few are kept
+export const gameSaveTable = sqliteTable(
+  'game_saves',
+  {
+    // An id the browser gives an upload, so one sent again after a dropped connection is stored only once
+    clientId: text(),
+    core: text().notNull(),
+    platform: text().notNull(),
+    romId: text().notNull(),
+    // The save's SHA-1, so an unchanged save isn't stored again
+    sha1: text().notNull(),
+    size: integer().notNull(),
+    ...fileSchema,
+  },
+  (table) => [
+    index('idx_game_saves_user_rom_core').on(table.userId, table.romId, table.core, table.status, table.createdAt),
+    uniqueIndex('idx_game_saves_user_client_id').on(table.userId, table.clientId),
+  ],
+)
+
 export const launchRecordTable = sqliteTable(
   'launch_records',
   {

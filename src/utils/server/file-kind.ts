@@ -4,10 +4,12 @@
 // - bioses/<platform>/<md5><ext>: a BIOS, likewise kept once, belonging to whoever has it in their settings
 // - attachments/<user id>/...: a game's box art or screenshots, added by that user to their library
 // - states/<user id>/...: that user's saved state and its thumbnail
+// - game-saves/<user id>/...: that user's in-game saves (memory cards, battery saves)
 // An id with an empty, "." or ".." part, a backslash, or another first folder isn't a file this app stores.
 export type FileKind =
   | { kind: 'attachment'; userId: string }
   | { kind: 'bios' }
+  | { kind: 'game-save'; userId: string }
   | { kind: 'rom' }
   | { kind: 'state'; userId: string }
 
@@ -25,6 +27,8 @@ export function getFileKind(id: string): FileKind | undefined {
       return { kind: 'attachment', userId }
     case 'bioses':
       return { kind: 'bios' }
+    case 'game-saves':
+      return { kind: 'game-save', userId }
     case 'roms':
       return { kind: 'rom' }
     case 'states':

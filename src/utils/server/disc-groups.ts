@@ -60,6 +60,7 @@ function mergeDiscGroups(db: Database) {
     }
     db.run(sql`UPDATE states SET disc = coalesce(disc, ${discNumber}), rom_id = ${representative} WHERE rom_id = ${id}`)
     db.run(sql`UPDATE launch_records SET rom_id = ${representative} WHERE rom_id = ${id}`)
+    db.run(sql`UPDATE game_saves SET rom_id = ${representative} WHERE rom_id = ${id}`)
     // A player has at most one favorite per game: one on another disc is dropped if the game already has one
     db.run(sql`
       DELETE FROM favorites WHERE rom_id = ${id}

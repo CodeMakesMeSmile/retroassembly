@@ -29,6 +29,7 @@ export async function canReadFile(scope: LibraryScope, id: string) {
         .limit(1)
       return Boolean(rom)
     }
+    case 'game-save':
     case 'state':
       return file.userId === currentUser.id
     default:
