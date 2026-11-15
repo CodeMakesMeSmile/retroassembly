@@ -1,9 +1,9 @@
 import { and, eq, inArray, sql } from 'drizzle-orm'
 import Fuse from 'fuse.js'
-import { getContext } from 'hono/context-storage'
 import type { PlatformName } from '#@/constants/platform.ts'
 import { favoriteTable, romTable, statusEnum } from '#@/databases/schema.ts'
 import { getSearchTitle, scoreRom } from '#@/utils/isomorphic/search.ts'
+import type { LibraryScope } from '#@/utils/server/library-scope.ts'
 import { addCoverCandidates } from '#@/utils/server/rom-cover-candidates.ts'
 
 type SearchRomsReturning = Awaited<ReturnType<typeof searchRoms>>
@@ -55,6 +55,7 @@ function rank(candidates: Candidate[], query: string) {
 }
 
 export async function searchRoms(
+  scope: LibraryScope,
   {
     page = 1,
     pageSize = 100,
@@ -67,8 +68,8 @@ export async function searchRoms(
     query: string
   } = {} as any,
 ) {
-  const { currentUser, db, effectiveLibraryUserId, preference } = getContext().var
-  const { library } = db
+  const { user: currentUser, libraryOwnerId: effectiveLibraryUserId, preference } = scope
+  const library = scope.db
 
   const conditions = [
     eq(romTable.userId, effectiveLibraryUserId),

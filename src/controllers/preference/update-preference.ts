@@ -1,9 +1,9 @@
 import { eq, type InferInsertModel } from 'drizzle-orm'
-import { getContext } from 'hono/context-storage'
 import { platforms } from '#@/constants/platform.ts'
 import { type PreferenceSnippet, resolveUserPreference } from '#@/constants/preference.ts'
 import { userPreferenceTable } from '#@/databases/schema.ts'
 import { mergePreference } from '#@/utils/isomorphic/preference.ts'
+import type { LibraryScope } from '#@/utils/server/library-scope.ts'
 
 function normalize(preference: any) {
   // sort platforms and remove invalid platforms
@@ -15,8 +15,8 @@ function normalize(preference: any) {
   }
 }
 
-export async function updatePreference(preference: PreferenceSnippet) {
-  const { currentUser, db } = getContext().var
+export async function updatePreference(scope: LibraryScope, preference: PreferenceSnippet) {
+  const { user: currentUser } = scope
 
   const where = eq(userPreferenceTable.userId, currentUser.id)
   const returning = {
@@ -25,7 +25,7 @@ export async function updatePreference(preference: PreferenceSnippet) {
     ui: userPreferenceTable.ui,
   }
 
-  const results = await db.library.select().from(userPreferenceTable).where(where)
+  const results = await scope.db.select().from(userPreferenceTable).where(where)
 
   let newPreferenceResults: Pick<InferInsertModel<typeof userPreferenceTable>, keyof typeof returning>[]
   if (results.length > 0) {
@@ -42,7 +42,7 @@ export async function updatePreference(preference: PreferenceSnippet) {
     }
     normalize(newPreference)
 
-    newPreferenceResults = await db.library
+    newPreferenceResults = await scope.db
       .update(userPreferenceTable)
       .set({ ...newPreference, userId: currentUser.id })
       .where(where)
@@ -52,7 +52,7 @@ export async function updatePreference(preference: PreferenceSnippet) {
 
     normalize(newPreference)
 
-    newPreferenceResults = await db.library
+    newPreferenceResults = await scope.db
       .insert(userPreferenceTable)
       .values({ ...preference, userId: currentUser.id })
       .returning(returning)

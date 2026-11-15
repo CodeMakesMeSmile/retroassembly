@@ -1,8 +1,8 @@
 import { and, count, desc, eq, inArray, isNotNull, max, sql } from 'drizzle-orm'
-import { getContext } from 'hono/context-storage'
 import type { PlatformName } from '#@/constants/platform.ts'
 import type { RomsOrder } from '#@/constants/roms-order.ts'
 import { favoriteTable, launchRecordTable, romTable, statusEnum } from '#@/databases/schema.ts'
+import type { LibraryScope } from '#@/utils/server/library-scope.ts'
 import { addCoverCandidates } from '#@/utils/server/rom-cover-candidates.ts'
 
 type GetRomsReturning = Awaited<ReturnType<typeof getRoms>>
@@ -26,18 +26,13 @@ interface GetRomsParams {
   platform?: PlatformName
 }
 
-export async function getRoms({
-  direction = 'asc',
-  favorite = false,
-  id,
-  orderBy = 'name',
-  page = 1,
-  pageSize = 100,
-  platform,
-}: GetRomsParams = {}) {
-  const { currentUser, db, effectiveLibraryUserId, preference } = getContext().var
+export async function getRoms(
+  scope: LibraryScope,
+  { direction = 'asc', favorite = false, id, orderBy = 'name', page = 1, pageSize = 100, platform }: GetRomsParams = {},
+) {
+  const { user: currentUser, libraryOwnerId: effectiveLibraryUserId, preference } = scope
 
-  const { library } = db
+  const library = scope.db
 
   const conditions = [eq(romTable.userId, effectiveLibraryUserId), eq(romTable.status, statusEnum.normal)]
   if (id) {

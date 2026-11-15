@@ -2,6 +2,7 @@ import { getContext } from 'hono/context-storage'
 import { getRomsWithStates } from '#@/controllers/roms/get-roms-with-states.ts'
 import { getRoms } from '#@/controllers/roms/get-roms.ts'
 import { getStates } from '#@/controllers/states/get-states.ts'
+import { getLibraryScope } from '#@/utils/server/library-scope.ts'
 import { getLibraryLoaderData } from '#@/utils/server/loader-data.ts'
 import { LibraryHomePage } from '../library/home/page.tsx'
 
@@ -10,9 +11,9 @@ export async function loader() {
 
   const [{ roms: recentlySavedRoms }, { roms: newAddedRoms }, { roms: favoriteRoms }, libraryLoaderData] =
     await Promise.all([
-      getRomsWithStates({ pageSize: 1 }),
-      getRoms({ direction: 'desc', orderBy: 'added', pageSize: 20 }),
-      getRoms({ favorite: true, pageSize: 20 }),
+      getRomsWithStates(getLibraryScope(), { pageSize: 1 }),
+      getRoms(getLibraryScope(), { direction: 'desc', orderBy: 'added', pageSize: 20 }),
+      getRoms(getLibraryScope(), { favorite: true, pageSize: 20 }),
       getLibraryLoaderData(),
     ])
 
@@ -24,7 +25,7 @@ export async function loader() {
   const { recentlyLaunchedRoms } = libraryLoaderData
   const rom = recentlySavedRoms[0] || recentlyLaunchedRoms[0] || newAddedRoms[0]
   if (rom) {
-    const [state] = await getStates({
+    const [state] = await getStates(getLibraryScope(), {
       core: preference.emulator.platform[rom.platform].core,
       limit: 1,
       rom: rom?.id,

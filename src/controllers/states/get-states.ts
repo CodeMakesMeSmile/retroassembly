@@ -1,42 +1,42 @@
-import { and, desc, eq } from 'drizzle-orm'
-import { getContext } from 'hono/context-storage'
+import { desc, eq } from 'drizzle-orm'
 import { stateTable } from '#@/databases/schema.ts'
+import { findRom, type LibraryScope, ownedBy } from '#@/utils/server/library-scope.ts'
 
 export type States = Awaited<ReturnType<typeof getStates>>
 export type State = States[number]
 
-export async function getStates({
-  core,
-  limit,
-  rom,
-  type = 'manual',
-}: {
-  core?: string
-  limit?: number
-  rom: string
-  // 'any' includes both, for picking the newest state to continue from
-  type?: 'any' | 'auto' | 'manual'
-}) {
-  const { currentUser, db } = getContext().var
-
-  const conditions = [eq(stateTable.userId, currentUser.id), eq(stateTable.status, 1)]
-  if (rom) {
-    conditions.push(eq(stateTable.romId, rom))
-  }
-  if (type === 'auto' || type === 'manual') {
-    conditions.push(eq(stateTable.type, type))
-  }
-  if (core) {
-    conditions.push(eq(stateTable.core, core))
-  }
-
-  const where = and(...conditions)
-  const query = db.library.select().from(stateTable).where(where).orderBy(desc(stateTable.createdAt))
-
+/** The user's own saves for a game in their library */
+export async function getStates(
+  scope: LibraryScope,
+  {
+    core,
+    limit,
+    rom,
+    type = 'manual',
+  }: {
+    core?: string
+    limit?: number
+    rom: string
+    // 'any' includes both, for picking the newest state to continue from
+    type?: 'any' | 'auto' | 'manual'
+  },
+) {
+  await findRom(scope, rom)
+  const query = scope.db
+    .select()
+    .from(stateTable)
+    .where(
+      ownedBy(
+        scope,
+        stateTable,
+        eq(stateTable.romId, rom),
+        type === 'auto' || type === 'manual' ? eq(stateTable.type, type) : undefined,
+        core ? eq(stateTable.core, core) : undefined,
+      ),
+    )
+    .orderBy(desc(stateTable.createdAt))
   if (limit) {
     query.limit(limit)
   }
-
-  const results = await query
-  return results
+  return await query
 }

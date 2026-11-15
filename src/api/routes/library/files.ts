@@ -21,7 +21,7 @@ function parseRange(header?: string) {
 export const files = new Hono().get(':id{.+}', async (c) => {
   const id = c.req.param('id')
   // Someone else's file is answered as if it didn't exist
-  if (!(await canReadFile(id))) {
+  if (!(await canReadFile(c.var.scope, id))) {
     return c.notFound()
   }
   const runTimeEnv = getRunTimeEnv()

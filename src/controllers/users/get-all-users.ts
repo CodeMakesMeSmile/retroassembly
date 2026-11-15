@@ -1,27 +1,12 @@
 import { asc, eq } from 'drizzle-orm'
-import { getContext } from 'hono/context-storage'
-import { HTTPException } from 'hono/http-exception'
 import { sessionTable, statusEnum, userTable } from '#@/databases/schema.ts'
+import { assertIsAdmin, type LibraryScope } from '#@/utils/server/library-scope.ts'
 
-export async function getAllUsers() {
-  const c = getContext()
-  const { currentUser, db } = c.var
-
-  // Get first user (super user) by createdAt timestamp
-  const [superUser] = await db.library
-    .select()
-    .from(userTable)
-    .where(eq(userTable.status, statusEnum.normal))
-    .orderBy(asc(userTable.createdAt))
-    .limit(1)
-
-  // Verify current user is super user
-  if (!superUser || superUser.id !== currentUser.id) {
-    throw new HTTPException(403, { message: 'Forbidden' })
-  }
+export async function getAllUsers(scope: LibraryScope) {
+  const superUser = await assertIsAdmin(scope)
 
   // Get all users with their most recent activity
-  const users = await db.library
+  const users = await scope.db
     .select({
       createdAt: userTable.createdAt,
       id: userTable.id,

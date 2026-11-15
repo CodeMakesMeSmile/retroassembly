@@ -19,7 +19,7 @@ export const launchRecords = new Hono()
 
     async (c) => {
       const form = c.req.valid('form')
-      await createLaunchRecord(form)
+      await createLaunchRecord(c.var.scope, form)
       return c.json(null)
     },
   )
@@ -37,7 +37,7 @@ export const launchRecords = new Hono()
 
     async (c) => {
       const query = c.req.valid('query')
-      const result = await getLaunchRecords(query)
+      const result = await getLaunchRecords(c.var.scope, query)
       return c.json(result)
     },
   )

@@ -1,10 +1,11 @@
 import { and, eq } from 'drizzle-orm'
-import { getContext } from 'hono/context-storage'
 import { favoriteTable, statusEnum } from '#@/databases/schema.ts'
+import { findRom, type LibraryScope } from '#@/utils/server/library-scope.ts'
 
-export async function addFavorite(romId: string) {
-  const { currentUser, db } = getContext().var
-  const { library } = db
+export async function addFavorite(scope: LibraryScope, romId: string) {
+  await findRom(scope, romId)
+  const { user: currentUser } = scope
+  const library = scope.db
 
   const [existing] = await library
     .select()

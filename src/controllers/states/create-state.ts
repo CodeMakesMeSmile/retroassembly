@@ -1,9 +1,8 @@
 import path from 'node:path'
 import { and, desc, eq } from 'drizzle-orm'
-import { getContext } from 'hono/context-storage'
-import { HTTPException } from 'hono/http-exception'
 import { getRunTimeEnv } from '#@/constants/env.ts'
-import { romTable, stateTable } from '#@/databases/schema.ts'
+import { stateTable, statusEnum } from '#@/databases/schema.ts'
+import { findRom, type LibraryScope } from '#@/utils/server/library-scope.ts'
 import { nanoid } from '#@/utils/server/nanoid.ts'
 import { deleteStates } from './delete-states.ts'
 
@@ -15,20 +14,9 @@ interface CreateStateParams {
   type: 'auto' | 'manual'
 }
 
-export async function createState({ core, rom, state, thumbnail, type }: CreateStateParams) {
-  const { currentUser, db, effectiveLibraryUserId, storage } = getContext().var
-  if (!currentUser) {
-    throw new Error('Unauthorized')
-  }
-
-  const [romResult] = await db.library
-    .select()
-    .from(romTable)
-    .where(and(eq(romTable.id, rom), eq(romTable.userId, effectiveLibraryUserId)))
-    .limit(1)
-  if (!romResult) {
-    throw new HTTPException(404, { message: 'ROM not found' })
-  }
+export async function createState(scope: LibraryScope, { core, rom, state, thumbnail, type }: CreateStateParams) {
+  const { user: currentUser, storage } = scope
+  const romResult = await findRom(scope, rom)
 
   const id = nanoid()
   const stateFileId = path.join('states', currentUser.id, romResult.platform, rom, `${id}.state`)
@@ -36,7 +24,7 @@ export async function createState({ core, rom, state, thumbnail, type }: CreateS
   const thumbnailFileId = path.join('states', currentUser.id, romResult.platform, rom, `${id}.png`)
   await storage.put(thumbnailFileId, thumbnail)
 
-  const [stateResult] = await db.library
+  const [stateResult] = await scope.db
     .insert(stateTable)
     .values({
       core,
@@ -50,14 +38,14 @@ export async function createState({ core, rom, state, thumbnail, type }: CreateS
     .returning()
 
   if (type === 'auto') {
-    const existingAutoStates = await db.library
+    const existingAutoStates = await scope.db
       .select()
       .from(stateTable)
       .where(
         and(
           eq(stateTable.userId, currentUser.id),
           eq(stateTable.romId, romResult.id),
-          eq(stateTable.status, 1),
+          eq(stateTable.status, statusEnum.normal),
           eq(stateTable.type, 'auto'),
         ),
       )
@@ -65,7 +53,7 @@ export async function createState({ core, rom, state, thumbnail, type }: CreateS
     const maxAutoStates = Math.trunc(Number(getRunTimeEnv().RETROASSEMBLY_RUN_TIME_MAX_AUTO_STATES_PER_ROM)) || 20
     if (existingAutoStates.length > maxAutoStates) {
       const idsToDelete = existingAutoStates.slice(maxAutoStates).map((s) => s.id)
-      await deleteStates(idsToDelete)
+      await deleteStates(scope, idsToDelete)
     }
   }
 

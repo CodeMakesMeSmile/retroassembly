@@ -1,12 +1,12 @@
 import path from 'node:path'
-import { getContext } from 'hono/context-storage'
 import type { PlatformName } from '#@/constants/platform.ts'
 import { getFilePartialDigest } from '#@/utils/server/file.ts'
+import type { LibraryScope } from '#@/utils/server/library-scope.ts'
 import { updatePreference } from './update-preference.ts'
 
-export async function addBIOS(platform: PlatformName, file: File) {
+export async function addBIOS(scope: LibraryScope, platform: PlatformName, file: File) {
   const digest = await getFilePartialDigest(file)
-  const { preference, storage } = getContext().var
+  const { preference, storage } = scope
   const { ext } = path.parse(file.name)
   const fileId = path.join('bioses', platform, `${digest}${ext}`)
   const fileExists = await storage.head(fileId)
@@ -22,7 +22,7 @@ export async function addBIOS(platform: PlatformName, file: File) {
     bioses.push({ fileId, fileName: file.name })
   }
 
-  return await updatePreference({
+  return await updatePreference(scope, {
     emulator: {
       platform: {
         [platform]: {

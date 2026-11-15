@@ -1,19 +1,12 @@
-import { and, count, eq } from 'drizzle-orm'
-import { getContext } from 'hono/context-storage'
+import { count, eq } from 'drizzle-orm'
 import type { PlatformName } from '#@/constants/platform.ts'
 import { romTable } from '#@/databases/schema.ts'
+import { type LibraryScope, romsOf } from '#@/utils/server/library-scope.ts'
 
-export async function countRoms({ platform }: { platform?: PlatformName } = {}) {
-  const { currentUser, db } = getContext().var
-  const { library } = db
-
-  const conditions = [eq(romTable.userId, currentUser.id), eq(romTable.status, 1)]
-  if (platform) {
-    conditions.push(eq(romTable.platform, platform))
-  }
-  const where = and(...conditions)
-
-  const [result] = await library.select({ count: count() }).from(romTable).orderBy(romTable.fileName).where(where)
-
+export async function countRoms(scope: LibraryScope, { platform }: { platform?: PlatformName } = {}) {
+  const [result] = await scope.db
+    .select({ count: count() })
+    .from(romTable)
+    .where(romsOf(scope, platform ? eq(romTable.platform, platform) : undefined))
   return result.count
 }

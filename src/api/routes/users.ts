@@ -6,17 +6,21 @@ import { deleteUser } from '#@/controllers/users/delete-user.ts'
 import { getAllUsers } from '#@/controllers/users/get-all-users.ts'
 import { getCurrentUser } from '#@/controllers/users/get-current-user.ts'
 import { updateUser } from '#@/controllers/users/update-user.ts'
+import { requireUser } from '#@/middlewares/require-user.ts'
 
 export const users = new Hono()
-
-  .get('', async (c) => {
-    const users = await getAllUsers()
-    return c.json(users)
-  })
-
+  // Whoever is signed in, or null; open to everyone
   .get('current', async (c) => {
     const user = await getCurrentUser()
     return c.json(user)
+  })
+
+  // Everything else is for signed-in users, and most of it for the admin only
+  .use(requireUser())
+
+  .get('', async (c) => {
+    const users = await getAllUsers(c.var.scope)
+    return c.json(users)
   })
 
   .post(
@@ -46,12 +50,12 @@ export const users = new Hono()
     ),
     async (c) => {
       const form = c.req.valid('form')
-      const user = await updateUser({ id: c.req.param('id'), libraryMode: form.libraryMode })
+      const user = await updateUser(c.var.scope, { id: c.req.param('id'), libraryMode: form.libraryMode })
       return c.json(user)
     },
   )
 
   .delete(':id', async (c) => {
-    await deleteUser(c.req.param('id'))
+    await deleteUser(c.var.scope, c.req.param('id'))
     return c.json({ success: true })
   })

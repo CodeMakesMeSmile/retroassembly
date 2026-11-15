@@ -1,13 +1,13 @@
 import path from 'node:path'
 import { and, eq, type InferInsertModel } from 'drizzle-orm'
 import { isNotNil, pickBy, omit } from 'es-toolkit'
-import { getContext } from 'hono/context-storage'
-import { HTTPException } from 'hono/http-exception'
 import { DateTime } from 'luxon'
 import { getRunTimeEnv } from '#@/constants/env.ts'
 import { platformMap, type PlatformName } from '#@/constants/platform.ts'
-import { libraryModeEnum, romTable, statusEnum } from '#@/databases/schema.ts'
+import { romTable, statusEnum } from '#@/databases/schema.ts'
+import { DomainError } from '#@/utils/server/domain-error.ts'
 import { getFilePartialDigest } from '#@/utils/server/file.ts'
+import { assertCanWriteLibrary, type LibraryScope } from '#@/utils/server/library-scope.ts'
 import { msleuth } from '#@/utils/server/msleuth.ts'
 import { countRoms } from './count-roms.ts'
 
@@ -58,28 +58,25 @@ function getReleaseYear({ launchbox, libretro }) {
   }
 }
 
-export async function createRom({ file, md5, platform }: { file: File; md5?: string; platform: PlatformName }) {
+export async function createRom(
+  scope: LibraryScope,
+  { file, md5, platform }: { file: File; md5?: string; platform: PlatformName },
+) {
   const env = getRunTimeEnv()
-  const { currentUser, db, storage, t } = getContext().var
-  const { library } = db
+  const { user: currentUser, storage, t } = scope
+  const library = scope.db
 
-  if (currentUser.libraryMode === libraryModeEnum.shared) {
-    throw new HTTPException(403, { message: t('error.sharedLibraryReadOnly') })
-  }
+  assertCanWriteLibrary(scope)
 
   const maxRomCount = Math.trunc(Number(env.RETROASSEMBLY_RUN_TIME_MAX_ROM_COUNT)) || Infinity
-  const romCount = await countRoms()
+  const romCount = await countRoms(scope)
   if (romCount + 1 > maxRomCount) {
-    throw new HTTPException(400, {
-      message: t('error.exceedMaxRomCount', { maxRomCount }),
-    })
+    throw new DomainError('invalid', t('error.exceedMaxRomCount', { maxRomCount }))
   }
 
   const ext = path.parse(file.name).ext.toLowerCase()
   if (!platformMap[platform].fileExtensions.includes(ext)) {
-    throw new HTTPException(400, {
-      message: `File extension ${ext} is not supported for platform ${platform}`,
-    })
+    throw new DomainError('invalid', `File extension ${ext} is not supported for platform ${platform}`)
   }
 
   // Look up game info

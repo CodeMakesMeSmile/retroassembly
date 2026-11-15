@@ -20,7 +20,7 @@ export const preference = new Hono()
 
     async (c) => {
       const preference = await c.req.json()
-      const result = await updatePreference(preference)
+      const result = await updatePreference(c.var.scope, preference)
       return c.json(result)
     },
   )
@@ -38,7 +38,7 @@ export const preference = new Hono()
 
     async (c) => {
       const { file, platform } = c.req.valid('form')
-      const result = await addBIOS(platform, file)
+      const result = await addBIOS(c.var.scope, platform, file)
       return c.json(result)
     },
   )
@@ -56,7 +56,7 @@ export const preference = new Hono()
 
     async (c) => {
       const { file_name: fileName, platform } = c.req.valid('query')
-      const result = await deleteBIOS(platform, fileName)
+      const result = await deleteBIOS(c.var.scope, platform, fileName)
       return c.json(result)
     },
   )

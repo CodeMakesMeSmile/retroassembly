@@ -1,10 +1,10 @@
 import { and, eq } from 'drizzle-orm'
-import { getContext } from 'hono/context-storage'
 import { favoriteTable, statusEnum } from '#@/databases/schema.ts'
+import type { LibraryScope } from '#@/utils/server/library-scope.ts'
 
-export async function removeFavorite(romId: string) {
-  const { currentUser, db } = getContext().var
-  const { library } = db
+export async function removeFavorite(scope: LibraryScope, romId: string) {
+  const { user: currentUser } = scope
+  const library = scope.db
 
   const result = await library
     .update(favoriteTable)

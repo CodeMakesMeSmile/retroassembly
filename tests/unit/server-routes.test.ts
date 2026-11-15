@@ -57,8 +57,8 @@ await describe('server routes', async () => {
     { path: '/login', status: 200 },
     { location: '/login', path: '/library', status: 302 },
     { location: '/login?redirect_to=%2Flibrary%2Froms', path: '/library/roms', status: 302 },
-    { path: '/api/v1/roms', status: 400 },
-    { path: '/api/v1/files/roms%2Fnes%2Fgame.nes', status: 400 },
+    { path: '/api/v1/roms', status: 401 },
+    { path: '/api/v1/files/roms%2Fnes%2Fgame.nes', status: 401 },
     { path: '/library', signedIn: true, status: 200 },
     { path: '/api/v1/roms', signedIn: true, status: 200 },
     { path: '/api/v1/files/roms%2Fnes%2Fgame.nes', signedIn: true, status: 404 },
@@ -98,7 +98,7 @@ await describe('server routes', async () => {
       request('/api/v1/roms', { headers: { 'Accept-Language': 'en' } }),
       request('/api/v1/roms', { headers: { 'Accept-Language': 'de' } }),
     ])
-    assert.equal(english.status, 400)
-    assert.equal(german.status, 400)
+    assert.equal(english.status, 401)
+    assert.equal(german.status, 401)
   })
 })

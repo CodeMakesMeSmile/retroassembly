@@ -1,9 +1,7 @@
-import assert from 'node:assert'
 import path from 'node:path'
 import { zValidator } from '@hono/zod-validator'
 import { pull } from 'es-toolkit'
-import { type Context, Hono } from 'hono'
-import { HTTPException } from 'hono/http-exception'
+import { Hono } from 'hono'
 import { DateTime } from 'luxon'
 import { z } from 'zod'
 import type { PlatformName } from '#@/constants/platform.ts'
@@ -12,22 +10,14 @@ import { createRom } from '#@/controllers/roms/create-roms.ts'
 import { deleteRom } from '#@/controllers/roms/delete-rom.ts'
 import { deleteRoms } from '#@/controllers/roms/delete-roms.ts'
 import { getRomContent } from '#@/controllers/roms/get-rom-content.ts'
-import { getRom } from '#@/controllers/roms/get-rom.ts'
 import { searchRoms } from '#@/controllers/roms/search-roms.ts'
 import { updateRom } from '#@/controllers/roms/update-rom.ts'
 import { getStates } from '#@/controllers/states/get-states.ts'
-import { libraryModeEnum } from '#@/databases/schema.ts'
 import { dateFormatMap } from '#@/utils/isomorphic/i18n.ts'
+import { assertCanWriteLibrary, findRom } from '#@/utils/server/library-scope.ts'
 import { nanoid } from '#@/utils/server/nanoid.ts'
 import { streamFormData } from '#@/utils/server/stream-form-data.ts'
 import { createFileResponse } from '../utils.ts'
-
-function assertNotSharedLibrary(c: Context) {
-  const { currentUser, t } = c.var
-  if (currentUser.libraryMode === libraryModeEnum.shared) {
-    throw new HTTPException(403, { message: t('error.sharedLibraryReadOnly') })
-  }
-}
 
 export const roms = new Hono()
   .post(
@@ -35,7 +25,7 @@ export const roms = new Hono()
 
     // Reject read-only users before their upload is written to disk
     async (c, next) => {
-      assertNotSharedLibrary(c)
+      assertCanWriteLibrary(c.var.scope)
       await next()
     },
 
@@ -53,7 +43,7 @@ export const roms = new Hono()
 
     async (c) => {
       const form = c.req.valid('form')
-      const rom = await createRom({ file: form.file, md5: form.md5, platform: form.platform })
+      const rom = await createRom(c.var.scope, { file: form.file, md5: form.md5, platform: form.platform })
       return c.json(rom)
     },
   )
@@ -90,7 +80,7 @@ export const roms = new Hono()
         gameReleaseDate,
       }
 
-      const ret = await updateRom({ id, ...rom })
+      const ret = await updateRom(c.var.scope, { id, ...rom })
       return c.json(ret)
     },
   )
@@ -106,18 +96,16 @@ export const roms = new Hono()
     ),
 
     async (c) => {
-      assertNotSharedLibrary(c)
-
       const form = c.req.valid('form')
-      const { currentUser, storage } = c.var
+      const { scope } = c.var
       const id = c.req.param('id')
-      const rom = await getRom({ id })
-      assert.ok(rom)
+      assertCanWriteLibrary(scope)
+      const rom = await findRom(scope, id)
 
       const extname = path.extname(form.file.name)
-      const fileId = path.join('attachments', currentUser.id, rom.platform, rom.id, `${nanoid()}${extname}`)
-      await storage.put(fileId, form.file)
-      const updatedRom = await updateRom({ gameBoxartFileIds: fileId, id })
+      const fileId = path.join('attachments', scope.user.id, rom.platform, rom.id, `${nanoid()}${extname}`)
+      await scope.storage.put(fileId, form.file)
+      const updatedRom = await updateRom(c.var.scope, { gameBoxartFileIds: fileId, id })
       return c.json(updatedRom.gameBoxartFileIds)
     },
   )
@@ -126,8 +114,7 @@ export const roms = new Hono()
     ':id/boxart',
 
     async (c) => {
-      assertNotSharedLibrary(c)
-      await updateRom({ gameBoxartFileIds: null, id: c.req.param('id') })
+      await updateRom(c.var.scope, { gameBoxartFileIds: null, id: c.req.param('id') })
       return c.json(null)
     },
   )
@@ -143,20 +130,18 @@ export const roms = new Hono()
     ),
 
     async (c) => {
-      assertNotSharedLibrary(c)
-
       const form = c.req.valid('form')
-      const { currentUser, storage } = c.var
+      const { scope } = c.var
       const id = c.req.param('id')
-      const rom = await getRom({ id })
-      assert.ok(rom)
+      assertCanWriteLibrary(scope)
+      const rom = await findRom(scope, id)
 
       const gameThumbnailFileIds: string[] = rom.gameThumbnailFileIds?.split(',') || []
       const extname = path.extname(form.file.name)
-      const fileId = path.join('attachments', currentUser.id, rom.platform, rom.id, `${nanoid()}${extname}`)
-      await storage.put(fileId, form.file)
+      const fileId = path.join('attachments', scope.user.id, rom.platform, rom.id, `${nanoid()}${extname}`)
+      await scope.storage.put(fileId, form.file)
       gameThumbnailFileIds.push(fileId)
-      const updatedRom = await updateRom({ gameThumbnailFileIds: gameThumbnailFileIds.join(','), id })
+      const updatedRom = await updateRom(c.var.scope, { gameThumbnailFileIds: gameThumbnailFileIds.join(','), id })
       return c.json(updatedRom.gameThumbnailFileIds)
     },
   )
@@ -165,15 +150,14 @@ export const roms = new Hono()
     ':id/thumbnail/:thumbnailId{.+}',
 
     async (c) => {
-      assertNotSharedLibrary(c)
-      const { currentUser } = c.var
+      const { scope } = c.var
       const id = c.req.param('id')
       const thumbnailId = c.req.param('thumbnailId')
-      const rom = await getRom({ id })
-      assert.ok(rom?.userId === currentUser.id)
+      assertCanWriteLibrary(scope)
+      const rom = await findRom(scope, id)
       const gameThumbnailFileIds: string[] = rom.gameThumbnailFileIds?.split(',') || []
       pull(gameThumbnailFileIds, [thumbnailId])
-      const updatedRom = await updateRom({
+      const updatedRom = await updateRom(c.var.scope, {
         gameThumbnailFileIds: gameThumbnailFileIds.length > 0 ? gameThumbnailFileIds.join(',') : null,
         id,
       })
@@ -182,10 +166,8 @@ export const roms = new Hono()
   )
 
   .get(':id/content', async (c) => {
-    const object = await getRomContent(c.req.param('id'))
-    if (object) {
-      return createFileResponse(object)
-    }
+    const object = await getRomContent(c.var.scope, c.req.param('id'))
+    return object ? createFileResponse(object) : c.notFound()
   })
 
   .get(
@@ -201,7 +183,7 @@ export const roms = new Hono()
     async (c) => {
       const query = c.req.valid('query')
       const rom = c.req.param('id')
-      const states = await getStates({ rom, type: query.type })
+      const states = await getStates(c.var.scope, { rom, type: query.type })
       return c.json(states)
     },
   )
@@ -211,13 +193,13 @@ export const roms = new Hono()
 
     async (c) => {
       const rom = c.req.param('id')
-      await deleteLaunchRecord({ rom })
+      await deleteLaunchRecord(c.var.scope, { rom })
       return c.json(null)
     },
   )
 
   .delete(':id', async (c) => {
-    await deleteRom(c.req.param('id'))
+    await deleteRom(c.var.scope, c.req.param('id'))
     return c.json(null)
   })
 
@@ -237,7 +219,7 @@ export const roms = new Hono()
         .split(',')
         .map((id) => id.trim())
         .filter(Boolean)
-      await deleteRoms(ids)
+      await deleteRoms(c.var.scope, ids)
       return c.json(null)
     },
   )
@@ -257,7 +239,7 @@ export const roms = new Hono()
 
     async (c) => {
       const queryParams = c.req.valid('query')
-      const result = await searchRoms({
+      const result = await searchRoms(c.var.scope, {
         page: queryParams.page,
         pageSize: queryParams.page_size,
         platform: queryParams.platform as PlatformName,

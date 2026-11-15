@@ -1,34 +1,20 @@
-import { asc, eq } from 'drizzle-orm'
-import { getContext } from 'hono/context-storage'
-import { HTTPException } from 'hono/http-exception'
-import { statusEnum, userTable } from '#@/databases/schema.ts'
+import { eq } from 'drizzle-orm'
+import { userTable } from '#@/databases/schema.ts'
+import { DomainError } from '#@/utils/server/domain-error.ts'
+import { assertIsAdmin, type LibraryScope } from '#@/utils/server/library-scope.ts'
 
-export async function updateUser({ id, libraryMode }: { id: string; libraryMode: number }) {
-  const c = getContext()
-  const { currentUser, db } = c.var
-
-  // Get first user (super user) by createdAt timestamp
-  const [superUser] = await db.library
-    .select()
-    .from(userTable)
-    .where(eq(userTable.status, statusEnum.normal))
-    .orderBy(asc(userTable.createdAt))
-    .limit(1)
-
-  // Verify current user is super user
-  if (!superUser || superUser.id !== currentUser.id) {
-    throw new HTTPException(403, { message: 'Forbidden' })
-  }
+export async function updateUser(scope: LibraryScope, { id, libraryMode }: { id: string; libraryMode: number }) {
+  const superUser = await assertIsAdmin(scope)
 
   // Prevent modifying super user's own libraryMode
   if (id === superUser.id) {
-    throw new HTTPException(400, { message: 'Cannot modify super user' })
+    throw new DomainError('invalid', 'Cannot modify super user')
   }
 
-  const [updatedUser] = await db.library.update(userTable).set({ libraryMode }).where(eq(userTable.id, id)).returning()
+  const [updatedUser] = await scope.db.update(userTable).set({ libraryMode }).where(eq(userTable.id, id)).returning()
 
   if (!updatedUser) {
-    throw new HTTPException(404, { message: 'User not found' })
+    throw new DomainError('not-found', 'User not found')
   }
 
   return {

@@ -1,18 +1,16 @@
-import { eq } from 'drizzle-orm'
-import { getContext } from 'hono/context-storage'
-import { launchRecordTable, romTable } from '#@/databases/schema.ts'
+import { launchRecordTable } from '#@/databases/schema.ts'
+import { findRom, type LibraryScope } from '#@/utils/server/library-scope.ts'
 
 interface CreateRomParams {
   core: string
   rom: string
 }
 
-export async function createLaunchRecord(params: CreateRomParams) {
-  const { currentUser, db } = getContext().var
-  const { library } = db
+export async function createLaunchRecord(scope: LibraryScope, params: CreateRomParams) {
+  const { user: currentUser } = scope
+  const library = scope.db
 
-  const results = await library.select().from(romTable).where(eq(romTable.id, params.rom))
-  const [rom] = results
+  const rom = await findRom(scope, params.rom)
 
   const [result] = await library
     .insert(launchRecordTable)

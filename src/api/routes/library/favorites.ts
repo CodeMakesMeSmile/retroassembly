@@ -18,13 +18,13 @@ export const favorites = new Hono()
 
     async (c) => {
       const { romId } = c.req.valid('json')
-      const result = await addFavorite(romId)
+      const result = await addFavorite(c.var.scope, romId)
       return c.json(result)
     },
   )
 
   .delete(':romId', async (c) => {
     const romId = c.req.param('romId')
-    await removeFavorite(romId)
+    await removeFavorite(c.var.scope, romId)
     return c.json(null)
   })

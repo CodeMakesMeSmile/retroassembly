@@ -1,10 +1,10 @@
 import { and, eq, inArray, sql } from 'drizzle-orm'
-import { getContext } from 'hono/context-storage'
 import { romTable, statusEnum } from '#@/databases/schema.ts'
+import type { LibraryScope } from '#@/utils/server/library-scope.ts'
 
-export async function getRomPlatformCount() {
-  const { db, effectiveLibraryUserId, preference } = getContext().var
-  const { library } = db
+export async function getRomPlatformCount(scope: LibraryScope) {
+  const { libraryOwnerId: effectiveLibraryUserId, preference } = scope
+  const library = scope.db
 
   const [{ count }] = await library
     .select({ count: sql<number>`COUNT(DISTINCT ${romTable.platform})` })

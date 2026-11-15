@@ -1,11 +1,11 @@
 import { and, count, countDistinct, desc, eq, gte, inArray, max } from 'drizzle-orm'
-import { getContext } from 'hono/context-storage'
 import { favoriteTable, romTable, stateTable, statusEnum } from '#@/databases/schema.ts'
+import type { LibraryScope } from '#@/utils/server/library-scope.ts'
 import { addCoverCandidates } from '#@/utils/server/rom-cover-candidates.ts'
 
-export async function getRomsWithStates({ page = 1, pageSize = 20 } = {}) {
-  const { currentUser, db, effectiveLibraryUserId, preference } = getContext().var
-  const { library } = db
+export async function getRomsWithStates(scope: LibraryScope, { page = 1, pageSize = 20 } = {}) {
+  const { user: currentUser, libraryOwnerId: effectiveLibraryUserId, preference } = scope
+  const library = scope.db
 
   const offset = (page - 1) * pageSize
   const stateJoinCondition = and(

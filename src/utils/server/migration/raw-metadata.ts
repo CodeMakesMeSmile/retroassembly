@@ -1,6 +1,6 @@
 import { and, eq, isNull, or, sql } from 'drizzle-orm'
 import { attemptAsync, chunk } from 'es-toolkit'
-import { romTable } from '#@/databases/schema.ts'
+import { romTable, statusEnum } from '#@/databases/schema.ts'
 import { getDatabase } from '../drizzle.ts'
 import { msleuth } from '../msleuth.ts'
 
@@ -90,7 +90,7 @@ export async function backfillRawMetadata() {
     .from(romTable)
     .where(
       and(
-        eq(romTable.status, 1),
+        eq(romTable.status, statusEnum.normal),
         or(
           isNull(romTable.rawGameMetadata),
           // SQLite doesn't have IS NULL for JSON, so we also check for empty string

@@ -1,18 +1,20 @@
 import { and, count, countDistinct, desc, eq, inArray, max } from 'drizzle-orm'
-import { getContext } from 'hono/context-storage'
 import { favoriteTable, launchRecordTable, romTable, statusEnum } from '#@/databases/schema.ts'
+import type { LibraryScope } from '#@/utils/server/library-scope.ts'
 import { addCoverCandidates } from '#@/utils/server/rom-cover-candidates.ts'
 
-export async function getLaunchRecords({ page = 1, pageSize = 100 }: { page?: number; pageSize?: number }) {
-  const c = getContext()
-  const { currentUser, db, preference } = c.var
-  const { library } = db
+export async function getLaunchRecords(
+  scope: LibraryScope,
+  { page = 1, pageSize = 100 }: { page?: number; pageSize?: number },
+) {
+  const { user: currentUser, preference } = scope
+  const library = scope.db
 
   const offset = (page - 1) * pageSize
 
   const where = and(
     eq(launchRecordTable.userId, currentUser.id),
-    eq(launchRecordTable.status, 1),
+    eq(launchRecordTable.status, statusEnum.normal),
     inArray(launchRecordTable.platform, preference.ui.platforms),
   )
 

@@ -1,23 +1,23 @@
 import { and, eq } from 'drizzle-orm'
-import { getContext } from 'hono/context-storage'
-import { launchRecordTable } from '#@/databases/schema.ts'
+import { launchRecordTable, statusEnum } from '#@/databases/schema.ts'
+import type { LibraryScope } from '#@/utils/server/library-scope.ts'
 
 interface DeleteRomParams {
   rom: string
 }
 
-export async function deleteLaunchRecord(params: DeleteRomParams) {
-  const { currentUser, db } = getContext().var
-  const { library } = db
+export async function deleteLaunchRecord(scope: LibraryScope, params: DeleteRomParams) {
+  const { user: currentUser } = scope
+  const library = scope.db
 
   const result = await library
     .update(launchRecordTable)
-    .set({ status: 0 })
+    .set({ status: statusEnum.deleted })
     .where(
       and(
         eq(launchRecordTable.romId, params.rom),
         eq(launchRecordTable.userId, currentUser.id),
-        eq(launchRecordTable.status, 1),
+        eq(launchRecordTable.status, statusEnum.normal),
       ),
     )
     .returning()
