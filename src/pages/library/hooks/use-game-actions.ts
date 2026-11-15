@@ -2,12 +2,13 @@ import { useTranslation } from 'react-i18next'
 import { useLocation } from 'react-router'
 import { libraryModeEnum } from '#@/databases/schema.ts'
 import { useGlobalLoaderData } from '#@/pages/hooks/use-global-loader-data.ts'
+import { routes } from '#@/pages/routes.ts'
 
 export function useGameActions() {
   const { t } = useTranslation()
   const { pathname } = useLocation()
   const { currentUser } = useGlobalLoaderData()
-  const pageType = pathname === '/library/history' ? 'history' : 'library'
+  const pageType = pathname === routes.libraryHistory ? 'history' : 'library'
 
   const isSharedLibrary = currentUser?.libraryMode === libraryModeEnum.shared
 

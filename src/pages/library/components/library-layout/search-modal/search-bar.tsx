@@ -1,11 +1,12 @@
 import { clsx } from 'clsx'
 import { useCallback, useEffect, useEffectEvent, type SubmitEvent } from 'react'
-import { useLocation, useNavigate } from 'react-router'
+import { generatePath, useLocation, useNavigate } from 'react-router'
 import useSWR from 'swr'
 import { client, parseResponse } from '#@/api/client.ts'
 import { useSpatialNavigationPaused } from '#@/pages/library/atoms.ts'
 import { useInputMapping } from '#@/pages/library/hooks/use-input-mapping.ts'
 import { useLibraryData } from '#@/pages/library/hooks/use-library-data.ts'
+import { routes } from '#@/pages/routes.ts'
 import { Gamepad } from '#@/utils/client/gamepad.ts'
 import { useShowSearchModal } from '../atoms.ts'
 import { useQuery, useSelectedResult } from './atoms.ts'
@@ -35,7 +36,7 @@ export function SearchBar() {
   const displayResults = allResults?.slice(0, 10)
 
   const selectedUrl = selectedResult
-    ? `/library/platform/${encodeURIComponent(selectedResult.platform)}/rom/${encodeURIComponent(selectedResult.fileName)}`
+    ? generatePath(routes.libraryPlatformRom, { fileName: selectedResult.fileName, platform: selectedResult.platform })
     : ''
   const select = useCallback(async () => {
     if (selectedUrl) {

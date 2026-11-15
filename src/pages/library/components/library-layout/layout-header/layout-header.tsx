@@ -3,6 +3,7 @@ import { Fragment } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Logo } from '#@/pages/components/logo.tsx'
 import { useViewport } from '#@/pages/library/hooks/use-viewport.ts'
+import { routes } from '#@/pages/routes.ts'
 import { useNavigationLinks } from '../../../hooks/use-navigation-links.ts'
 import { LayoutMenu } from '../layout-menu/layout-menu.tsx'
 import { HeaderLinkItem } from './header-link-item.tsx'
@@ -26,7 +27,7 @@ export function LayoutHeader() {
   return (
     <>
       <header className='px-safe-offset-2 fixed inset-x-0 top-0 z-2 flex items-center bg-(--accent-9) py-2 lg:hidden'>
-        <Link className='flex items-center gap-2 font-bold' to='/library'>
+        <Link className='flex items-center gap-2 font-bold' to={routes.libraryHome}>
           <Logo height='32' width='32' />
         </Link>
 

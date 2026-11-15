@@ -29,15 +29,16 @@ export async function loader() {
   return { recentlyLaunchedRoms }
 }
 
-// Loaded again only when something may have changed it (a change made on the page, or an explicit refresh), not on
-// every move between library pages
+// Loaded again only when something may have changed it, not on every move between library pages: after a change made
+// on the page, an explicit refresh, or leaving a game's page, where a game may have been played
 export function shouldRevalidate({
   currentUrl,
   defaultShouldRevalidate,
   formMethod,
   nextUrl,
 }: ShouldRevalidateFunctionArgs) {
-  if (formMethod || currentUrl.href === nextUrl.href) {
+  const leavingGame = currentUrl.pathname.includes('/rom/') && currentUrl.pathname !== nextUrl.pathname
+  if (formMethod || leavingGame || currentUrl.href === nextUrl.href) {
     return defaultShouldRevalidate
   }
   return false

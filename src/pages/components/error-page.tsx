@@ -2,6 +2,7 @@ import { Button } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
 import { isRouteErrorResponse, Link } from 'react-router'
 import { metadata } from '#@/constants/metadata.ts'
+import { routes } from '#@/pages/routes.ts'
 import type { Route } from '../+types/root.ts'
 
 export function ErrorPage({ error }: Readonly<Route.ErrorBoundaryProps>) {
@@ -49,7 +50,7 @@ export function ErrorPage({ error }: Readonly<Route.ErrorBoundaryProps>) {
               <Link
                 className='border-2! bg-(--color-background)! shadow-none! in-[.dark]:border-(--gray-4)!'
                 reloadDocument
-                to='/library'
+                to={routes.libraryHome}
               >
                 <span className='icon-[mdi--bookshelf]' />
                 {t('nav.library')}
