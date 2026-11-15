@@ -4,18 +4,22 @@ import { generatePath, useLocation } from 'react-router'
 import { platformMap } from '#@/constants/platform.ts'
 import { routes } from '#@/pages/routes.ts'
 import { getPlatformIcon } from '#@/utils/client/library.ts'
-import { useIsDemo } from './use-demo.ts'
 import { usePlatform } from './use-platform.ts'
 import { usePreference } from './use-preference.ts'
 
-const demoPlatforms = ['gba', 'gbc', 'genesis', 'nes', 'snes']
+function getPlatformLink(platform?: string) {
+  if (!platform) {
+    return ''
+  }
+  return generatePath(routes.libraryPlatform, { platform })
+}
+
 export function useNavigationLinks() {
   const { t } = useTranslation()
   const { preference } = usePreference()
   const platform = usePlatform()
   const location = useLocation()
-  const isDemo = useIsDemo()
-  const platforms = isDemo ? demoPlatforms : preference.ui.platforms
+  const { platforms } = preference.ui
 
   const platformLinks = platforms.map((platform) => ({
     iconClass: '',
@@ -29,46 +33,36 @@ export function useNavigationLinks() {
 
   const groups = [
     {
-      links: isDemo
-        ? [
-            {
-              iconClass: 'icon-[mdi--home]',
-              iconUrl: '',
-              name: 'home',
-              text: t('common.games'),
-              to: generatePath(routes.demoHome),
-            },
-          ]
-        : [
-            {
-              iconClass: 'icon-[mdi--home]',
-              iconUrl: '',
-              name: 'home',
-              text: t('nav.home'),
-              to: generatePath(routes.libraryHome),
-            },
-            {
-              iconClass: 'icon-[mdi--bookshelf]',
-              iconUrl: '',
-              name: 'library',
-              text: t('common.games'),
-              to: generatePath(routes.libraryRoms),
-            },
-            {
-              iconClass: 'icon-[mdi--heart]',
-              iconUrl: '',
-              name: 'favorites',
-              text: t('nav.favorites'),
-              to: generatePath(routes.libraryFavorites),
-            },
-            {
-              iconClass: 'icon-[mdi--history]',
-              iconUrl: '',
-              name: 'history',
-              text: t('nav.history'),
-              to: generatePath(routes.libraryHistory),
-            },
-          ],
+      links: [
+        {
+          iconClass: 'icon-[mdi--home]',
+          iconUrl: '',
+          name: 'home',
+          text: t('nav.home'),
+          to: generatePath(routes.libraryHome),
+        },
+        {
+          iconClass: 'icon-[mdi--bookshelf]',
+          iconUrl: '',
+          name: 'library',
+          text: t('common.games'),
+          to: generatePath(routes.libraryRoms),
+        },
+        {
+          iconClass: 'icon-[mdi--heart]',
+          iconUrl: '',
+          name: 'favorites',
+          text: t('nav.favorites'),
+          to: generatePath(routes.libraryFavorites),
+        },
+        {
+          iconClass: 'icon-[mdi--history]',
+          iconUrl: '',
+          name: 'history',
+          text: t('nav.history'),
+          to: generatePath(routes.libraryHistory),
+        },
+      ],
       title: '',
     },
     { links: sortedPlatformLinks, title: t('common.platform_other') },
@@ -76,13 +70,6 @@ export function useNavigationLinks() {
 
   function isActive(link: string) {
     return location.pathname === link || getPlatformLink(platform?.name) === link
-  }
-
-  function getPlatformLink(platform?: string) {
-    if (!platform) {
-      return ''
-    }
-    return generatePath(isDemo ? routes.demoPlatform : routes.libraryPlatform, { platform })
   }
 
   return { groups, isActive }

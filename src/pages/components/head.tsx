@@ -1,15 +1,13 @@
 import { noop } from 'es-toolkit'
-import { createElement, useSyncExternalStore } from 'react'
+import { useSyncExternalStore } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Links, Meta, useLoaderData } from 'react-router'
+import { Links, Meta } from 'react-router'
 import { metadata } from '#@/constants/metadata.ts'
-import type { loader } from '#@/pages/root.tsx'
 import { cdnHost, isCDNCacheEnabled, libretroThumbnailsHost } from '#@/utils/isomorphic/cdn.ts'
 import { getFontFaces } from '#@/utils/isomorphic/fonts.ts'
 
 export function Head() {
   const { t } = useTranslation()
-  const { headElements } = useLoaderData<typeof loader>() || {}
   const target = useSyncExternalStore(
     () => noop,
     () => (globalThis.self === globalThis.top ? '_self' : '_blank'),
@@ -56,8 +54,6 @@ export function Head() {
       {(isCDNCacheEnabled() ? [] : [cdnHost, libretroThumbnailsHost]).map((host) => (
         <link key={host} href={host} rel='dns-prefetch' />
       ))}
-
-      {headElements?.map(({ props, type }) => createElement(type, props))}
 
       <Meta />
       <Links />

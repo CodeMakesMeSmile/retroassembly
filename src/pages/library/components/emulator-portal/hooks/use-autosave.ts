@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 import { useShowGameOverlayContent, useEmulatorLaunched } from '#@/pages/library/atoms.ts'
-import { useIsDemo } from '#@/pages/library/hooks/use-demo.ts'
 import { usePreference } from '#@/pages/library/hooks/use-preference.ts'
 import { useEmulator } from './use-emulator.ts'
 import { useGameStates } from './use-game-states.ts'
@@ -9,7 +8,6 @@ export function useAutosave() {
   const { emulator } = useEmulator()
   const { preference } = usePreference()
   const { saveAutoState } = useGameStates()
-  const isDemo = useIsDemo()
   const showGameOverlay = useShowGameOverlayContent()
   const overlayVisible = showGameOverlay[0]
   const [launched] = useEmulatorLaunched()
@@ -18,7 +16,7 @@ export function useAutosave() {
   const pausedAtRef = useRef<number | null>(null)
   const nextSaveAtRef = useRef<number | null>(null)
   const intervalSeconds = preference.emulator.autoSaveInterval
-  const isDisabled = intervalSeconds === 0 || isDemo
+  const isDisabled = intervalSeconds === 0
 
   useEffect(() => {
     if (isDisabled) {

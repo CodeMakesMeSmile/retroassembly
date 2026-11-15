@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { useIsDemo } from '#@/pages/library/hooks/use-demo.ts'
 import { focus } from '#@/pages/library/utils/spatial-navigation.ts'
 import { useEmulator } from '../hooks/use-emulator.ts'
 import { useGameOverlay } from '../hooks/use-game-overlay.ts'
@@ -11,7 +10,6 @@ export function GameOverlayButtons() {
   const { emulator, exit } = useEmulator()
   const { saveManualState } = useGameStates()
   const { hide, isPending, setIsPending } = useGameOverlay()
-  const isDemo = useIsDemo()
 
   async function handleClickResume() {
     await hide()
@@ -61,7 +59,7 @@ export function GameOverlayButtons() {
         {t('game.resume')}
       </GameOverlayButton>
 
-      <GameOverlayButton disabled={isDemo} onClick={handleClickSaveState}>
+      <GameOverlayButton onClick={handleClickSaveState}>
         <span className='icon-[mdi--content-save] size-5' />
         {t('emulator.saveState')}
       </GameOverlayButton>
@@ -78,11 +76,7 @@ export function GameOverlayButtons() {
         {t('common.exit')}
       </GameOverlayButton>
 
-      <GameOverlayButton
-        dataSnRight='.game-overlay-buttons button:first-child'
-        disabled={isDemo}
-        onClick={handleClickSaveExit}
-      >
+      <GameOverlayButton dataSnRight='.game-overlay-buttons button:first-child' onClick={handleClickSaveExit}>
         <span className='icon-[mdi--location-exit] size-5' />
         {t('emulator.saveAndExit')}
       </GameOverlayButton>

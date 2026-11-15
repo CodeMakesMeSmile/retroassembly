@@ -1,4 +1,3 @@
-import { clsx } from 'clsx'
 import { isBrowser } from 'es-toolkit'
 import { Provider } from 'jotai'
 import { HydrationBoundary } from 'jotai-ssr'
@@ -21,7 +20,7 @@ if (isBrowser()) {
 }
 
 export function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
-  const { isHome, language, preference } = useLoaderData<typeof loader>() || {}
+  const { language, preference } = useLoaderData<typeof loader>() || {}
   const hydrateAtom = [preferenceAtom, preference] as const
   const hydrateAtoms = [hydrateAtom]
 
@@ -36,7 +35,7 @@ export function AppLayout({ children }: Readonly<{ children: ReactNode }>) {
       <I18nextProvider i18n={i18n}>
         <Head />
       </I18nextProvider>
-      <body className={clsx({ 'bg-(--primary) 2xl:bg-none': !isHome })} style={getGlobalCSSVars(preference)}>
+      <body className='bg-(--primary) 2xl:bg-none' style={getGlobalCSSVars(preference)}>
         <I18nextProvider i18n={i18n}>
           <RadixTheme>
             <ThemeProvider attribute='class'>

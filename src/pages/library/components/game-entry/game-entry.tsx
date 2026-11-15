@@ -2,7 +2,6 @@ import type { MouseEvent } from 'react'
 import { generatePath } from 'react-router'
 import { routes } from '#@/pages/routes.ts'
 import { useSelectedGames } from '../../atoms.ts'
-import { useIsDemo } from '../../hooks/use-demo.ts'
 import { FavoriteButton } from '../favorite-button.tsx'
 import { NavigatableLink } from '../navigatable-link.tsx'
 import { GameEntryDropdownMenu } from './game-entry-dropdown-menu.tsx'
@@ -11,11 +10,9 @@ import { GamePlatform } from './game-platform.tsx'
 import { GameTitle } from './game-title.tsx'
 
 export function GameEntry({ rom }) {
-  const isDemo = useIsDemo()
-
   const [selectedGames, setSelectedGames] = useSelectedGames()
 
-  const url = generatePath(isDemo ? routes.demoPlatformRom : routes.libraryPlatformRom, {
+  const url = generatePath(routes.libraryPlatformRom, {
     fileName: rom.fileName,
     platform: rom.platform,
   })
@@ -54,7 +51,7 @@ export function GameEntry({ rom }) {
           </>
         )}
       </NavigatableLink>
-      {isDemo ? null : <FavoriteButton rom={rom} variant='overlay' />}
+      <FavoriteButton rom={rom} variant='overlay' />
       <GameEntryDropdownMenu rom={rom} />
     </div>
   )

@@ -4,14 +4,11 @@ import type { PropsWithChildren } from 'react'
 import { Link, useLoaderData } from 'react-router'
 import { metadata } from '#@/constants/metadata.ts'
 import { Logo } from '#@/pages/components/logo.tsx'
-import { getHomePath } from '#@/utils/isomorphic/misc.ts'
 import type { getLibraryLoaderData } from '#@/utils/server/loader-data.ts'
-import { useIsDemo } from '../../hooks/use-demo.ts'
 import { useFocusRestoration } from '../../hooks/use-focus-restoration.ts'
 import { useUploadPendingSaves } from '../../hooks/use-upload-pending-saves.ts'
 import { useViewport } from '../../hooks/use-viewport.ts'
 import { PendingMask } from '../pending-mask.tsx'
-import { DemoLoginButton } from './demo-login-button.tsx'
 import { FocusIndicator } from './focus-indicator.tsx'
 import { LayoutHeader } from './layout-header/layout-header.tsx'
 import { LayoutMain } from './layout-main.tsx'
@@ -27,9 +24,8 @@ function getPostfixedTitle(title: string) {
 }
 
 export default function LibraryLayout({ children }: Readonly<PropsWithChildren>) {
-  const { language, title } = useLoaderData<typeof getLibraryLoaderData>()
+  const { title } = useLoaderData<typeof getLibraryLoaderData>()
   useUploadPendingSaves()
-  const isDemo = useIsDemo()
   const { isLargeScreen } = useViewport()
 
   useFocusRestoration()
@@ -39,13 +35,11 @@ export default function LibraryLayout({ children }: Readonly<PropsWithChildren>)
       <title>{getPostfixedTitle(title)}</title>
 
       <div className={clsx('library-layout flex min-h-screen flex-col bg-(--color-background)')}>
-        {isDemo ? <DemoLoginButton /> : null}
-
         <LayoutHeader />
 
         <SidebarContainer>
           <div className='flex items-center justify-between px-4 pb-4'>
-            <Link className='flex items-center gap-2 font-bold' reloadDocument to={getHomePath(language)}>
+            <Link className='flex items-center gap-2 font-bold' to='/library'>
               <Logo height='32' width='32' />
               <span className='font-serif font-semibold'>{metadata.title}</span>
             </Link>
@@ -53,11 +47,9 @@ export default function LibraryLayout({ children }: Readonly<PropsWithChildren>)
           <ScrollArea className='flex-1' size='2'>
             <SidebarLinks />
           </ScrollArea>
-          {isDemo ? null : (
-            <div className='flex items-center justify-between border-t border-t-white/30 py-2'>
-              {isLargeScreen ? <LayoutMenu /> : null}
-            </div>
-          )}
+          <div className='flex items-center justify-between border-t border-t-white/30 py-2'>
+            {isLargeScreen ? <LayoutMenu /> : null}
+          </div>
         </SidebarContainer>
 
         <LayoutMain>{children}</LayoutMain>

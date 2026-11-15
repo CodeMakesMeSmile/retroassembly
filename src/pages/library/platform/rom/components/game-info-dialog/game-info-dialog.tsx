@@ -7,7 +7,6 @@ import { client } from '#@/api/client.ts'
 import { libraryModeEnum } from '#@/databases/schema.ts'
 import { useGlobalLoaderData } from '#@/pages/hooks/use-global-loader-data.ts'
 import { DialogRoot } from '#@/pages/library/components/dialog-root.tsx'
-import { useIsDemo } from '#@/pages/library/hooks/use-demo.ts'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
 import { useRouter } from '#@/pages/library/hooks/use-router.ts'
 import { getRomGoodcodes } from '#@/utils/client/library.ts'
@@ -34,7 +33,6 @@ export function GameInfoDialog({ autoFocusField, children = defaultTrigger }: Re
   const { currentUser } = useGlobalLoaderData()
 
   const { reload } = useRouter()
-  const isDemo = useIsDemo()
 
   const [open, setOpen] = useState(false)
 
@@ -52,7 +50,7 @@ export function GameInfoDialog({ autoFocusField, children = defaultTrigger }: Re
     await reload()
   }
 
-  if (isDemo || currentUser?.libraryMode === libraryModeEnum.shared) {
+  if (currentUser?.libraryMode === libraryModeEnum.shared) {
     return
   }
 

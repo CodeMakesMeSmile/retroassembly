@@ -33,6 +33,7 @@ export const repositoryVersions = {
   'libretro/docs': '35b22b41444b7d547d7f239669332c634acb455b', // https://github.com/libretro/docs/commits
   'libretro/retroarch-assets': '2d24ef2972a709f870cc3f73853158fa2376f37d', // https://github.com/libretro/retroarch-assets/commits
   'Mattersons/es-theme-neutral': 'c9b38e7265d680d3da68e96df1bc2ed1cfefb79f', // https://github.com/Mattersons/es-theme-neutral/commits
+  // Free homebrew games, which the end-to-end tests play
   'retrobrews/gba-games': 'add86969f1a7a3b9534822a9a015d05ed20a0dcf', // https://github.com/retrobrews/gba-games/commits
   'retrobrews/gbc-games': 'a23861c19f1b4d1eeea129879f3a30b709f1f48f', // https://github.com/retrobrews/gbc-games/commits
   'retrobrews/md-games': '69799854cb357a252ff5eda173381feb5e81aac5', // https://github.com/retrobrews/md-games/commits

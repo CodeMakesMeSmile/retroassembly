@@ -1,7 +1,6 @@
 import { Tooltip } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
 import { useSpatialNavigationPaused } from '#@/pages/library/atoms.ts'
-import { useIsDemo } from '#@/pages/library/hooks/use-demo.ts'
 import { useIsApple } from '#@/pages/library/hooks/use-is-apple.ts'
 import { useShowSearchModal } from '../atoms.ts'
 
@@ -10,16 +9,11 @@ export function SearchButton() {
   const [, setSpatialNavigationPaused] = useSpatialNavigationPaused()
   const { t } = useTranslation()
 
-  const isDemo = useIsDemo()
   const isApple = useIsApple()
 
   function showSearch() {
     setSpatialNavigationPaused(true)
     setShowSearchModal(true)
-  }
-
-  if (isDemo) {
-    return
   }
 
   return (

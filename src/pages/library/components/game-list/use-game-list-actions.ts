@@ -4,20 +4,18 @@ import { libraryModeEnum } from '#@/databases/schema.ts'
 import { useGlobalLoaderData } from '#@/pages/hooks/use-global-loader-data.ts'
 import { routes } from '../../../routes.ts'
 import { useSelectedGames } from '../../atoms.ts'
-import { useIsDemo } from '../../hooks/use-demo.ts'
 import { useRoms } from '../../hooks/use-roms.ts'
 
 export function useGameListActions() {
   const { roms } = useRoms()
   const [selectedGames, setSelectedGames] = useSelectedGames()
   const { pathname, search } = useLocation()
-  const isDemo = useIsDemo()
   const { currentUser } = useGlobalLoaderData()
 
   const isHistoryPage = pathname === routes.libraryHistory
   const isFavoritesPage = pathname === routes.libraryFavorites
   const isSharedLibrary = currentUser?.libraryMode === libraryModeEnum.shared
-  const shouldHideActions = isDemo || isHistoryPage || isSharedLibrary
+  const shouldHideActions = isHistoryPage || isSharedLibrary
 
   const searchParams = new URLSearchParams(search)
   const sort = searchParams.get('sort') || defaultRomsOrder
@@ -57,7 +55,6 @@ export function useGameListActions() {
     getFavoriteToggleLink,
     hasRoms,
     hasSelectedGames,
-    isDemo,
     isViewingFavorites,
     pathname,
     roms,

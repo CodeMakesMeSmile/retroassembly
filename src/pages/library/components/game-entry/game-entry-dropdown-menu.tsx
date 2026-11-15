@@ -6,13 +6,11 @@ import { libraryModeEnum } from '#@/databases/schema.ts'
 import { useGlobalLoaderData } from '#@/pages/hooks/use-global-loader-data.ts'
 import { routes } from '#@/pages/routes.ts'
 import { useSelectedGames } from '../../atoms.ts'
-import { useIsDemo } from '../../hooks/use-demo.ts'
 import { useGameActions } from '../../hooks/use-game-actions.ts'
 import { DeleteDialog } from './delete-dialog.tsx'
 
 export function GameEntryDropdownMenu({ rom }) {
   const { pathname } = useLocation()
-  const isDemo = useIsDemo()
   const { currentUser } = useGlobalLoaderData()
   const { actions } = useGameActions()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -37,7 +35,7 @@ export function GameEntryDropdownMenu({ rom }) {
     handler?.()
   }
 
-  if (isDemo || currentUser?.libraryMode === libraryModeEnum.shared) {
+  if (currentUser?.libraryMode === libraryModeEnum.shared) {
     return
   }
 

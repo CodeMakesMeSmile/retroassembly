@@ -1,7 +1,6 @@
 import type { Nostalgist } from 'nostalgist'
 import { useEffect } from 'react'
 import { useEmulatorLaunched } from '#@/pages/library/atoms.ts'
-import { useIsDemo } from '#@/pages/library/hooks/use-demo.ts'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
 import { putPendingSave, uploadPendingSave } from '#@/pages/library/utils/pending-saves.ts'
 import { useEmulator } from './use-emulator.ts'
@@ -69,11 +68,10 @@ export function useSaveOnHide() {
   const { core, emulator } = useEmulator()
   const rom = useRom()
   const [launched] = useEmulatorLaunched()
-  const isDemo = useIsDemo()
   const { reloadAutoStates } = useGameStates()
 
   useEffect(() => {
-    if (!launched || !emulator || !core || !rom || isDemo) {
+    if (!launched || !emulator || !core || !rom) {
       return
     }
 
@@ -139,5 +137,5 @@ export function useSaveOnHide() {
     // page is hidden
     globalThis.addEventListener('visibilitychange', handleVisibilityChange, { capture: true })
     return () => globalThis.removeEventListener('visibilitychange', handleVisibilityChange, { capture: true })
-  }, [launched, emulator, core, rom, isDemo, reloadAutoStates])
+  }, [launched, emulator, core, rom, reloadAutoStates])
 }

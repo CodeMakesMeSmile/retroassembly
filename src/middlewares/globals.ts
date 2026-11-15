@@ -40,17 +40,10 @@ function getLanguage(c: Context) {
   const { detectedLanguage, preference } = c.var
 
   const path = c.req.path.endsWith('.data') ? c.req.path.slice(0, -5) : c.req.path
-  const segments = path.split('/').slice(1)
-  const [segment] = segments
-  const isDemo = match('/demo{/*path}')(path)
   const isLibrary = match('/library{/*path}')(path)
-  const isLogin = path === '/login'
-  const isHome = !isDemo && !isLibrary && !isLogin && match('/{:language}')(path)
 
   let language = detectedLanguage
-  if (isHome) {
-    language = locales.find(({ code }) => segment === code.toLowerCase())?.code || defaultLanguage
-  } else if (isLibrary || isDemo) {
+  if (isLibrary) {
     language =
       !preference?.ui?.language || preference?.ui?.language === 'auto' ? detectedLanguage : preference?.ui?.language
   }

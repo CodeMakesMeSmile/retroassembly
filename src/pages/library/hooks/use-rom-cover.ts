@@ -2,16 +2,14 @@ import { uniq } from 'es-toolkit'
 import useSWRImmutable from 'swr/immutable'
 import type { Rom } from '#@/controllers/roms/get-roms.ts'
 import { imageLoaded } from '#@/utils/client/image.ts'
-import { getDemoRomThumbnail, getPlatformGameIcon } from '#@/utils/client/library.ts'
+import { getPlatformGameIcon } from '#@/utils/client/library.ts'
 import { getRomCoverCandidates } from '#@/utils/isomorphic/rom-cover-candidates.ts'
 import { getFileUrl } from '../utils/file.ts'
-import { useIsDemo } from './use-demo.ts'
 
 export function useRomCover(rom: Rom) {
-  const isDemo = useIsDemo()
   // The server notes which images it has for each game; without that note, every possible one is tried
   const { coverCandidates } = rom as { coverCandidates?: string[] }
-  const romCovers = isDemo ? [getDemoRomThumbnail(rom)] : [...(coverCandidates ?? getRomCoverCandidates(rom))]
+  const romCovers = [...(coverCandidates ?? getRomCoverCandidates(rom))]
   if (rom.gameBoxartFileIds) {
     romCovers.unshift(...rom.gameBoxartFileIds.split(',').map((fileId) => getFileUrl(fileId)))
   }

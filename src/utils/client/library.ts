@@ -6,13 +6,6 @@ export { getLibretroThumbnail, getRomLibretroThumbnail } from '../isomorphic/lib
 
 const { path } = Nostalgist.vendors
 
-export function getDemoRomThumbnail(rom) {
-  const platform = { genesis: 'md' }[rom.platform] || rom.platform
-  const repo = `retrobrews/${platform}-games`
-  // @ts-expect-error we know this is a valid call
-  return getCDNUrl(repo, `${path.parse(rom.fileName).name}.png`)
-}
-
 // Platforms added in this fork, whose artwork ships with the app in public/assets/platforms
 const bundledPlatformAssets = new Set(['nds'])
 

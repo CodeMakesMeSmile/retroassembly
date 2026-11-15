@@ -1,16 +1,10 @@
 import { clsx } from 'clsx'
-import { useIsDemo } from '#@/pages/library/hooks/use-demo.ts'
 import { useNavigationLinks } from '../../../hooks/use-navigation-links.ts'
 import { SearchButton } from './search-button.tsx'
 import { SidebarLink } from './sidebar-link.tsx'
 
 export function SidebarLinks() {
   const { groups, isActive } = useNavigationLinks()
-  const isDemo = useIsDemo()
-
-  function shouldShowsSearchButton(name: string) {
-    return !isDemo && name === 'home'
-  }
 
   return (
     <div className='w-64'>
@@ -36,7 +30,7 @@ export function SidebarLinks() {
                   </span>
                 </SidebarLink>
 
-                {shouldShowsSearchButton(name) ? <SearchButton /> : null}
+                {name === 'home' ? <SearchButton /> : null}
               </div>
             ))}
           </div>

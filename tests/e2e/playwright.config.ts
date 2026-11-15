@@ -32,7 +32,6 @@ export default defineConfig({
     command: 'node --run=build && node --run=start',
     env: {
       RETROASSEMBLY_RUN_TIME_DATA_DIRECTORY: tmp,
-      RETROASSEMBLY_RUN_TIME_SKIP_HOME: 'true',
       ...process.env,
     },
     port,

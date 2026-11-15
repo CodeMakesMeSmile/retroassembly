@@ -83,21 +83,3 @@ a.pending:focus {
     background-position: 0 10px;
   }
 }
-
-@keyframes rewind-demo-background-move {
-  from {
-    background-position: right -50% center;
-  }
-  to {
-    background-position: right 50% center;
-  }
-}
-
-@keyframes marquee-left {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(calc(-100% - var(--gap)));
-  }
-}

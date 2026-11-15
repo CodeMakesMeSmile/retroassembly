@@ -4,7 +4,6 @@ import type { CSSProperties } from 'react'
 import sparkMd5 from 'spark-md5'
 import { metadata } from '#@/constants/metadata.ts'
 import type { ResolvedPreference } from '#@/constants/preference.ts'
-import { defaultLanguage } from './i18n.ts'
 
 export function restoreTitleForSorting(title: string) {
   const match = /^(?<mainTitle>.*),\s*(?<article>A|An|The)(?<additionalInfo>\s*(?:\S.*)?)$/u.exec(title)
@@ -32,10 +31,6 @@ export function encodeRFC3986URIComponent(str: string) {
 export async function getFileMd5(file: Blob) {
   const buffer = await file.arrayBuffer()
   return sparkMd5.ArrayBuffer.hash(buffer)
-}
-
-export function getHomePath(language: string) {
-  return `/${language === defaultLanguage ? '' : language.toLowerCase()}`
 }
 
 export function getGlobalCSSVars(preference?: ResolvedPreference) {

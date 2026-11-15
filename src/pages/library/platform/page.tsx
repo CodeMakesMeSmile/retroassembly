@@ -7,7 +7,6 @@ import { DeviceInfo } from '../components/device-info/device-info.tsx'
 import { GameListMain } from '../components/game-list-main.tsx'
 import LibraryLayout from '../components/library-layout/library-layout.tsx'
 import { PageStats } from '../components/page-stats.tsx'
-import { useIsDemo } from '../hooks/use-demo.ts'
 import { PlatformBackground } from './components/platform-background.tsx'
 import { UploadButton } from './components/upload-button.tsx'
 
@@ -15,7 +14,6 @@ export default function PlatformPage() {
   const { t } = useTranslation()
   const { favorite, pagination, platform, roms } = useLoaderData<typeof loader>()
   const gameLabel = t('common.game', { count: pagination.total })
-  const isDemo = useIsDemo()
 
   if (!platformMap[platform]) {
     return <>{t('error.notFoundCode')}</>
@@ -34,22 +32,20 @@ export default function PlatformPage() {
           <div className={clsx('flex w-full justify-between', { 'flex-col': platformMap[platform].info })}>
             <DeviceInfo platform={platform} />
 
-            {isDemo ? undefined : (
-              <PageStats suffix={<UploadButton platform={platform} />}>
-                <span className='icon-[mdi--bar-chart] text-(--color-text)' />
-                <Trans
-                  components={{
-                    1: <span className='font-semibold text-(--accent-9)' />,
-                  }}
-                  i18nKey={favorite ? 'stats.platformFavoriteGames' : 'stats.platformGames'}
-                  values={{
-                    game: gameLabel,
-                    gameCount: pagination.total,
-                    platform: t(platformMap[platform].displayNameI18nKey),
-                  }}
-                />
-              </PageStats>
-            )}
+            <PageStats suffix={<UploadButton platform={platform} />}>
+              <span className='icon-[mdi--bar-chart] text-(--color-text)' />
+              <Trans
+                components={{
+                  1: <span className='font-semibold text-(--accent-9)' />,
+                }}
+                i18nKey={favorite ? 'stats.platformFavoriteGames' : 'stats.platformGames'}
+                values={{
+                  game: gameLabel,
+                  gameCount: pagination.total,
+                  platform: t(platformMap[platform].displayNameI18nKey),
+                }}
+              />
+            </PageStats>
           </div>
         </GameListMain>
       </div>

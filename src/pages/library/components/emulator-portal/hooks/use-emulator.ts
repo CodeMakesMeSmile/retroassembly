@@ -13,7 +13,6 @@ import {
   useLaunchButton,
   useSpatialNavigationPaused,
 } from '#@/pages/library/atoms.ts'
-import { useIsDemo } from '#@/pages/library/hooks/use-demo.ts'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
 import { useRouter } from '#@/pages/library/hooks/use-router.ts'
 import { closeAudioContexts } from '#@/pages/library/utils/audio-contexts.ts'
@@ -22,7 +21,6 @@ import { getFileUrl } from '#@/pages/library/utils/file.ts'
 import { focus, offCancel, onCancel } from '#@/pages/library/utils/spatial-navigation.ts'
 import { attachVirtualGamepad } from '#@/pages/library/utils/virtual-gamepad.ts'
 import type { loader } from '#@/pages/routes/library-platform-rom.tsx'
-import { getCDNUrl } from '#@/utils/isomorphic/cdn.ts'
 import { getGlobalCSSVars } from '#@/utils/isomorphic/misc.ts'
 import { toRetroarchInputNames } from '#@/utils/isomorphic/retroarch-input-names.ts'
 import { usePreference } from '../../../hooks/use-preference.ts'
@@ -79,16 +77,12 @@ export function useEmulator() {
   const emulatorGamepadMapping = useEmulatorGamepadMapping()
   const lazy = useEmulatorLazy()
   const [launched, setLaunched] = useEmulatorLaunched()
-  const isDemo = useIsDemo()
   const { reload } = useRouter()
   const [isFullscreen, setIsFullscreen] = useIsFullscreen()
   const [launchButton] = useLaunchButton()
   const [, setSpatialNavigationPaused] = useSpatialNavigationPaused()
 
-  const romUrl = isDemo
-    ? // @ts-expect-error we can guarantee the platform is supported here
-      getCDNUrl(`retrobrews/${{ genesis: 'md' }[rom.platform] || rom.platform}-games`, rom.fileName)
-    : getFileUrl(rom.fileId) || ''
+  const romUrl = getFileUrl(rom.fileId) || ''
   const { core } = preference.emulator.platform[rom.platform] || {}
 
   const platformShader = preference.emulator.platform[rom.platform].shader
@@ -255,9 +249,7 @@ export function useEmulator() {
 
     setLaunched(true)
 
-    if (!isDemo) {
-      await client.launch_records.$post({ form: { core, rom: rom.id } })
-    }
+    await client.launch_records.$post({ form: { core, rom: rom.id } })
   }
 
   async function start() {
