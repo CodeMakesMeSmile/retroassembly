@@ -26,7 +26,13 @@ export const emulators = {
   mgba: { displayName: 'mGBA', source: 'retroarch' },
   mupen64plus_next: {
     displayName: 'Mupen64Plus-Next',
-    launch: { attachVirtualGamepad: true, heavy: true, nudgeAfterStart: true, stickAxes: 'both' },
+    launch: {
+      attachVirtualGamepad: true,
+      canvasThumbnail: true,
+      heavy: true,
+      nudgeAfterStart: true,
+      stickAxes: 'both',
+    },
     source: 'custom',
   },
   nestopia: { displayName: 'Nestopia', source: 'retroarch' },

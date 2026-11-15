@@ -7,6 +7,7 @@
     "launch": {
       "attachVirtualGamepad": true,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -22,6 +23,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -37,6 +39,7 @@
     "launch": {
       "attachVirtualGamepad": true,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -52,6 +55,7 @@
     "launch": {
       "attachVirtualGamepad": true,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -67,6 +71,7 @@
     "launch": {
       "attachVirtualGamepad": true,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -82,6 +87,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -97,6 +103,7 @@
     "launch": {
       "attachVirtualGamepad": true,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -112,6 +119,7 @@
     "launch": {
       "attachVirtualGamepad": true,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -127,6 +135,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -142,6 +151,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -157,6 +167,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -172,6 +183,7 @@
     "launch": {
       "attachVirtualGamepad": true,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -187,6 +199,7 @@
     "launch": {
       "attachVirtualGamepad": true,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -202,6 +215,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -217,6 +231,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -232,6 +247,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -247,6 +263,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -262,6 +279,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -277,6 +295,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -292,6 +311,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -307,6 +327,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -322,6 +343,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -337,6 +359,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -352,6 +375,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -367,6 +391,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -382,6 +407,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -397,6 +423,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -412,6 +439,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -427,6 +455,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -442,6 +471,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -457,6 +487,7 @@
     "launch": {
       "attachVirtualGamepad": true,
       "audioLatency": null,
+      "canvasThumbnail": true,
       "dualShockRemap": false,
       "nudgeAfterStart": true,
       "rewindBufferSize": 100,
@@ -472,6 +503,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": 160,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 100,
@@ -487,6 +519,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -502,6 +535,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -517,6 +551,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -532,6 +567,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -547,6 +583,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -562,6 +599,7 @@
     "launch": {
       "attachVirtualGamepad": true,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -577,6 +615,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -592,6 +631,7 @@
     "launch": {
       "attachVirtualGamepad": true,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": true,
       "nudgeAfterStart": false,
       "rewindBufferSize": 100,
@@ -607,6 +647,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -622,6 +663,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -637,6 +679,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -652,6 +695,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -667,6 +711,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -682,6 +727,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -697,6 +743,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -712,6 +759,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -727,6 +775,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -742,6 +791,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -757,6 +807,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -772,6 +823,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -787,6 +839,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -802,6 +855,7 @@
     "launch": {
       "attachVirtualGamepad": true,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -817,6 +871,7 @@
     "launch": {
       "attachVirtualGamepad": true,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -832,6 +887,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
@@ -847,6 +903,7 @@
     "launch": {
       "attachVirtualGamepad": false,
       "audioLatency": null,
+      "canvasThumbnail": false,
       "dualShockRemap": false,
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,

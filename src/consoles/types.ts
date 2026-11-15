@@ -87,6 +87,8 @@ export interface LaunchProfile {
   attachVirtualGamepad?: boolean
   /** A larger audio buffer, in milliseconds, for an emulator whose frames can take too long */
   audioLatency?: number
+  /** Its own screenshots aren't usable, so a save's thumbnail is taken from the canvas instead */
+  canvasThumbnail?: boolean
   /** Told by a remap file that its controller is a DualShock */
   dualShockRemap?: boolean
   /** Too slow for run-ahead, and given a larger rewind buffer */

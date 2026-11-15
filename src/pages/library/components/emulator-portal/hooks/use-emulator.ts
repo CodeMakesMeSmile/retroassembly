@@ -10,6 +10,7 @@ import { resolveConsole } from '#@/consoles/registry.ts'
 import type { Rom } from '#@/controllers/roms/get-roms.ts'
 import { closeAudioContexts, setDualShockController, skipAutoState, startWithoutCamera } from '#@/emulator/adapter.ts'
 import { connectOnScreenGamepad, disconnectOnScreenGamepad } from '#@/emulator/on-screen-gamepad.ts'
+import { getSessionPhase } from '#@/emulator/session.ts'
 import { buildInputConfig } from '#@/input/build-input-config.ts'
 import {
   useEmulatorLaunched,
@@ -49,27 +50,6 @@ const remapDirectory = '/home/web_user/retroarch/userdata/config/remaps'
 
 function hasAnalogStickOnScreen() {
   return globalThis.matchMedia?.('(pointer: coarse)').matches ?? false
-}
-
-/** What a game session is doing: downloading, ready to start, running, or shutting down */
-export type SessionPhase = 'exiting' | 'preparing' | 'ready' | 'running'
-
-export function getSessionPhase({
-  exiting,
-  launched,
-  preparing,
-}: {
-  exiting: boolean
-  launched: boolean
-  preparing: boolean
-}): SessionPhase {
-  if (exiting) {
-    return 'exiting'
-  }
-  if (launched) {
-    return 'running'
-  }
-  return preparing ? 'preparing' : 'ready'
 }
 
 /**
@@ -326,6 +306,7 @@ export function useEmulatorSessionController({
     isPreparing,
     launch,
     launched,
+    launchProfile,
     phase: getSessionPhase({ exiting, launched, preparing: isDownloading }),
     prepare,
     setLaunched,

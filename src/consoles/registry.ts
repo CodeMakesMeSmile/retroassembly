@@ -47,6 +47,7 @@ export interface ResolvedConsole {
   launch: {
     attachVirtualGamepad: boolean
     audioLatency: null | number
+    canvasThumbnail: boolean
     dualShockRemap: boolean
     nudgeAfterStart: boolean
     rewindBufferSize: number
@@ -72,6 +73,7 @@ export function resolveConsole(platform: string, core: string): ResolvedConsole 
     launch: {
       attachVirtualGamepad: Boolean(launch.attachVirtualGamepad || definition?.attachVirtualGamepad),
       audioLatency: launch.audioLatency ?? null,
+      canvasThumbnail: Boolean(launch.canvasThumbnail),
       dualShockRemap: Boolean(launch.dualShockRemap),
       nudgeAfterStart: Boolean(launch.nudgeAfterStart),
       rewindBufferSize: launch.heavy ? 100 : 20,
