@@ -6,6 +6,7 @@ import { metadata } from '#@/constants/metadata.ts'
 import { Logo } from '#@/pages/components/logo.tsx'
 import { usePageTitle } from '#@/pages/library/hooks/use-library-data.ts'
 import { routes } from '#@/pages/routes.ts'
+import { useCrossOriginIsolatedNavigation } from '../../hooks/use-cross-origin-isolated-navigation.ts'
 import { useFocusRestoration } from '../../hooks/use-focus-restoration.ts'
 import { useUploadPendingSaves } from '../../hooks/use-upload-pending-saves.ts'
 import { useWarnBeforeLeavingUpload } from '../../hooks/use-uploads.ts'
@@ -32,6 +33,7 @@ export default function LibraryLayout({ children }: Readonly<PropsWithChildren>)
   const { isLargeScreen } = useViewport()
 
   useFocusRestoration()
+  useCrossOriginIsolatedNavigation()
 
   return (
     <>

@@ -12,7 +12,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "arcade/mame2003_plus": {
@@ -28,7 +29,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "atari2600/stella2014": {
@@ -44,7 +46,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "atari5200/a5200": {
@@ -60,7 +63,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": "both"
+      "stickAxes": "both",
+      "threads": false
     }
   },
   "atari7800/prosystem": {
@@ -76,7 +80,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "atarilynx/mednafen_lynx": {
@@ -92,7 +97,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "channelf/freechaf": {
@@ -108,7 +114,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "colecovision/gearcoleco": {
@@ -124,7 +131,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": "left"
+      "stickAxes": "left",
+      "threads": false
     }
   },
   "famicom/fceumm": {
@@ -140,7 +148,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "famicom/nestopia": {
@@ -156,7 +165,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "famicom/quicknes": {
@@ -172,7 +182,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "fds/fceumm": {
@@ -188,7 +199,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "fds/nestopia": {
@@ -204,7 +216,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "gameandwatch/gw": {
@@ -220,7 +233,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "gamegear/genesis_plus_gx": {
@@ -236,7 +250,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "gamegear/gearsystem": {
@@ -252,7 +267,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "gb/mgba": {
@@ -268,7 +284,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "gb/gearboy": {
@@ -284,7 +301,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "gb/gambatte": {
@@ -300,7 +318,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "gb/tgbdual": {
@@ -316,7 +335,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "gba/mgba": {
@@ -332,7 +352,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "gba/vba_next": {
@@ -348,7 +369,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "gbc/mgba": {
@@ -364,7 +386,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "gbc/gearboy": {
@@ -380,7 +403,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "gbc/gambatte": {
@@ -396,7 +420,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "gbc/tgbdual": {
@@ -412,7 +437,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "genesis/genesis_plus_gx": {
@@ -428,7 +454,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "genesis/picodrive": {
@@ -444,7 +471,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "megadrive/genesis_plus_gx": {
@@ -460,7 +488,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "megadrive/picodrive": {
@@ -476,7 +505,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "n64/mupen64plus_next": {
@@ -492,7 +522,8 @@
       "nudgeAfterStart": true,
       "rewindBufferSize": 100,
       "runAhead": false,
-      "stickAxes": "both"
+      "stickAxes": "both",
+      "threads": false
     }
   },
   "nds/desmume2015": {
@@ -508,7 +539,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 100,
       "runAhead": false,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "nes/fceumm": {
@@ -524,7 +556,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "nes/nestopia": {
@@ -540,7 +573,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "nes/quicknes": {
@@ -556,7 +590,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "ngp/mednafen_ngp": {
@@ -572,7 +607,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "ngpc/mednafen_ngp": {
@@ -588,7 +624,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "odyssey2/o2em": {
@@ -604,7 +641,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "pcengine/mednafen_pce_fast": {
@@ -620,7 +658,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "psx/pcsx_rearmed": {
@@ -636,7 +675,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 100,
       "runAhead": false,
-      "stickAxes": "both"
+      "stickAxes": "both",
+      "threads": false
     }
   },
   "sega32x/picodrive": {
@@ -652,7 +692,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "sfc/snes9x": {
@@ -668,7 +709,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "sfc/snes9x2002": {
@@ -684,7 +726,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "sfc/snes9x2005": {
@@ -700,7 +743,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "sfc/snes9x2010": {
@@ -716,7 +760,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "sg-1000/gearsystem": {
@@ -732,7 +777,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "sms/genesis_plus_gx": {
@@ -748,7 +794,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "sms/picodrive": {
@@ -764,7 +811,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "sms/gearsystem": {
@@ -780,7 +828,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "snes/snes9x": {
@@ -796,7 +845,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "snes/snes9x2002": {
@@ -812,7 +862,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "snes/snes9x2005": {
@@ -828,7 +879,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "snes/snes9x2010": {
@@ -844,7 +896,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "vb/mednafen_vb": {
@@ -860,7 +913,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "videopac/o2em": {
@@ -876,7 +930,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "wonderswan/mednafen_wswan": {
@@ -892,7 +947,8 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
     }
   },
   "wonderswancolor/mednafen_wswan": {
@@ -908,7 +964,25 @@
       "nudgeAfterStart": false,
       "rewindBufferSize": 20,
       "runAhead": true,
-      "stickAxes": null
+      "stickAxes": null,
+      "threads": false
+    }
+  },
+  "psp/ppsspp": {
+    "coin": false,
+    "controls": "psp",
+    "hints": "generic",
+    "keyboard": "standard",
+    "launch": {
+      "attachVirtualGamepad": true,
+      "audioLatency": null,
+      "canvasThumbnail": true,
+      "dualShockRemap": false,
+      "nudgeAfterStart": false,
+      "rewindBufferSize": 100,
+      "runAhead": false,
+      "stickAxes": "left",
+      "threads": true
     }
   }
 }

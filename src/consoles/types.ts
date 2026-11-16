@@ -24,6 +24,7 @@ export type ControlsKind =
   | 'ngp'
   | 'odyssey2'
   | 'pcengine'
+  | 'psp'
   | 'psx'
   | 'snes'
   | 'vb'
@@ -87,6 +88,11 @@ export interface ConsoleDefinition {
 export interface LaunchProfile {
   /** The on-screen gamepad's sticks or extra buttons drive the game, so the gamepad is attached to the emulator */
   attachVirtualGamepad?: boolean
+  /**
+   * Runs on several threads, which browsers only allow on a page sent with cross-origin isolation headers. Its games'
+   * pages are sent with them, and opened with a full page load
+   */
+  threads?: boolean
   /** A larger audio buffer, in milliseconds, for an emulator whose frames can take too long */
   audioLatency?: number
   /** Its own screenshots aren't usable, so a save's thumbnail is taken from the canvas instead */
@@ -103,6 +109,11 @@ export interface LaunchProfile {
 
 export interface EmulatorDefinition {
   displayName: string
+  /**
+   * Where the emulator keeps the game's own saves, when they're a folder of files rather than one file, relative to
+   * RetroArch's saves folder. The folder is kept as one zip
+   */
+  saveFolder?: string
   /** The extension of the game's own save (memory card, battery save) as the emulator writes it; srm when left out */
   saveFileType?: string
   launch?: LaunchProfile

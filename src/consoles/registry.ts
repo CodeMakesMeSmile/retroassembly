@@ -55,7 +55,10 @@ export interface ResolvedConsole {
     rewindBufferSize: number
     runAhead: boolean
     stickAxes: 'both' | 'left' | null
+    threads: boolean
   }
+  /** Where the game's own saves are kept, when they're a folder, relative to RetroArch's saves folder */
+  saveFolder: null | string
 }
 
 /** Everything about playing a game on `platform` with the emulator `core` */
@@ -81,7 +84,9 @@ export function resolveConsole(platform: string, core: string): ResolvedConsole 
       rewindBufferSize: launch.heavy ? 100 : 20,
       runAhead: !launch.heavy,
       stickAxes: launch.stickAxes ?? null,
+      threads: Boolean(launch.threads),
     },
     saveFileType: (emulator as EmulatorDefinition | undefined)?.saveFileType ?? 'srm',
+    saveFolder: (emulator as EmulatorDefinition | undefined)?.saveFolder ?? null,
   }
 }

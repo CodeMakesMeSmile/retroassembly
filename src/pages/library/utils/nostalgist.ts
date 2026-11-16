@@ -20,7 +20,9 @@ async function extractCore(core: string) {
     entries.map(async (entry) => {
       if (entry && !entry.directory) {
         if (entry.filename.endsWith('.js')) {
-          result.js = await entry.getData?.(new BlobWriter('application/octet-stream'))
+          // Typed as JavaScript: an emulator that runs on several threads (the PSP's) starts each thread from this
+          // file, and browsers only start a module worker from JavaScript
+          result.js = await entry.getData?.(new BlobWriter('text/javascript'))
         } else if (entry.filename.endsWith('.wasm')) {
           result.wasm = await entry.getData?.(new BlobWriter('application/octet-stream'))
         }

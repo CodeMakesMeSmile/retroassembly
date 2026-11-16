@@ -2,6 +2,26 @@ import type { ConsoleDefinition } from './types.ts'
 
 // Sony
 export const sonyConsoles = {
+  psp: {
+    cores: ['ppsspp'],
+    displayNameI18nKey: 'platform.psp',
+    fileExtensions: ['.iso', '.cso', '.pbp'],
+    info: {
+      developer: 'Sony Computer Entertainment',
+      manufacturer: 'Sony Computer Entertainment',
+      notesI18nKey: 'platform.pspNote',
+      releaseDate: '2004-12-12T00:00:00+09:00',
+    },
+    libretroName: 'Sony - PlayStation Portable',
+    // PPSSPP reads □, △, ✕ and ○ from the RetroPad's Y, X, B and A, as the PlayStation does, and the nub from the left
+    // stick
+    setups: [
+      {
+        controls: 'psp',
+        cores: ['ppsspp'],
+      },
+    ],
+  },
   psx: {
     bioses: [
       {

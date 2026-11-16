@@ -7,7 +7,7 @@ export { getLibretroThumbnail, getRomLibretroThumbnail } from '../isomorphic/lib
 const { path } = Nostalgist.vendors
 
 // Platforms added in this fork, whose artwork ships with the app in public/assets/platforms
-const bundledPlatformAssets = new Set(['nds'])
+const bundledPlatformAssets = new Set(['nds', 'psp'])
 
 function getPlatformAsset(platform: string, file: string) {
   if (bundledPlatformAssets.has(platform)) {

@@ -1,14 +1,17 @@
 import { Button, HoverCard } from '@radix-ui/themes'
 import { clsx } from 'clsx'
-import type { MouseEvent } from 'react'
+import { noop } from 'es-toolkit'
+import { type MouseEvent, useSyncExternalStore } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useLoaderData } from 'react-router'
+import { generatePath, useLoaderData, useLocation, useNavigate } from 'react-router'
 import { platformMap } from '#@/constants/platform.ts'
 import { useLaunchButton } from '#@/pages/library/atoms.ts'
 import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { useFocusIndicator } from '#@/pages/library/hooks/use-focus-indicator.ts'
 import { usePreference } from '#@/pages/library/hooks/use-preference.ts'
 import { getFileUrl } from '#@/pages/library/utils/file.ts'
+import { routes } from '#@/pages/routes.ts'
+import { needsCrossOriginIsolation } from '#@/utils/isomorphic/cross-origin-isolation.ts'
 import { LaunchButton } from '../../platform/rom/components/launch-button.tsx'
 import { EmulatorPortal } from '../emulator-portal/emulator-portal.tsx'
 import { EmulatorSessionProvider } from '../emulator-portal/emulator-session-provider.tsx'
@@ -21,6 +24,10 @@ const isAppleMobileDesktopMode =
   !isChromeLike && isMacLike && /safari/iu.test(navigator.userAgent) && screen.height <= 1366
 const mayNeedsUserInteraction = isAppleMobile || isAppleMobileDesktopMode
 
+function subscribeNever() {
+  return noop
+}
+
 export function GameButtons({ lazy = false }: Readonly<{ lazy?: boolean }>) {
   const { rom } = useLoaderData()
   const { t } = useTranslation()
@@ -31,7 +38,7 @@ export function GameButtons({ lazy = false }: Readonly<{ lazy?: boolean }>) {
     <EmulatorSessionProvider lazy={lazy}>
       <div>
         <GameButtonsContent />
-        {['psx', 'n64', 'nds'].includes(rom.platform) ? (
+        {['psx', 'n64', 'nds', 'psp'].includes(rom.platform) ? (
           <div className='mt-1 text-sm opacity-60'>
             {t('platform.emulationExperimental', { platform: platformName })}
           </div>
@@ -50,6 +57,20 @@ function GameButtonsContent() {
   const { preference } = usePreference()
 
   const { bioses } = preference.emulator.platform[rom.platform]
+
+  // A game whose emulator runs on several threads (the PSP's) only starts on its own page, which is cross-origin isolated.
+  // From anywhere else, Start opens that page; on it, a browser that couldn't isolate it is told so
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const gamePage = generatePath(routes.libraryPlatformRom, { fileName: rom.fileName, platform: rom.platform })
+  const needsIsolation = needsCrossOriginIsolation(gamePage)
+  const isolated = useSyncExternalStore(
+    subscribeNever,
+    () => globalThis.crossOriginIsolated,
+    () => true,
+  )
+  const awayFromGamePage = needsIsolation && !needsCrossOriginIsolation(pathname)
+  const cannotIsolate = needsIsolation && !awayFromGamePage && !isolated
 
   const expectedBioses = platformMap[rom.platform].bioses
   const missingBioses = expectedBioses?.filter(
@@ -72,6 +93,10 @@ function GameButtonsContent() {
       return
     }
 
+    if (awayFromGamePage) {
+      await navigate(gamePage)
+      return
+    }
     handleClickCommon(event)
     await launch({ withState: true })
   }
@@ -82,13 +107,17 @@ function GameButtonsContent() {
       event.stopPropagation()
       return
     }
+    if (awayFromGamePage) {
+      await navigate(gamePage)
+      return
+    }
     handleClickCommon(event)
     await launch()
   }
 
   // The game starts downloading as soon as the player reaches for Start with a mouse or finger, so it's usually ready by
   // the time it's pressed. Focus doesn't count: Start is focused as soon as the page opens
-  const warmUpHandlers = { onPointerDown: warmUp, onPointerEnter: warmUp }
+  const warmUpHandlers = awayFromGamePage ? {} : { onPointerDown: warmUp, onPointerEnter: warmUp }
 
   async function handleClickRetry() {
     if (!isPreparing) {
@@ -98,6 +127,17 @@ function GameButtonsContent() {
 
   if (missingBioses?.length) {
     return <BioseMissingMessage bioses={missingBioses} />
+  }
+
+  if (cannotIsolate) {
+    return (
+      <div className='flex min-h-16 w-full items-center justify-center gap-2 rounded bg-(--accent-3) p-3 lg:w-80'>
+        <span className='icon-[mdi--warning-decagram] shrink-0' />
+        <span className='text-sm opacity-60'>
+          {t('error.browserCannotRunPlatform', { platform: t(platformMap[rom.platform].displayNameI18nKey) })}
+        </span>
+      </div>
+    )
   }
 
   if (!isPreparing && error) {

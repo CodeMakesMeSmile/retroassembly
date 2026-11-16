@@ -125,6 +125,11 @@
       "displayName": "ProSystem",
       "url": "https://cdn.jsdelivr.net/npm/retroassembly-custom-cores@1.22.2-20260719172358/dist/cores/prosystem_libretro.zip"
     },
+    "ppsspp": {
+      "bundled": true,
+      "displayName": "PPSSPP",
+      "url": "https://cdn.jsdelivr.net/gh/arianrhodsandlot/retroarch-emscripten-build@v1.22.2-1/retroarch/ppsspp_libretro.zip"
+    },
     "quicknes": {
       "bundled": false,
       "displayName": "QuickNES",
@@ -856,6 +861,25 @@
       },
       "libretroName": "Sony - PlayStation"
     },
+    "psp": {
+      "name": "psp",
+      "cores": [
+        "ppsspp"
+      ],
+      "displayNameI18nKey": "platform.psp",
+      "fileExtensions": [
+        ".iso",
+        ".cso",
+        ".pbp"
+      ],
+      "info": {
+        "developer": "Sony Computer Entertainment",
+        "manufacturer": "Sony Computer Entertainment",
+        "notesI18nKey": "platform.pspNote",
+        "releaseDate": "2004-12-12T00:00:00+09:00"
+      },
+      "libretroName": "Sony - PlayStation Portable"
+    },
     "sega32x": {
       "name": "sega32x",
       "cores": [
@@ -1076,6 +1100,7 @@
     "nes",
     "pcengine",
     "videopac",
+    "psp",
     "psx",
     "sega32x",
     "sg-1000",

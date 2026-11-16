@@ -6,6 +6,7 @@ import { cdnCache } from '#@/middlewares/cdn-cache.ts'
 import { globals } from '#@/middlewares/globals.ts'
 import { logger } from '#@/middlewares/logger.ts'
 import { vendors } from '#@/middlewares/vendors.ts'
+import { crossOriginIsolationHeaders, needsCrossOriginIsolation } from '#@/utils/isomorphic/cross-origin-isolation.ts'
 import { staticFiles } from './static-files.ts'
 
 interface ServerOptions {
@@ -26,6 +27,19 @@ const uncompressedPaths = [/^\/api\/v1\/files\//u, /^\/api\/v1\/roms\/[^/]+\/con
 export function createServer({ client, pages }: ServerOptions) {
   const app = new Hono()
   app.use(contextStorage())
+
+  // The game pages of consoles whose emulator runs on several threads (the PSP's) are cross-origin isolated
+  app.use(async (c, next) => {
+    await next()
+    if (needsCrossOriginIsolation(c.req.path)) {
+      for (const [name, value] of Object.entries(crossOriginIsolationHeaders)) {
+        c.header(name, value)
+      }
+    } else if (c.req.path.startsWith('/api/v1/files/')) {
+      // A stored file opened in a frame on such a page, like a game's PDF manual, has to allow it too
+      c.header('Cross-Origin-Embedder-Policy', crossOriginIsolationHeaders['Cross-Origin-Embedder-Policy'])
+    }
+  })
 
   // A private library, kept out of search engines
   app.get('/robots.txt', (c) => c.text('User-agent: *\nDisallow: /'))

@@ -140,8 +140,8 @@ export const defaultPreference: ResolvedPreference = {
     platform: mapValues(platformMap, ({ cores: [core] }, name) => ({
       bioses: [],
       core,
-      // Rewinding saves the DS's large state every few frames, which slows weaker devices down
-      rewindEnabled: name !== 'nds',
+      // Rewinding saves the DS's and PSP's large states every few frames, which slows weaker devices down
+      rewindEnabled: name !== 'nds' && name !== 'psp',
       shader: 'inherit',
     })),
     shader: '',

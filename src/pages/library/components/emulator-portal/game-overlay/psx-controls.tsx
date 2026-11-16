@@ -12,28 +12,28 @@ import { VirtualGamepadButton } from './virtual-gamepad-button.tsx'
 // the two analog sticks below, and plain Select and Start between the hands in portrait, or beside pause in landscape.
 // PCSX ReARMed reads □, △, ✕ and ○ from the RetroPad's Y, X, B and A, and is told the controller is a DualShock, whose
 // sticks games switch on themselves.
-const pressed = 'data-[touching=true]:brightness-125 data-[touching=true]:scale-95'
+export const pressed = 'data-[touching=true]:brightness-125 data-[touching=true]:scale-95'
 
 // Each face button: its symbol and colour, and its place in the diamond in portrait and in landscape. The diamond, like
 // the d-pad, sits midway between the bumpers above and the sticks below
-const faceButtons: [label: string, buttonName: RetroPadButton, color: string, className: string][] = [
+export const faceButtons: [label: string, buttonName: RetroPadButton, color: string, className: string][] = [
   ['△', 'x', '#3fcf8e', 'right-[64px] bottom-[267px] landscape:right-[48px] landscape:bottom-[227px]'],
   ['□', 'y', '#e88ac8', 'right-[112px] bottom-[219px] landscape:right-[86px] landscape:bottom-[189px]'],
   ['○', 'a', '#ff5a5a', 'right-[16px] bottom-[219px] landscape:right-[10px] landscape:bottom-[189px]'],
   ['✕', 'b', '#7aa8ff', 'right-[64px] bottom-[171px] landscape:right-[48px] landscape:bottom-[151px]'],
 ]
-const faceStyle: CSSProperties = {
+export const faceStyle: CSSProperties = {
   background: 'radial-gradient(circle at 40% 30%, #4a4a52, #2a2a30 60%, #18181c)',
   boxShadow: '0 3px 4px #000a, inset 0 2px 0 #ffffff22, inset 0 -3px 0 #0006',
 }
 
 // The bumpers are short, flat and light; the triggers taller, darker and curved, sitting behind and above them
-const bumper = twMerge(
+export const bumper = twMerge(
   pressed,
   'absolute bottom-[336px] h-5.5 w-35 rounded-md text-[11px] font-extrabold text-[#3a3a40] shadow-[0_2px_3px_#0008,inset_0_1px_0_#fff]',
   'landscape:bottom-[284px] landscape:w-33',
 )
-const bumperStyle: CSSProperties = { background: 'linear-gradient(#e6e6ea, #b4b4bc)' }
+export const bumperStyle: CSSProperties = { background: 'linear-gradient(#e6e6ea, #b4b4bc)' }
 const trigger = twMerge(
   pressed,
   'absolute bottom-[364px] flex h-8 w-35 items-start justify-center rounded-t-[18px] rounded-b-md pt-1.25 text-[11px] font-extrabold text-[#d8d8de] shadow-[0_2px_4px_#0009,inset_0_1px_0_#ffffff40]',
@@ -41,12 +41,12 @@ const trigger = twMerge(
 )
 const triggerStyle: CSSProperties = { background: 'linear-gradient(#7a7a84, #4a4a52)' }
 
-const plain = twMerge(
+export const plain = twMerge(
   pressed,
   'h-7 rounded-full px-3 text-[11px] font-bold tracking-wider text-[#e8e8ea] shadow-[0_2px_3px_#0008,inset_0_1px_0_#ffffff22]',
   'landscape:px-1.5 landscape:text-[9px] landscape:tracking-wide',
 )
-const plainStyle: CSSProperties = { background: 'linear-gradient(#3a3a3d, #202022)' }
+export const plainStyle: CSSProperties = { background: 'linear-gradient(#3a3a3d, #202022)' }
 
 export function PsxControls({ visible }: Readonly<{ visible: boolean }>) {
   const hidden = clsx({ hidden: !visible })

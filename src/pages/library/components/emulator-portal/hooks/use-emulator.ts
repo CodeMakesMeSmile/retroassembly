@@ -10,14 +10,18 @@ import { resolveConsole } from '#@/consoles/registry.ts'
 import type { Rom } from '#@/controllers/roms/get-roms.ts'
 import {
   closeAudioContexts,
+  installSystemFiles,
   readGameSave,
+  readGameSaveFolder,
   restoreGameSave,
+  restoreGameSaveFolder,
   setDualShockController,
   skipAutoState,
   startWithoutCamera,
   switchDisc,
 } from '#@/emulator/adapter.ts'
 import { connectOnScreenGamepad, disconnectOnScreenGamepad } from '#@/emulator/on-screen-gamepad.ts'
+import { type SaveFiles, unzipSaveFiles } from '#@/emulator/save-folder.ts'
 import { saveQueue } from '#@/emulator/save-queue.ts'
 import { getSessionPhase } from '#@/emulator/session.ts'
 import { buildInputConfig } from '#@/input/build-input-config.ts'
@@ -29,6 +33,7 @@ import {
 } from '#@/pages/library/atoms.ts'
 import { useLibraryRefresh } from '#@/pages/library/hooks/use-library-refresh.ts'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
+import { bundledSystemFiles } from '#@/pages/library/utils/bundled-cores.ts'
 import { getFileUrl } from '#@/pages/library/utils/file.ts'
 import { focus, offCancel, onCancel } from '#@/pages/library/utils/spatial-navigation.ts'
 import type { loader } from '#@/pages/routes/library-platform-rom.tsx'
@@ -65,6 +70,32 @@ function isBlank(content: Uint8Array) {
 
 function isSame(a: Uint8Array, b: Uint8Array | undefined) {
   return b !== undefined && a.length === b.length && a.every((byte, index) => byte === b[index])
+}
+
+// A core's system files, downloaded and unpacked once per page
+const systemFiles = new Map<string, Promise<SaveFiles>>()
+
+function getSystemFiles(core: string) {
+  const bundled = bundledSystemFiles[core]
+  if (!bundled) {
+    return
+  }
+  let files = systemFiles.get(core)
+  if (!files) {
+    files = (async () => {
+      try {
+        const response = await fetch(bundled.url)
+        const unpacked = await unzipSaveFiles(new Uint8Array(await response.arrayBuffer()), '')
+        return unpacked.map(([path, content]): SaveFiles[number] => [`${bundled.folder}/${path}`, content])
+      } catch (error) {
+        // Tried again next time
+        systemFiles.delete(core)
+        throw error
+      }
+    })()
+    systemFiles.set(core, files)
+  }
+  return files
 }
 
 function hasAnalogStickOnScreen() {
@@ -110,10 +141,11 @@ export function useEmulatorSessionController({
   const romUrl = getFileUrl(rom.fileId) || ''
   const { core } = preference.emulator.platform[rom.platform] || {}
   // How this emulator is started and run, from the console registry
-  const { launch: launchProfile, saveFileType } = useMemo(
-    () => resolveConsole(rom.platform, core),
-    [rom.platform, core],
-  )
+  const {
+    launch: launchProfile,
+    saveFileType,
+    saveFolder,
+  } = useMemo(() => resolveConsole(rom.platform, core), [rom.platform, core])
 
   const platformShader = preference.emulator.platform[rom.platform].shader
   const shader =
@@ -233,8 +265,18 @@ export function useEmulatorSessionController({
     if (!withState) {
       skipAutoState(emulator)
     }
+    const files = await getSystemFiles(core)
+    if (files) {
+      installSystemFiles(emulator, files)
+    }
     const save = await getGameSave()
-    if (save) {
+    if (save && saveFolder) {
+      const folderName = saveFolder.slice(saveFolder.lastIndexOf('/') + 1)
+      const [, saveFiles] = await attemptAsync(() => unzipSaveFiles(save, folderName))
+      if (saveFiles) {
+        restoreGameSaveFolder(emulator, saveFolder, saveFiles)
+      }
+    } else if (save) {
       restoreGameSave(emulator, save)
     }
     withStateRef.current = Boolean(withState)
@@ -280,7 +322,7 @@ export function useEmulatorSessionController({
     if (!emulator || !rom || !core || !['paused', 'running'].includes(emulator.getStatus())) {
       return Promise.resolve()
     }
-    const content = readGameSave(emulator)
+    const content = saveFolder ? readGameSaveFolder(emulator, saveFolder) : readGameSave(emulator)
     if (!content || isBlank(content) || isSame(content, knownGameSave.current.content)) {
       return Promise.resolve()
     }

@@ -1,4 +1,5 @@
 import type { Nostalgist } from 'nostalgist'
+import { type SaveFiles, zipSaveFiles } from './save-folder.ts'
 
 // The only module that reaches into the emulator's internals: Nostalgist's private emulator, the Emscripten file system
 // and Module, and JSEvents, the emulator's own input handlers. Everything else goes through these functions
@@ -51,6 +52,62 @@ export function readGameSave(emulator: Nostalgist) {
     inner.callCommand('_cmd_savefiles')
     return new Uint8Array(fs.readFile(inner.sramFilePath) as Uint8Array)
   } catch {}
+}
+
+// Where RetroArch keeps saves and system files, in the emulator's file system
+const savesDirectory = '/home/web_user/retroarch/userdata/saves'
+const systemDirectory = '/home/web_user/retroarch/userdata/system'
+
+type EmscriptenFS = ReturnType<Nostalgist['getEmscriptenFS']>
+
+function listFiles(fs: EmscriptenFS, directory: string, prefix = ''): SaveFiles {
+  let names: string[]
+  try {
+    names = fs.readdir(directory) as string[]
+  } catch {
+    return []
+  }
+  return names
+    .filter((name) => name !== '.' && name !== '..')
+    .flatMap((name) => {
+      const path = `${directory}/${name}`
+      const { mode } = fs.stat(path)
+      return fs.isDir(mode)
+        ? listFiles(fs, path, `${prefix}${name}/`)
+        : [[`${prefix}${name}`, new Uint8Array(fs.readFile(path) as Uint8Array)] as SaveFiles[number]]
+    })
+}
+
+function writeFiles(fs: EmscriptenFS, directory: string, files: SaveFiles) {
+  for (const [path, content] of files) {
+    const filePath = `${directory}/${path}`
+    fs.mkdirTree(filePath.slice(0, filePath.lastIndexOf('/')))
+    fs.writeFile(filePath, content)
+  }
+}
+
+/**
+ * Reads the game's own saves, for an emulator that keeps them as a folder of files (the PSP's), as one zip. The
+ * emulator writes them when the game saves, so this, too, works while the game is paused or the page is being hidden.
+ * Nothing is returned when the game has saved nothing yet
+ */
+export function readGameSaveFolder(emulator: Nostalgist, folder: string) {
+  const files = listFiles(emulator.getEmscriptenFS(), `${savesDirectory}/${folder}`)
+  return files.length > 0 ? zipSaveFiles(files) : undefined
+}
+
+/** Puts the game's own saves back in their folder before the game boots */
+export function restoreGameSaveFolder(emulator: Nostalgist, folder: string, files: SaveFiles) {
+  getInner(emulator).on('beforeLaunch', () => {
+    writeFiles(emulator.getEmscriptenFS(), `${savesDirectory}/${folder}`, files)
+  })
+}
+
+/** Puts files an emulator needs besides the game (PPSSPP's fonts and dialog graphics) in RetroArch's system folder */
+export function installSystemFiles(emulator: Nostalgist, files: SaveFiles) {
+  getInner(emulator).on('beforeLaunch', () => {
+    writeFiles(emulator.getEmscriptenFS(), systemDirectory, files)
+  })
 }
 
 // PCSX ReARMed's DualShock: libretro's analog controller (5), the second of its kinds, as RetroArch numbers it.

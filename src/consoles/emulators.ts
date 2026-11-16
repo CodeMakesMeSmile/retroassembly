@@ -48,6 +48,15 @@ export const emulators = {
     source: 'retroarch',
   },
   picodrive: { displayName: 'PicoDrive', source: 'retroarch' },
+  // PSP, built for this fork from EmulatorJS's copy of PPSSPP, which keeps it building for browsers. Its games save
+  // into folders on the memory stick
+  ppsspp: {
+    displayName: 'PPSSPP',
+    launch: { attachVirtualGamepad: true, canvasThumbnail: true, heavy: true, stickAxes: 'left', threads: true },
+    saveFileType: 'zip',
+    saveFolder: 'PPSSPP/PSP/SAVEDATA',
+    source: 'bundled',
+  },
   prosystem: { displayName: 'ProSystem', launch: { attachVirtualGamepad: true }, source: 'custom' },
   quicknes: { displayName: 'QuickNES', source: 'retroarch' },
   snes9x: { displayName: 'Snes9x', source: 'retroarch' },

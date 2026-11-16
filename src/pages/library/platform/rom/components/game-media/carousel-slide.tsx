@@ -1,7 +1,7 @@
 import { getFileExtension } from '../game-media-dialog/utils.ts'
 import { CbzViewer } from './cbz-viewer.tsx'
 import type { MediaItem } from './game-media-carousel.tsx'
-import { convertYouTubeIframeURL } from './youtube-utils.ts'
+import { convertYouTubeIframeURL, getYouTubeThumbnailUrl } from './youtube-utils.ts'
 
 interface CarouselSlideProps {
   index: number
@@ -28,6 +28,27 @@ export function CarouselSlide({ index, item, videoRefs, youtubeRefs }: Readonly<
       >
         <track kind='captions' />
       </video>
+    )
+  }
+
+  // On a cross-origin isolated page (the PSP's game pages) YouTube's player can't be shown, so its thumbnail opens the
+  // video on YouTube instead
+  if (item.type === 'youtube' && globalThis.crossOriginIsolated) {
+    return (
+      <a
+        className='relative flex h-full w-full items-center justify-center'
+        href={item.src}
+        rel='noreferrer noopener'
+        target='_blank'
+        title='YouTube'
+      >
+        <img alt='' className='h-full w-full object-contain' src={getYouTubeThumbnailUrl(item.src)} />
+        <span className='absolute flex items-center gap-2 rounded-full bg-black/70 px-5 py-3 text-lg font-semibold text-white'>
+          <span className='icon-[mdi--youtube] size-7 text-[#ff0033]' />
+          YouTube
+          <span className='icon-[mdi--open-in-new] size-5' />
+        </span>
+      </a>
     )
   }
 

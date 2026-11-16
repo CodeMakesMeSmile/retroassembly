@@ -28,6 +28,7 @@ import { NesControls } from './nes-controls.tsx'
 import { NgpControls } from './ngp-controls.tsx'
 import { Odyssey2Controls } from './odyssey2-controls.tsx'
 import { PcEngineControls } from './pce-controls.tsx'
+import { PspControls } from './psp-controls.tsx'
 import { PsxControls } from './psx-controls.tsx'
 import { MasterSystemControls } from './sms-controls.tsx'
 import { SnesControls } from './snes-controls.tsx'
@@ -366,6 +367,7 @@ export function GameOverlayVirtualGamepad() {
       {controls === 'gamegear' ? <GameGearControls visible={gamepadVisible} /> : null}
       {controls === 'mastersystem' ? <MasterSystemControls visible={gamepadVisible} /> : null}
       {controls === 'psx' ? <PsxControls visible={gamepadVisible} /> : null}
+      {controls === 'psp' ? <PspControls visible={gamepadVisible} /> : null}
       {controls === 'pcengine' ? <PcEngineControls visible={gamepadVisible} /> : null}
       {controls === 'atari7800' ? <Atari7800Controls visible={gamepadVisible} /> : null}
       {controls === 'ngp' ? <NgpControls visible={gamepadVisible} /> : null}

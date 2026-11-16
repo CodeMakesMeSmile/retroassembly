@@ -18,8 +18,10 @@ import { getRomGoodcodes } from '#@/utils/client/library.ts'
 import { dateFormatMap } from '#@/utils/isomorphic/i18n.ts'
 import { humanizeDate } from '#@/utils/isomorphic/misc.ts'
 
-// Files a save from another emulator may come as: RetroArch's .srm, the common .sav, and DeSmuME's .dsv
+// Files a save from another emulator may come as: RetroArch's .srm, the common .sav, and DeSmuME's .dsv; or, for an
+// emulator that keeps its saves in a folder (PPSSPP's SAVEDATA), that folder as a zip
 const uploadExtensions = ['.srm', '.sav', '.dsv']
+const folderUploadExtensions = ['.zip']
 
 function useAgo() {
   const { i18n } = useTranslation()
@@ -62,7 +64,7 @@ function InGameSaveDialog({ rom }: Readonly<{ rom: Awaited<ReturnType<typeof loa
   const refresh = useLibraryRefresh()
   const ago = useAgo()
   const core = preference.emulator.platform[rom.platform]?.core ?? ''
-  const { saveFileType } = resolveConsole(rom.platform, core)
+  const { saveFileType, saveFolder } = resolveConsole(rom.platform, core)
   const dateFormat = preference.ui.dateFormat === 'auto' ? dateFormatMap[i18n.language] : preference.ui.dateFormat
   const name = getRomGoodcodes(rom).rom
 
@@ -89,7 +91,7 @@ function InGameSaveDialog({ rom }: Readonly<{ rom: Awaited<ReturnType<typeof loa
   )
 
   const { isMutating: isUploading, trigger: upload } = useSWRMutation('game_saves/upload', async () => {
-    const file = await fileOpen({ extensions: uploadExtensions })
+    const file = await fileOpen({ extensions: saveFolder ? folderUploadExtensions : uploadExtensions })
     if (!file.size) {
       return
     }
