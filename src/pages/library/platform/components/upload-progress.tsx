@@ -1,22 +1,7 @@
 import { Progress } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
+import { formatBytes } from '#@/utils/client/format-bytes.ts'
 import type { UploadSnapshot } from '../../utils/upload-roms.ts'
-
-const byteUnits = ['byte', 'kilobyte', 'megabyte', 'gigabyte', 'terabyte'] as const
-
-function formatBytes(bytes: number, language: string) {
-  let value = bytes
-  let unit = 0
-  while (value >= 1000 && unit < byteUnits.length - 1) {
-    value /= 1000
-    unit += 1
-  }
-  return new Intl.NumberFormat(language, {
-    maximumFractionDigits: value < 10 && unit > 0 ? 1 : 0,
-    style: 'unit',
-    unit: byteUnits[unit],
-  }).format(value)
-}
 
 function formatDuration(seconds: number, language: string) {
   function format(value: number, unit: 'hour' | 'minute' | 'second') {

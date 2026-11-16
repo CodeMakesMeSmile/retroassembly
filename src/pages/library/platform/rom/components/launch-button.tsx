@@ -2,26 +2,61 @@ import { Button, type ButtonProps } from '@radix-ui/themes'
 import { clsx } from 'clsx'
 import type { ButtonHTMLAttributes } from 'react'
 
+/** What a Start button shows while its game loads */
+export interface LaunchButtonProgress {
+  /** From 0 to 1; left out while it can't be told, which shows moving stripes */
+  fraction?: number
+  /** The step, like "Loading" or "Starting" */
+  label: string
+  /** How far the step has got, like "Game: 312 of 980 MB" */
+  detail?: string
+}
+
 interface LaunchButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  progress?: LaunchButtonProgress
   variant?: ButtonProps['variant']
 }
 
-export function LaunchButton({ children, disabled, variant = 'solid', ...props }: Readonly<LaunchButtonProps>) {
+export function LaunchButton({
+  children,
+  disabled,
+  progress,
+  variant = 'solid',
+  ...props
+}: Readonly<LaunchButtonProps>) {
   return (
     <button
+      aria-busy={progress ? 'true' : undefined}
       aria-disabled={disabled ? 'true' : 'false'}
-      className={clsx('launch-button block w-full lg:w-80', { 'opacity-50': disabled })}
+      className={clsx('launch-button block w-full lg:w-80', { 'opacity-50': disabled && !progress })}
       data-sn-enabled
       {...props}
       type='button'
     >
       <Button asChild radius='small' size='4' variant={variant}>
         <div
-          className={clsx('relative h-16! w-full!', {
+          className={clsx('relative h-16! w-full! overflow-hidden', {
             'border-2! bg-(--color-background)! shadow-none!': variant === 'outline',
           })}
         >
-          {children}
+          {progress ? (
+            // The button fills as the game's files arrive
+            <>
+              <span className='absolute inset-0 bg-(--accent-3)' />
+              <span
+                className={clsx('absolute inset-y-0 left-0 bg-(--accent-6)', {
+                  'launch-stripes': progress.fraction === undefined,
+                })}
+                style={{ width: `${(progress.fraction ?? 1) * 100}%` }}
+              />
+              <span aria-live='polite' className='relative flex flex-col items-center leading-tight text-(--accent-12)'>
+                <span className='text-2xl font-semibold'>{progress.label}</span>
+                {progress.detail ? <span className='text-xs font-medium tabular-nums'>{progress.detail}</span> : null}
+              </span>
+            </>
+          ) : (
+            children
+          )}
         </div>
       </Button>
     </button>

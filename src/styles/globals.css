@@ -103,3 +103,19 @@ a.pending:focus {
   transform-style: flat;
   transition-duration: 0s !important;
 }
+
+/* A Start button that's loading a game, while it can't tell how long is left */
+@keyframes launch-stripes {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 28px 0;
+  }
+}
+
+.launch-stripes {
+  animation: launch-stripes 0.8s linear infinite;
+  background-image: repeating-linear-gradient(-45deg, var(--white-a6) 0 10px, transparent 10px 20px);
+  background-size: 28px 28px;
+}

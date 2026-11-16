@@ -1,7 +1,7 @@
 import { Button, HoverCard } from '@radix-ui/themes'
 import { clsx } from 'clsx'
 import { noop } from 'es-toolkit'
-import { type MouseEvent, useSyncExternalStore } from 'react'
+import { type MouseEvent, useEffect, useState, useSyncExternalStore } from 'react'
 import { useTranslation } from 'react-i18next'
 import { generatePath, useLoaderData, useLocation, useNavigate } from 'react-router'
 import { platformMap } from '#@/constants/platform.ts'
@@ -9,10 +9,13 @@ import { useLaunchButton } from '#@/pages/library/atoms.ts'
 import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { useFocusIndicator } from '#@/pages/library/hooks/use-focus-indicator.ts'
 import { usePreference } from '#@/pages/library/hooks/use-preference.ts'
+import { DownloadError } from '#@/pages/library/utils/download.ts'
 import { getFileUrl } from '#@/pages/library/utils/file.ts'
+import type { LoadingProgress } from '#@/pages/library/utils/loading-progress.ts'
 import { routes } from '#@/pages/routes.ts'
+import { formatBytes } from '#@/utils/client/format-bytes.ts'
 import { needsCrossOriginIsolation } from '#@/utils/isomorphic/cross-origin-isolation.ts'
-import { LaunchButton } from '../../platform/rom/components/launch-button.tsx'
+import { LaunchButton, type LaunchButtonProgress } from '../../platform/rom/components/launch-button.tsx'
 import { EmulatorPortal } from '../emulator-portal/emulator-portal.tsx'
 import { EmulatorSessionProvider } from '../emulator-portal/emulator-session-provider.tsx'
 import { BioseMissingMessage } from './biose-missing-message.tsx'
@@ -50,8 +53,50 @@ export function GameButtons({ lazy = false }: Readonly<{ lazy?: boolean }>) {
 
 function GameButtonsContent() {
   const { rom, state } = useLoaderData()
-  const { t } = useTranslation()
-  const { error, isDownloading, isPreparing, launch, prepare, warmUp } = useSession()
+  const { i18n, t } = useTranslation()
+  const { error: prepareError, isDownloading, isPreparing, launch, loadingProgress, prepare, warmUp } = useSession()
+  // Which button was pressed, while its game loads, and whether it's taken long enough to show how far it's got.
+  // Loads under half a second show nothing, so a small game doesn't flash anything up
+  const [pressed, setPressed] = useState<'continue' | 'start'>()
+  const [progressShown, setProgressShown] = useState(false)
+  const [launchError, setLaunchError] = useState<unknown>()
+  const error = prepareError ?? launchError
+  useEffect(() => {
+    if (!pressed) {
+      return
+    }
+    const timer = setTimeout(() => setProgressShown(true), 500)
+    return () => clearTimeout(timer)
+  }, [pressed])
+
+  async function launchFrom(button: 'continue' | 'start', withState: boolean) {
+    setPressed(button)
+    setLaunchError(undefined)
+    try {
+      await launch({ withState })
+    } catch (error) {
+      setLaunchError(error)
+    } finally {
+      setPressed(undefined)
+      setProgressShown(false)
+    }
+  }
+
+  function describe(progress: LoadingProgress): LaunchButtonProgress {
+    if (progress.step === 'starting') {
+      return { detail: t('emulator.almostThere'), label: t('emulator.starting') }
+    }
+    const values = {
+      loaded: formatBytes(progress.loaded ?? 0, i18n.language),
+      total: progress.total === undefined ? '' : formatBytes(progress.total, i18n.language),
+    }
+    const detail =
+      progress.total === undefined
+        ? t(`emulator.loadingStepSoFar.${progress.step}`, values)
+        : t(`emulator.loadingStep.${progress.step}`, values)
+    return { detail, fraction: progress.fraction, label: t('emulator.loading') }
+  }
+  const progress = progressShown ? describe(loadingProgress) : undefined
   const [, setLaunchButton] = useLaunchButton()
   const { syncStyle } = useFocusIndicator()
   const { preference } = usePreference()
@@ -98,7 +143,7 @@ function GameButtonsContent() {
       return
     }
     handleClickCommon(event)
-    await launch({ withState: true })
+    await launchFrom('continue', true)
   }
 
   async function handleClickStart(event: MouseEvent<HTMLButtonElement>) {
@@ -112,7 +157,7 @@ function GameButtonsContent() {
       return
     }
     handleClickCommon(event)
-    await launch()
+    await launchFrom('start', false)
   }
 
   // The game starts downloading as soon as the player reaches for Start with a mouse or finger, so it's usually ready by
@@ -120,6 +165,7 @@ function GameButtonsContent() {
   const warmUpHandlers = awayFromGamePage ? {} : { onPointerDown: warmUp, onPointerEnter: warmUp }
 
   async function handleClickRetry() {
+    setLaunchError(undefined)
     if (!isPreparing) {
       await prepare()
     }
@@ -144,7 +190,9 @@ function GameButtonsContent() {
     return (
       <div className='flex h-16 w-full items-center justify-center gap-2 rounded bg-(--accent-3) lg:w-80'>
         <span className='icon-[mdi--warning-decagram]' />
-        <span className='text-sm opacity-60'>{t('error.failedToLoadEmulator')}</span>
+        <span className='text-sm opacity-60'>
+          {error instanceof DownloadError ? t(`error.failedToDownload.${error.kind}`) : t('error.failedToLoadEmulator')}
+        </span>
         <Button onClick={handleClickRetry} size='1' type='button'>
           <span className='icon-[mdi--reload]' />
           {t('common.retry')}
@@ -156,7 +204,12 @@ function GameButtonsContent() {
   return (
     <div className='flex w-full flex-col gap-4 xl:flex-row'>
       {state ? (
-        <LaunchButton disabled={isPreparing} onClick={handleClickContinue} {...warmUpHandlers}>
+        <LaunchButton
+          disabled={isPreparing}
+          onClick={handleClickContinue}
+          progress={pressed === 'continue' ? progress : undefined}
+          {...warmUpHandlers}
+        >
           <span
             className={clsx(
               'absolute left-10',
@@ -191,6 +244,7 @@ function GameButtonsContent() {
       <LaunchButton
         disabled={isPreparing}
         onClick={handleClickStart}
+        progress={pressed === 'start' ? progress : undefined}
         variant={state ? 'outline' : 'solid'}
         {...warmUpHandlers}
       >

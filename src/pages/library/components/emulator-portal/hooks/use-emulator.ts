@@ -1,7 +1,7 @@
 import { attemptAsync, delay, noop } from 'es-toolkit'
 import NoSleep from 'nosleep.js'
 import { Nostalgist } from 'nostalgist'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLoaderData } from 'react-router'
 import { unstable_serialize, useSWRConfig } from 'swr'
 import useSWRImmutable from 'swr/immutable'
@@ -34,7 +34,10 @@ import {
 import { useLibraryRefresh } from '#@/pages/library/hooks/use-library-refresh.ts'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
 import { bundledSystemFiles } from '#@/pages/library/utils/bundled-cores.ts'
+import { type DownloadKind, downloadWithProgress } from '#@/pages/library/utils/download.ts'
 import { getFileUrl } from '#@/pages/library/utils/file.ts'
+import { type Download, getLoadingProgress } from '#@/pages/library/utils/loading-progress.ts'
+import { onCoreDownloadProgress } from '#@/pages/library/utils/nostalgist.ts'
 import { focus, offCancel, onCancel } from '#@/pages/library/utils/spatial-navigation.ts'
 import type { loader } from '#@/pages/routes/library-platform-rom.tsx'
 import { createDiscList } from '#@/utils/isomorphic/discs.ts'
@@ -75,7 +78,7 @@ function isSame(a: Uint8Array, b: Uint8Array | undefined) {
 // A core's system files, downloaded and unpacked once per page
 const systemFiles = new Map<string, Promise<SaveFiles>>()
 
-function getSystemFiles(core: string) {
+function getSystemFiles(core: string, onProgress?: (loaded: number, total: number | undefined) => void) {
   const bundled = bundledSystemFiles[core]
   if (!bundled) {
     return
@@ -84,8 +87,8 @@ function getSystemFiles(core: string) {
   if (!files) {
     files = (async () => {
       try {
-        const response = await fetch(bundled.url)
-        const unpacked = await unzipSaveFiles(new Uint8Array(await response.arrayBuffer()), '')
+        const buffer = await downloadWithProgress(bundled.url, { kind: 'files', onProgress })
+        const unpacked = await unzipSaveFiles(new Uint8Array(buffer), '')
         return unpacked.map(([path, content]): SaveFiles[number] => [`${bundled.folder}/${path}`, content])
       } catch (error) {
         // Tried again next time
@@ -139,6 +142,30 @@ export function useEmulatorSessionController({
   const [, setSpatialNavigationPaused] = useSpatialNavigationPaused()
 
   const romUrl = getFileUrl(rom.fileId) || ''
+
+  // Each download this game needs, as far as it's got, for the Start button to show. Updated at most once a frame
+  const downloads = useRef(new Map<string, Download>())
+  const [, setDownloadsShown] = useState(0)
+  const nextFrame = useRef<number | undefined>(undefined)
+  const report = useCallback((key: string, progress: Download) => {
+    downloads.current.set(key, progress)
+    nextFrame.current ??= requestAnimationFrame(() => {
+      nextFrame.current = undefined
+      setDownloadsShown((count) => count + 1)
+    })
+  }, [])
+  // A file's contents given to the player as a function, which it calls when it needs them: the download happens here,
+  // so its progress can be shown. The player takes them as a Uint8Array, not a bare buffer
+  const download = useCallback(
+    (key: string, kind: DownloadKind, url: string) => async () => {
+      const buffer = await downloadWithProgress(url, {
+        kind,
+        onProgress: (loaded, total) => report(key, { kind, loaded, total }),
+      })
+      return new Uint8Array(buffer)
+    },
+    [report],
+  )
   const { core } = preference.emulator.platform[rom.platform] || {}
   // How this emulator is started and run, from the console registry
   const {
@@ -159,15 +186,24 @@ export function useEmulatorSessionController({
               fileContent: new Blob([createDiscList(discs.map(({ fileName }) => fileName))]),
               fileName: `${rom.discGroup}.m3u`,
             },
-            ...discs.map(({ fileId, fileName }) => ({ fileContent: getFileUrl(fileId), fileName })),
+            // Only the first disc downloads at the start, so only its progress is shown
+            ...discs.map(({ fileId, fileName }, index) => ({
+              fileContent: index === 0 ? download('game', 'game', getFileUrl(fileId)) : getFileUrl(fileId),
+              fileName,
+            })),
           ]
-        : { fileContent: romUrl, fileName: rom?.fileName },
-    [discs, multiDisc, rom, romUrl],
+        : { fileContent: download('game', 'game', romUrl), fileName: rom?.fileName },
+    [discs, download, multiDisc, rom, romUrl],
   )
-  const bios = preference.emulator.platform[rom.platform].bioses.map(({ fileId, fileName }) => ({
-    fileContent: getFileUrl(fileId),
-    fileName,
-  }))
+  const { bioses } = preference.emulator.platform[rom.platform]
+  const bios = useMemo(
+    () =>
+      bioses.map(({ fileId, fileName }) => ({
+        fileContent: download(`bios:${fileName}`, 'files', getFileUrl(fileId)),
+        fileName,
+      })),
+    [bioses, download],
+  )
   const options: NostalgistOption = useMemo(
     () => ({
       bios,
@@ -196,7 +232,7 @@ export function useEmulatorSessionController({
       // srm and sav, but it takes any extension
       sramType: saveFileType as 'srm',
       // A game on several discs is continued once started, after its disc is put in
-      state: state?.fileId && !multiDisc ? getFileUrl(state.fileId) : undefined,
+      state: state?.fileId && !multiDisc ? download('state', 'files', getFileUrl(state.fileId)) : undefined,
     }),
     [
       romObject,
@@ -210,6 +246,7 @@ export function useEmulatorSessionController({
       launchProfile,
       multiDisc,
       saveFileType,
+      download,
     ],
   )
 
@@ -249,14 +286,31 @@ export function useEmulatorSessionController({
   }
 
   // Called when the player looks about to start the game
+  // The emulator's download, which happens in the player, is followed here too
+  useEffect(
+    () =>
+      onCoreDownloadProgress((downloaded, loaded, total) => {
+        if (downloaded === core) {
+          report('emulator', { kind: 'emulator', loaded, total })
+        }
+      }),
+    [core, report],
+  )
+
+  // Files the emulator needs besides the game (PPSSPP's fonts), downloaded alongside it
+  function getEmulatorFiles() {
+    return getSystemFiles(core, (loaded, total) => report('system', { kind: 'files', loaded, total }))
+  }
+
   async function warmUp() {
     if (lazy && !data) {
-      await attemptAsync(prepareOnce)
+      await Promise.all([attemptAsync(async () => await getEmulatorFiles()), attemptAsync(prepareOnce)])
     }
   }
 
   async function launch({ withState }: { withState?: boolean } = {}) {
     // In a lazy session nothing is downloaded until now
+    const emulatorFiles = getEmulatorFiles()
     const emulator = data ?? (lazy ? await prepareOnce() : undefined)
     if (!emulator || !rom) {
       return
@@ -265,7 +319,7 @@ export function useEmulatorSessionController({
     if (!withState) {
       skipAutoState(emulator)
     }
-    const files = await getSystemFiles(core)
+    const files = await emulatorFiles
     if (files) {
       installSystemFiles(emulator, files)
     }
@@ -472,6 +526,7 @@ export function useEmulatorSessionController({
     launch,
     launched,
     launchProfile,
+    loadingProgress: getLoadingProgress(downloads.current.values()),
     phase: getSessionPhase({ exiting, launched, preparing: isDownloading }),
     prepare,
     setLaunched,
