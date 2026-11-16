@@ -25,14 +25,18 @@ async function lettersFor(
 export async function loadGamesPage() {
   const scope = getLibraryScope()
   const query = getRomsQuery()
-  const [{ pagination, roms }, platformCount] = await Promise.all([getRoms(scope, query), getRomPlatformCount(scope)])
-  const letters = await lettersFor(query, pagination.pages, { favorite: query.favorite })
-  return { letters, pagination, platformCount, roms, title: getContext().var.t('common.games') }
+  const [{ matchIds, pagination, roms, search }, platformCount] = await Promise.all([
+    getRoms(scope, query),
+    getRomPlatformCount(scope),
+  ])
+  const letters = await lettersFor(query, pagination.pages, { favorite: query.favorite, ids: matchIds })
+  return { letters, pagination, platformCount, roms, search, title: getContext().var.t('common.games') }
 }
 
 export async function loadFavoritesPage() {
   const query = getRomsQuery()
-  const { pagination, roms } = await getRoms(getLibraryScope(), { ...query, favorite: true })
+  // No search box here yet, so a search in the address is ignored
+  const { pagination, roms } = await getRoms(getLibraryScope(), { ...query, favorite: true, search: undefined })
   const letters = await lettersFor(query, pagination.pages, { favorite: true })
   return { letters, pagination, roms, title: getContext().var.t('nav.favorites') }
 }
@@ -50,14 +54,15 @@ export async function loadPlatformPage(name: string | undefined) {
   }
   const platform = name as PlatformName
   const query = getRomsQuery()
-  const { pagination, roms } = await getRoms(getLibraryScope(), { ...query, platform })
-  const letters = await lettersFor(query, pagination.pages, { favorite: query.favorite, platform })
+  const { matchIds, pagination, roms, search } = await getRoms(getLibraryScope(), { ...query, platform })
+  const letters = await lettersFor(query, pagination.pages, { favorite: query.favorite, ids: matchIds, platform })
   return {
     favorite: query.favorite,
     letters,
     pagination,
     platform,
     roms,
+    search,
     title: getContext().var.t(platformMap[platform].displayNameI18nKey),
   }
 }

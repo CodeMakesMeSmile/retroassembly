@@ -2,7 +2,7 @@ import { getConnInfo as getNodeConnInfo } from '@hono/node-server/conninfo'
 import type { Context } from 'hono'
 import { getContext } from 'hono/context-storage'
 import { z } from 'zod'
-import { defaultRomsOrder, getDefaultRomsDirection, romsOrders } from '#@/constants/roms-order.ts'
+import { getDefaultRomsDirection, getListOrder } from '#@/constants/roms-order.ts'
 
 export function getConnInfo(context?: Context) {
   const c = context || getContext()
@@ -21,18 +21,19 @@ export async function getFileContent(id: string, options?: { range?: { length?: 
 export function getRomsQuery() {
   const c = getContext()
   const { searchParams } = new URL(c.req.url)
-  const orderBy = searchParams.get('sort')
   const direction = searchParams.get('direction')
-
   const favorite = searchParams.get('favorite')
-  /* eslint-disable promise/prefer-await-to-then */
-  const order = z.enum(romsOrders).catch(defaultRomsOrder).parse(orderBy)
+  // What's typed in the list's search box, if anything
+  const search = searchParams.get('q')?.trim().replaceAll(/\s+/gu, ' ').slice(0, 100) || undefined
+  const order = getListOrder(searchParams.get('sort'), Boolean(search))
 
   return {
+    /* eslint-disable promise/prefer-await-to-then */
     direction: z.enum(['asc', 'desc']).catch(getDefaultRomsDirection(order)).parse(direction),
     favorite: favorite === '1',
     orderBy: order,
     page: z.coerce.number().min(1).catch(1).parse(searchParams.get('page')),
     /* eslint-enable promise/prefer-await-to-then */
+    search,
   }
 }

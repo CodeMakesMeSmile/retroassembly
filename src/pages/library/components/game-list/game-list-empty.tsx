@@ -7,6 +7,7 @@ import { usePlatform } from '../../hooks/use-platform.ts'
 import { UploadButton } from '../../platform/components/upload-button.tsx'
 import { UploadSelectButton } from '../../platform/components/upload-select-button.tsx'
 import { HomeLinkButton } from './home-link-button.tsx'
+import { useGameListActions } from './use-game-list-actions.ts'
 
 export function GameListEmpty() {
   const { t } = useTranslation()
@@ -17,6 +18,16 @@ export function GameListEmpty() {
   const isHistory = pathname === routes.libraryHistory
   const isFavorites = pathname === routes.libraryFavorites
   const favorite = new URLSearchParams(search).get('favorite') === '1'
+  const { query } = useGameListActions()
+
+  if (query) {
+    return (
+      <div className='flex flex-col items-center justify-center gap-2 py-16 text-sm lg:text-xl'>
+        <span className='icon-[mdi--magnify-remove-outline] size-32 text-zinc-300' />
+        <div className='text-(--gray-11)'>{t('empty.noSearchMatches', { query })}</div>
+      </div>
+    )
+  }
 
   return (
     <div className='flex flex-col items-center justify-center gap-2 py-16 text-sm lg:text-xl'>

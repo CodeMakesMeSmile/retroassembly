@@ -1,9 +1,10 @@
 import { and, count, desc, eq, inArray, isNotNull, max, sql } from 'drizzle-orm'
 import type { PlatformName } from '#@/constants/platform.ts'
-import type { RomsOrder } from '#@/constants/roms-order.ts'
+import { type ListOrder, searchOrder } from '#@/constants/roms-order.ts'
 import { favoriteTable, launchRecordTable, romTable, statusEnum } from '#@/databases/schema.ts'
 import { discCount, type LibraryScope, listedOnce } from '#@/utils/server/library-scope.ts'
 import { addCoverCandidates } from '#@/utils/server/rom-cover-candidates.ts'
+import { findSearchMatches } from './search-roms.ts'
 
 type GetRomsReturning = Awaited<ReturnType<typeof getRoms>>
 export type Roms = GetRomsReturning['roms']
@@ -20,15 +21,26 @@ interface GetRomsParams {
   direction?: 'asc' | 'desc'
   favorite?: boolean
   id?: string
-  orderBy?: RomsOrder
+  orderBy?: ListOrder
   page?: number
   pageSize?: number
   platform?: PlatformName
+  /** Only the games matching this, as the quick search finds them */
+  search?: string
 }
 
 export async function getRoms(
   scope: LibraryScope,
-  { direction = 'asc', favorite = false, id, orderBy = 'name', page = 1, pageSize = 100, platform }: GetRomsParams = {},
+  {
+    direction = 'asc',
+    favorite = false,
+    id,
+    orderBy: requestedOrder = 'name',
+    page = 1,
+    pageSize = 100,
+    platform,
+    search,
+  }: GetRomsParams = {},
 ) {
   const { user: currentUser, libraryOwnerId: effectiveLibraryUserId, preference } = scope
 
@@ -45,9 +57,26 @@ export async function getRoms(
   } else {
     conditions.push(inArray(romTable.platform, preference.ui.platforms))
   }
-  const where = and(...conditions)
-
   const offset = (page - 1) * pageSize
+
+  // A search: the matching games, best match first. Sorted by best match, the page is cut from them here; sorted any
+  // other way, the database sorts the matches
+  let matchIds: string[] | undefined
+  let searched = 0
+  if (search) {
+    const found = await findSearchMatches(scope, { favorite, platform, query: search })
+    matchIds = found.matches.map((match) => match.id)
+    searched = found.searched
+  }
+  const orderBy = requestedOrder === searchOrder && !matchIds ? 'name' : requestedOrder
+  const byMatch = orderBy === searchOrder
+  const pageIds = byMatch && matchIds ? matchIds.slice(offset, offset + pageSize) : undefined
+  if (pageIds) {
+    conditions.push(inArray(romTable.id, pageIds))
+  } else if (matchIds) {
+    conditions.push(sql`${romTable.id} IN (SELECT value FROM json_each(${JSON.stringify(matchIds)}))`)
+  }
+  const where = and(...conditions)
   // Most played: how many times this player has launched the game, then how recently
   const plays = library
     .select({
@@ -67,7 +96,7 @@ export async function getRoms(
     popular: popularity,
     released: sql`${romTable.gameReleaseDate}`,
   }
-  const column = columnMap[orderBy]
+  const column = columnMap[orderBy === searchOrder ? 'name' : orderBy]
   const columns = [sql`${column} IS NULL`, direction === 'desc' ? desc(column) : column]
   if (orderBy === 'played') {
     const lastPlayed = sql`${plays.last}`
@@ -94,20 +123,36 @@ export async function getRoms(
 
   const favoriteWhere = favorite ? and(where, isNotNull(favoriteTable.id)) : where
 
-  const romsRaw = await baseQuery
-    .orderBy(...columns)
-    .where(favoriteWhere)
-    .offset(offset)
-    .limit(pageSize)
+  const romsRaw = pageIds
+    ? await baseQuery.where(favoriteWhere)
+    : await baseQuery
+        .orderBy(...columns)
+        .where(favoriteWhere)
+        .offset(offset)
+        .limit(pageSize)
 
   const roms = romsRaw.map(({ discCount, isFavorite, rom }) => Object.assign(rom, { discCount, isFavorite }))
+  if (pageIds) {
+    const position = new Map(pageIds.map((id, index) => [id, index]))
+    roms.sort((a, b) => (position.get(a.id) ?? 0) - (position.get(b.id) ?? 0))
+  }
 
-  const [{ total }] = await library
-    .select({ total: count() })
-    .from(romTable)
-    .leftJoin(favoriteTable, favoriteJoinCondition)
-    .where(favoriteWhere)
+  let total = matchIds?.length ?? 0
+  if (!matchIds) {
+    const [counted] = await library
+      .select({ total: count() })
+      .from(romTable)
+      .leftJoin(favoriteTable, favoriteJoinCondition)
+      .where(favoriteWhere)
+    total = counted.total
+  }
 
   await addCoverCandidates(roms)
-  return { pagination: { current: page, pages: Math.ceil(total / pageSize), size: pageSize, total }, roms }
+  return {
+    /** Every match's id, for the letters; not for sending to the page */
+    matchIds,
+    pagination: { current: page, pages: Math.ceil(total / pageSize), size: pageSize, total },
+    roms,
+    search: search ? { query: search, searched } : undefined,
+  }
 }

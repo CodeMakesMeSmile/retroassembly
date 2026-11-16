@@ -17,6 +17,8 @@ export interface RomLetterPage {
 interface GetRomLettersParams {
   direction?: 'asc' | 'desc'
   favorite?: boolean
+  /** Only these games: a search's matches */
+  ids?: string[]
   pageSize?: number
   platform?: PlatformName
 }
@@ -27,7 +29,7 @@ interface GetRomLettersParams {
  */
 export async function getRomLetters(
   scope: LibraryScope,
-  { direction = 'asc', favorite = false, pageSize = 100, platform }: GetRomLettersParams = {},
+  { direction = 'asc', favorite = false, ids, pageSize = 100, platform }: GetRomLettersParams = {},
 ): Promise<RomLetterPage[]> {
   const conditions = [
     eq(romTable.userId, scope.libraryOwnerId),
@@ -37,6 +39,9 @@ export async function getRomLetters(
   ]
   if (favorite) {
     conditions.push(isNotNull(favoriteTable.id))
+  }
+  if (ids) {
+    conditions.push(sql`${romTable.id} IN (SELECT value FROM json_each(${JSON.stringify(ids)}))`)
   }
   // The same key the list sorts by
   const name = sql`LOWER(${romTable.fileName})`

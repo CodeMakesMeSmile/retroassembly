@@ -1,4 +1,4 @@
-import { and, eq, inArray, sql } from 'drizzle-orm'
+import { and, eq, inArray, isNotNull, sql } from 'drizzle-orm'
 import Fuse from 'fuse.js'
 import type { PlatformName } from '#@/constants/platform.ts'
 import { favoriteTable, romTable, statusEnum } from '#@/databases/schema.ts'
@@ -54,6 +54,71 @@ function rank(candidates: Candidate[], query: string) {
   )
 }
 
+function normalizeQuery(query: string) {
+  return query.trim().replaceAll(/\s+/gu, ' ')
+}
+
+function favoriteJoinCondition(userId: string) {
+  return and(
+    eq(favoriteTable.romId, romTable.id),
+    eq(favoriteTable.userId, userId),
+    eq(favoriteTable.status, statusEnum.normal),
+  )
+}
+
+const isFavorite = sql<boolean>`CASE WHEN ${favoriteTable.id} IS NOT NULL THEN 1 ELSE 0 END`
+
+interface FindSearchMatchesParams {
+  favorite?: boolean
+  platform?: PlatformName
+  query: string
+}
+
+/**
+ * Every game in the list that matches a search, best match first, and how many games were searched. The quick search
+ * and a game list's search box both use it, so they find the same games in the same order
+ */
+export async function findSearchMatches(
+  scope: LibraryScope,
+  { favorite = false, platform, query }: FindSearchMatchesParams,
+) {
+  const { user: currentUser, libraryOwnerId: effectiveLibraryUserId, preference } = scope
+
+  const conditions = [
+    eq(romTable.userId, effectiveLibraryUserId),
+    eq(romTable.status, statusEnum.normal),
+    platform ? eq(romTable.platform, platform) : inArray(romTable.platform, preference.ui.platforms),
+    listedOnce(),
+  ]
+  if (favorite) {
+    conditions.push(isNotNull(favoriteTable.id))
+  }
+
+  // Only what ranking needs is read for every game
+  const rows = await scope.db
+    .select({
+      fileName: romTable.fileName,
+      gameDeveloper: romTable.gameDeveloper,
+      gameName: romTable.gameName,
+      gamePublisher: romTable.gamePublisher,
+      id: romTable.id,
+      isFavorite,
+      platform: romTable.platform,
+      popularity: sql<number>`coalesce(json_extract(${romTable.rawGameMetadata}, '$.launchbox.communityRatingCount'), 0)`,
+    })
+    .from(romTable)
+    .leftJoin(favoriteTable, favoriteJoinCondition(currentUser.id))
+    .where(and(...conditions))
+  // Arcade files are named like "sf2.zip"; the library shows their game's name
+  const candidates = rows.map((row) =>
+    Object.assign(row, {
+      score: 0,
+      title: row.platform === 'arcade' && row.gameName ? row.gameName : getSearchTitle(row.fileName),
+    }),
+  )
+  return { matches: rank(candidates, normalizeQuery(query)), searched: candidates.length }
+}
+
 export async function searchRoms(
   scope: LibraryScope,
   {
@@ -68,56 +133,17 @@ export async function searchRoms(
     query: string
   } = {} as any,
 ) {
-  const { user: currentUser, libraryOwnerId: effectiveLibraryUserId, preference } = scope
-  const library = scope.db
+  const trimmedQuery = normalizeQuery(query)
+  const { matches: ranked } = await findSearchMatches(scope, { platform, query })
 
-  const conditions = [
-    eq(romTable.userId, effectiveLibraryUserId),
-    eq(romTable.status, statusEnum.normal),
-    platform ? eq(romTable.platform, platform) : inArray(romTable.platform, preference.ui.platforms),
-    listedOnce(),
-  ]
-  const trimmedQuery = query.trim().replaceAll(/\s+/gu, ' ')
-  const where = and(...conditions)
-
-  const favoriteJoinCondition = and(
-    eq(favoriteTable.romId, romTable.id),
-    eq(favoriteTable.userId, currentUser.id),
-    eq(favoriteTable.status, statusEnum.normal),
-  )
-  const isFavorite = sql<boolean>`CASE WHEN ${favoriteTable.id} IS NOT NULL THEN 1 ELSE 0 END`
-
-  // Only what ranking needs is read for every game; whole rows only for the page returned
-  const rows = await library
-    .select({
-      fileName: romTable.fileName,
-      gameDeveloper: romTable.gameDeveloper,
-      gameName: romTable.gameName,
-      gamePublisher: romTable.gamePublisher,
-      id: romTable.id,
-      isFavorite,
-      platform: romTable.platform,
-      popularity: sql<number>`coalesce(json_extract(${romTable.rawGameMetadata}, '$.launchbox.communityRatingCount'), 0)`,
-    })
-    .from(romTable)
-    .leftJoin(favoriteTable, favoriteJoinCondition)
-    .where(where)
-  // Arcade files are named like "sf2.zip"; the library shows their game's name
-  const candidates = rows.map((row) =>
-    Object.assign(row, {
-      score: 0,
-      title: row.platform === 'arcade' && row.gameName ? row.gameName : getSearchTitle(row.fileName),
-    }),
-  )
-  const ranked = rank(candidates, trimmedQuery)
-
+  // Whole rows only for the page returned
   const offset = (page - 1) * pageSize
   const pageIds = ranked.slice(offset, offset + pageSize).map(({ id }) => id)
   const pageRows = pageIds.length
-    ? await library
+    ? await scope.db
         .select({ discCount: discCount(), isFavorite, rom: romTable })
         .from(romTable)
-        .leftJoin(favoriteTable, favoriteJoinCondition)
+        .leftJoin(favoriteTable, favoriteJoinCondition(scope.user.id))
         .where(inArray(romTable.id, pageIds))
     : []
   const byId = new Map(

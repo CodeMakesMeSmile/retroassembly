@@ -2,18 +2,21 @@ import { Button, DropdownMenu } from '@radix-ui/themes'
 import { clsx } from 'clsx'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
-import { getDefaultRomsDirection } from '#@/constants/roms-order.ts'
+import { getDefaultRomsDirection, searchOrder } from '#@/constants/roms-order.ts'
 
 interface SortDropdownProps {
   currentSort: string
   currentDirection: string
   buildSortLink: (params: Record<string, string>) => string
+  /** Whether the list is being searched, which adds Best match */
+  searching?: boolean
 }
 
-export function SortDropdown({ currentSort, currentDirection, buildSortLink }: SortDropdownProps) {
+export function SortDropdown({ currentSort, currentDirection, buildSortLink, searching }: SortDropdownProps) {
   const { t } = useTranslation()
 
   const sortOptions = [
+    ...(searching ? [{ icon: 'icon-[mdi--magnify]', label: t('common.bestMatch'), value: searchOrder }] : []),
     { icon: 'icon-[mdi--pencil]', label: t('common.name'), value: 'name' },
     { icon: 'icon-[mdi--clock]', label: t('common.dateAdded'), value: 'added' },
     { icon: 'icon-[mdi--calendar]', label: t('common.released'), value: 'released' },
@@ -37,7 +40,9 @@ export function SortDropdown({ currentSort, currentDirection, buildSortLink }: S
       <DropdownMenu.Trigger>
         <Button variant='soft'>
           <span className='icon-[mdi--sort]' />
-          {t('common.sort')}
+          {searching
+            ? t('common.sortCurrent', { sort: sortOptions.find(({ value }) => value === currentSort)?.label })
+            : t('common.sort')}
           <DropdownMenu.TriggerIcon />
         </Button>
       </DropdownMenu.Trigger>
@@ -45,7 +50,11 @@ export function SortDropdown({ currentSort, currentDirection, buildSortLink }: S
         <DropdownMenu.Label>{t('common.sortBy')}</DropdownMenu.Label>
         {sortOptions.map(({ icon, label, value }) => (
           <DropdownMenu.Item asChild key={value}>
-            <Link to={buildSortLink({ direction: getDirection(value), sort: value })}>
+            <Link
+              to={buildSortLink(
+                value === searchOrder ? { sort: value } : { direction: getDirection(value), sort: value },
+              )}
+            >
               <span className={clsx('icon-[mdi--check]', { 'opacity-0': value !== currentSort })} />
               <span className={icon} />
               {label}
@@ -53,18 +62,23 @@ export function SortDropdown({ currentSort, currentDirection, buildSortLink }: S
           </DropdownMenu.Item>
         ))}
 
-        <DropdownMenu.Separator />
+        {/* Best match is always best first */}
+        {currentSort === searchOrder ? null : (
+          <>
+            <DropdownMenu.Separator />
 
-        <DropdownMenu.Label>{t('common.sortDirection')}</DropdownMenu.Label>
-        {directionOptions.map(({ icon, label, value }) => (
-          <DropdownMenu.Item asChild key={value}>
-            <Link to={buildSortLink({ direction: value, sort: currentSort })}>
-              <span className={clsx('icon-[mdi--check]', { 'opacity-0': value !== currentDirection })} />
-              <span className={icon} />
-              {label}
-            </Link>
-          </DropdownMenu.Item>
-        ))}
+            <DropdownMenu.Label>{t('common.sortDirection')}</DropdownMenu.Label>
+            {directionOptions.map(({ icon, label, value }) => (
+              <DropdownMenu.Item asChild key={value}>
+                <Link to={buildSortLink({ direction: value, sort: currentSort })}>
+                  <span className={clsx('icon-[mdi--check]', { 'opacity-0': value !== currentDirection })} />
+                  <span className={icon} />
+                  {label}
+                </Link>
+              </DropdownMenu.Item>
+            ))}
+          </>
+        )}
       </DropdownMenu.Content>
     </DropdownMenu.Root>
   )

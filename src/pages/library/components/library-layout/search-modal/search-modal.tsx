@@ -67,6 +67,24 @@ export function SearchModal() {
     }
   })
 
+  // The page behind stays where it is while search is open
+  useEffect(() => {
+    if (!showSearchModal) {
+      return
+    }
+    const { clientHeight, scrollHeight, style } = document.documentElement
+    const { overflow, scrollbarGutter } = style
+    style.overflow = 'hidden'
+    // Keeps the room the scroll bar took, where it takes room, so the page doesn't shift
+    if (scrollHeight > clientHeight) {
+      style.scrollbarGutter = 'stable'
+    }
+    return () => {
+      style.overflow = overflow
+      style.scrollbarGutter = scrollbarGutter
+    }
+  }, [showSearchModal])
+
   useEffect(() => {
     const abortController = new AbortController()
 
@@ -87,7 +105,7 @@ export function SearchModal() {
           <motion.div
             animate={{ opacity: 1 }}
             aria-hidden
-            className='absolute inset-0 z-1 cursor-default! bg-(--color-overlay)'
+            className='fixed inset-0 z-1 cursor-default! bg-(--color-overlay)'
             exit={{ opacity: 0 }}
             initial={{ opacity: 0 }}
             onClick={handleClose}
@@ -95,7 +113,7 @@ export function SearchModal() {
         ) : null}
       </AnimatePresence>
 
-      <div className='pointer-events-none absolute inset-0 z-1 *:pointer-events-auto'>
+      <div className='pointer-events-none fixed inset-0 z-1 *:pointer-events-auto'>
         <AnimatePresence>
           {showSearchModal ? (
             <motion.dialog

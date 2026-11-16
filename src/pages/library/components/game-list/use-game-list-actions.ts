@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router'
-import { defaultRomsOrder, getDefaultRomsDirection } from '#@/constants/roms-order.ts'
+import { getDefaultRomsDirection, getListOrder } from '#@/constants/roms-order.ts'
 import { libraryModeEnum } from '#@/databases/schema.ts'
 import { useGlobalLoaderData } from '#@/pages/hooks/use-global-loader-data.ts'
 import { routes } from '../../../routes.ts'
@@ -18,7 +18,10 @@ export function useGameListActions() {
   const shouldHideActions = isHistoryPage || isSharedLibrary
 
   const searchParams = new URLSearchParams(search)
-  const sort = searchParams.get('sort') || defaultRomsOrder
+  // The Games page and a console's page can be searched
+  const isSearchable = pathname === routes.libraryRoms || pathname.startsWith('/library/platform/')
+  const query = isSearchable ? (searchParams.get('q') ?? '') : ''
+  const sort = getListOrder(searchParams.get('sort'), Boolean(query))
   const direction = searchParams.get('direction') || getDefaultRomsDirection(sort)
   const isViewingFavorites = searchParams.get('favorite') === '1'
 
@@ -26,13 +29,16 @@ export function useGameListActions() {
   const hasSelectedGames = selectedGames.length > 0
   const canSelectAll = selectedGames.length < roms.length
 
-  const showFavoriteButton = (!isFavoritesPage && hasRoms) || isViewingFavorites
+  const showFavoriteButton = (!isFavoritesPage && (hasRoms || Boolean(query))) || isViewingFavorites
   const showSortDropdown = hasRoms
 
   function buildSortLink(params: Record<string, string>) {
     const newParams = new URLSearchParams(params)
     if (isViewingFavorites) {
       newParams.set('favorite', '1')
+    }
+    if (query) {
+      newParams.set('q', query)
     }
     return [pathname, newParams].join('?')
   }
@@ -55,8 +61,10 @@ export function useGameListActions() {
     getFavoriteToggleLink,
     hasRoms,
     hasSelectedGames,
+    isSearchable,
     isViewingFavorites,
     pathname,
+    query,
     roms,
     search,
     selectedGames,

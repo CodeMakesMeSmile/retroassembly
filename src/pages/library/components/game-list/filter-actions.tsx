@@ -11,15 +11,21 @@ export function FilterActions() {
     direction,
     sort,
     buildSortLink,
+    query,
   } = useGameListActions()
 
   return (
-    <div className='flex gap-2'>
+    <div className='ml-auto flex gap-2'>
       {showFavoriteButton && (
         <FavoriteButton isViewingFavorites={isViewingFavorites} getToggleLink={getFavoriteToggleLink} />
       )}
       {showSortDropdown && (
-        <SortDropdown currentSort={sort} currentDirection={direction} buildSortLink={buildSortLink} />
+        <SortDropdown
+          buildSortLink={buildSortLink}
+          currentDirection={direction}
+          currentSort={sort}
+          searching={Boolean(query)}
+        />
       )}
     </div>
   )

@@ -6,12 +6,13 @@ import type { loader } from '#@/pages/routes/library-platform.tsx'
 import { DeviceInfo } from '../components/device-info/device-info.tsx'
 import { GameListMain } from '../components/game-list-main.tsx'
 import { PageStats } from '../components/page-stats.tsx'
+import { SearchStats } from '../components/search-stats.tsx'
 import { PlatformBackground } from './components/platform-background.tsx'
 import { UploadButton } from './components/upload-button.tsx'
 
 export default function PlatformPage() {
   const { t } = useTranslation()
-  const { favorite, pagination, platform, roms } = useLoaderData<typeof loader>()
+  const { favorite, pagination, platform, roms, search } = useLoaderData<typeof loader>()
   const gameLabel = t('common.game', { count: pagination.total })
 
   if (!platformMap[platform]) {
@@ -33,17 +34,21 @@ export default function PlatformPage() {
 
             <PageStats suffix={<UploadButton platform={platform} />}>
               <span className='icon-[mdi--bar-chart] text-(--color-text)' />
-              <Trans
-                components={{
-                  1: <span className='font-semibold text-(--accent-9)' />,
-                }}
-                i18nKey={favorite ? 'stats.platformFavoriteGames' : 'stats.platformGames'}
-                values={{
-                  game: gameLabel,
-                  gameCount: pagination.total,
-                  platform: t(platformMap[platform].displayNameI18nKey),
-                }}
-              />
+              {search ? (
+                <SearchStats matchCount={pagination.total} query={search.query} searchedCount={search.searched} />
+              ) : (
+                <Trans
+                  components={{
+                    1: <span className='font-semibold text-(--accent-9)' />,
+                  }}
+                  i18nKey={favorite ? 'stats.platformFavoriteGames' : 'stats.platformGames'}
+                  values={{
+                    game: gameLabel,
+                    gameCount: pagination.total,
+                    platform: t(platformMap[platform].displayNameI18nKey),
+                  }}
+                />
+              )}
             </PageStats>
           </div>
         </GameListMain>

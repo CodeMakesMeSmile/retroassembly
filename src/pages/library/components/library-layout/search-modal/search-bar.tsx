@@ -1,5 +1,5 @@
 import { clsx } from 'clsx'
-import { useCallback, useEffect, useEffectEvent, type SubmitEvent } from 'react'
+import { useCallback, useEffect, useEffectEvent, useMemo, type SubmitEvent } from 'react'
 import { generatePath, useLocation, useNavigate } from 'react-router'
 import useSWR from 'swr'
 import { client, parseResponse } from '#@/api/client.ts'
@@ -11,7 +11,7 @@ import { Gamepad } from '#@/utils/client/gamepad.ts'
 import { useShowSearchModal } from '../atoms.ts'
 import { useQuery, useSelectedResult } from './atoms.ts'
 import { SearchInput } from './search-input.tsx'
-import { SearchResults } from './search-results.tsx'
+import { SearchResults, seeAllRow } from './search-results.tsx'
 
 const { $get } = client.roms.search
 
@@ -33,20 +33,33 @@ export function SearchBar() {
   )
 
   const allResults = query ? data?.roms : recentlyLaunchedRoms
-  const displayResults = allResults?.slice(0, 10)
+  // More matches than shown: a last row opens them all on the Games page
+  const matchCount = query && data?.query === query ? data.pagination.total : 0
+  const seeAll = matchCount > 10 ? seeAllRow : undefined
+  const displayResults = useMemo(() => {
+    const shown = allResults?.slice(0, 10)
+    return shown && seeAll ? [...shown, seeAll] : shown
+  }, [allResults, seeAll])
 
-  const selectedUrl = selectedResult
-    ? generatePath(routes.libraryPlatformRom, { fileName: selectedResult.fileName, platform: selectedResult.platform })
-    : ''
+  function getUrl(result: typeof selectedResult) {
+    if (!result) {
+      return ''
+    }
+    if (result === seeAllRow) {
+      return `${routes.libraryRoms}?${new URLSearchParams({ q: query })}`
+    }
+    return generatePath(routes.libraryPlatformRom, { fileName: result.fileName, platform: result.platform })
+  }
+  const selectedUrl = getUrl(selectedResult)
   const select = useCallback(async () => {
     if (selectedUrl) {
       setShowSearchModal(false)
       setSpatialNavigationPaused(false)
-      if (selectedUrl !== location.pathname) {
+      if (selectedUrl !== `${location.pathname}${location.search}`) {
         await navigate(selectedUrl)
       }
     }
-  }, [location.pathname, selectedUrl, setShowSearchModal, setSpatialNavigationPaused, navigate])
+  }, [location.pathname, location.search, selectedUrl, setShowSearchModal, setSpatialNavigationPaused, navigate])
 
   async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -114,11 +127,17 @@ export function SearchBar() {
 
       <div
         className={clsx(
-          'w-full overflow-auto rounded-b border-x-2 border-b-2 border-(--accent-9) bg-(--color-background) transition-opacity *:pointer-events-auto empty:hidden',
+          'w-full overflow-auto overscroll-contain rounded-b border-x-2 border-b-2 border-(--accent-9) bg-(--color-background) transition-opacity *:pointer-events-auto empty:hidden',
           { '*:opacity-50': query && data?.query !== query },
         )}
       >
-        <SearchResults keyword={query} loading={isMutating} results={displayResults} />
+        <SearchResults
+          keyword={query}
+          loading={isMutating}
+          matchCount={matchCount}
+          results={displayResults}
+          seeAllUrl={getUrl(seeAllRow)}
+        />
       </div>
     </div>
   )

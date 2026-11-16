@@ -10,6 +10,17 @@ import { useFocusIndicator } from './use-focus-indicator.ts'
 import { useInputMapping } from './use-input-mapping.ts'
 import { usePreference } from './use-preference.ts'
 
+const nonTextInputs = new Set(['button', 'checkbox', 'color', 'file', 'radio', 'range', 'reset', 'submit'])
+
+/** Whether keys go to a box being typed in, like a search box, rather than to moving around the page */
+function isTypingIn(target: EventTarget | null) {
+  return (
+    target instanceof HTMLTextAreaElement ||
+    (target instanceof HTMLInputElement && !nonTextInputs.has(target.type)) ||
+    (target instanceof HTMLElement && target.isContentEditable)
+  )
+}
+
 export function useSpatialNavigation() {
   const { state } = useNavigation()
   const inputMapping = useInputMapping()
@@ -58,6 +69,11 @@ export function useSpatialNavigation() {
       up: 'up',
     } as const
     const keyName = getKeyNameFromCode(event.code)
+    // In a text box, letters, Backspace, Enter and left and right are for typing; up and down still move out of it,
+    // unless the box handled them itself
+    if (isTypingIn(event.target) && ((keyName !== 'up' && keyName !== 'down') || event.defaultPrevented)) {
+      return
+    }
     const direction = keyboardDirectionMap[keyName]
     if (direction) {
       event.preventDefault()

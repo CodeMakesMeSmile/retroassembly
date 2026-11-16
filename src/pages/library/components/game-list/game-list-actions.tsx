@@ -5,26 +5,40 @@ import { useTranslation } from 'react-i18next'
 import { client, parseResponse } from '#@/api/client.ts'
 import { DeleteDialog } from '../delete-dialog.tsx'
 import { FilterActions } from './filter-actions.tsx'
+import { GameListSearch } from './game-list-search.tsx'
 import { SelectionActions } from './selection-actions.tsx'
 import { SelectionInfo } from './selection-info.tsx'
 import { useGameListActions } from './use-game-list-actions.ts'
 
 export function GameListActions() {
-  const { roms, selectedGames, setSelectedGames, shouldHideActions, hasSelectedGames, canSelectAll } =
-    useGameListActions()
+  const {
+    roms,
+    selectedGames,
+    setSelectedGames,
+    shouldHideActions,
+    hasSelectedGames,
+    canSelectAll,
+    isSearchable,
+    pathname,
+  } = useGameListActions()
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const { t } = useTranslation()
 
+  // A shared library's players can search it, but not change it or filter by favorites
   if (shouldHideActions) {
-    return
+    return isSearchable ? (
+      <div className='flex flex-wrap px-4'>
+        <GameListSearch key={pathname} />
+      </div>
+    ) : null
   }
 
   return (
     <div
-      className={clsx('flex px-4', {
-        'justify-between': hasSelectedGames,
-        'justify-end': !hasSelectedGames,
+      className={clsx('flex flex-wrap gap-2 px-4', {
+        'justify-between': hasSelectedGames || isSearchable,
+        'justify-end': !hasSelectedGames && !isSearchable,
       })}
     >
       {hasSelectedGames ? (
@@ -55,7 +69,10 @@ export function GameListActions() {
           />
         </>
       ) : (
-        <FilterActions />
+        <>
+          {isSearchable ? <GameListSearch key={pathname} /> : null}
+          <FilterActions />
+        </>
       )}
     </div>
   )
