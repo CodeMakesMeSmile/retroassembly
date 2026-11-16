@@ -1,5 +1,4 @@
 import { Skeleton } from '@radix-ui/themes'
-import { Atropos } from 'atropos/react'
 import { clsx } from 'clsx'
 import { AnimatePresence, motion } from 'motion/react'
 import { useState } from 'react'
@@ -8,6 +7,7 @@ import { getRomGoodcodes } from '#@/utils/client/library.ts'
 import { skeletonClassnames } from '../../constants/skeleton-classnames.ts'
 import { useRomCover } from '../../hooks/use-rom-cover.ts'
 import { useViewport } from '../../hooks/use-viewport.ts'
+import { TiltCover } from '../tilt-cover.tsx'
 
 export function GameEntryImage({ centered = false, rom }: Readonly<{ centered?: boolean; rom: any }>) {
   const { t } = useTranslation()
@@ -33,17 +33,14 @@ export function GameEntryImage({ centered = false, rom }: Readonly<{ centered?: 
   )
 
   const atropos = (
-    <Atropos
-      activeOffset={0}
+    <TiltCover
       className='size-full'
-      highlight={false}
       innerClassName={clsx('flex! justify-center transition-opacity', centered ? 'items-center' : 'items-end', {
         'opacity-0': !loaded,
       })}
-      shadow={false}
     >
       {image}
-    </Atropos>
+    </TiltCover>
   )
 
   const coverElement = isLargeScreen ? (

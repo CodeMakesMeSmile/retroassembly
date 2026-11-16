@@ -1,6 +1,6 @@
 import { Skeleton } from '@radix-ui/themes'
-import { Atropos } from 'atropos/react'
 import type { ReactNode } from 'react'
+import { TiltCover } from '#@/pages/library/components/tilt-cover.tsx'
 import { skeletonClassnames } from '#@/pages/library/constants/skeleton-classnames.ts'
 import { useRomCover } from '../../../hooks/use-rom-cover.ts'
 
@@ -12,13 +12,7 @@ export function GameCover({ className = '', parallax = false, rom }) {
     content = <Skeleton className={skeletonClassnames[rom.platform] || 'aspect-square! size-full!'} loading />
   } else if (cover) {
     const img = <img alt={rom.name} className='block h-auto w-full' loading='lazy' src={cover.src} />
-    content = parallax ? (
-      <Atropos activeOffset={0} className='size-full!' highlight={false} shadow={false}>
-        {img}
-      </Atropos>
-    ) : (
-      img
-    )
+    content = parallax ? <TiltCover className='size-full!'>{img}</TiltCover> : img
   }
 
   return (

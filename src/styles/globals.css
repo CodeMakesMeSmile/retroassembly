@@ -83,3 +83,12 @@ a.pending:focus {
     background-position: 0 10px;
   }
 }
+
+/* A cover's 3D tilt layers are drawn flat until it's pointed at (see TiltCover) */
+.atropos.atropos-flat-at-rest:not([data-tilting]),
+.atropos.atropos-flat-at-rest:not([data-tilting]) :is(.atropos-scale, .atropos-rotate, .atropos-inner) {
+  perspective: none;
+  transform: none !important;
+  transform-style: flat;
+  transition-duration: 0s !important;
+}
