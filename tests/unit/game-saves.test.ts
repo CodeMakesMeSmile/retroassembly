@@ -48,6 +48,16 @@ async function uploadSave(as: string, content: string, clientId?: string) {
   return { body: response.ok ? await response.json() : undefined, status: response.status }
 }
 
+async function listSaves(as: string) {
+  const response = await call(as, `/api/v1/game_saves?core=mgba&rom=${romId}`)
+  return (await response.json()) as { fileId: string; id: string }[]
+}
+
+async function readSave(as: string, fileId: string) {
+  const response = await call(as, `/api/v1/files/${encodeURIComponent(fileId)}`)
+  return await response.text()
+}
+
 function versions(user: string) {
   return getDatabase()
     .library.$client.prepare(
@@ -112,5 +122,31 @@ await describe('in-game saves', async () => {
     assert.equal(await own.text(), 'sharer-save')
     const others = await call('admin', `/api/v1/files/${encodeURIComponent(sharers.body.fileId)}`)
     assert.equal(others.status, 404)
+  })
+
+  await it('lists versions newest first, and restoring one copies it to the top', async () => {
+    const list = await listSaves('admin')
+    assert.equal(list.length, 10)
+    const [newest, older] = list
+    assert.equal(await readSave('admin', newest.fileId), 'save-15')
+
+    const restored = await call('admin', `/api/v1/game_saves/${older.id}/restore`, { method: 'POST' })
+    assert.equal(restored.status, 200)
+    const after = await listSaves('admin')
+    assert.equal(await readSave('admin', after[0].fileId), 'save-14')
+    // The version that was in use is still there, just below
+    assert.equal(after[1].id, newest.id)
+    assert.equal(after.length, 10)
+
+    // Restoring the one in use changes nothing
+    const again = await call('admin', `/api/v1/game_saves/${after[0].id}/restore`, { method: 'POST' })
+    const kept = (await again.json()) as { id: string }
+    assert.equal(kept.id, after[0].id)
+  })
+
+  await it("doesn't restore someone else's save", async () => {
+    const [sharers] = await listSaves('sharer')
+    const response = await call('admin', `/api/v1/game_saves/${sharers.id}/restore`, { method: 'POST' })
+    assert.equal(response.status, 404)
   })
 })

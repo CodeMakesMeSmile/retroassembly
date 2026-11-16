@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import path from 'node:path'
 import { and, desc, eq, sql } from 'drizzle-orm'
 import { gameSaveTable, statusEnum } from '#@/databases/schema.ts'
+import { DomainError } from '#@/utils/server/domain-error.ts'
 import { findRom, type LibraryScope, ownedBy } from '#@/utils/server/library-scope.ts'
 import { nanoid } from '#@/utils/server/nanoid.ts'
 
@@ -18,6 +19,42 @@ export async function getLatestGameSave(scope: LibraryScope, { core, rom }: { co
     .orderBy(desc(gameSaveTable.createdAt), sql`rowid DESC`)
     .limit(1)
   return latest
+}
+
+/** A game's kept versions with an emulator, newest first */
+export async function listGameSaves(scope: LibraryScope, { core, rom }: { core: string; rom: string }) {
+  return await scope.db
+    .select()
+    .from(gameSaveTable)
+    .where(ownedBy(scope, gameSaveTable, eq(gameSaveTable.romId, rom), eq(gameSaveTable.core, core)))
+    .orderBy(desc(gameSaveTable.createdAt), sql`rowid DESC`)
+    .limit(keptGameSaveVersions)
+}
+
+/**
+ * Makes an older version the one in use: it's copied to the top, so the version that was in use stays in the list.
+ * Restoring the version already in use changes nothing
+ */
+export async function restoreGameSave(scope: LibraryScope, { id }: { id: string }) {
+  const [version] = await scope.db
+    .select()
+    .from(gameSaveTable)
+    .where(ownedBy(scope, gameSaveTable, eq(gameSaveTable.id, id)))
+    .limit(1)
+  if (!version) {
+    throw new DomainError('not-found', 'Game save not found')
+  }
+  const file = await scope.storage.get(version.fileId)
+  if (!file) {
+    throw new DomainError('not-found', 'Game save not found')
+  }
+  const content = await new Response(file.body).blob()
+  return await createGameSave(scope, {
+    core: version.core,
+    file: content,
+    fileType: path.extname(version.fileId).slice(1),
+    rom: version.romId,
+  })
 }
 
 interface CreateGameSaveParams {

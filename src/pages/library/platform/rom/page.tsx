@@ -13,6 +13,7 @@ import { GameInfoDialog } from './components/game-info-dialog/game-info-dialog.t
 import { GameInfo } from './components/game-info.tsx'
 import { GameMediaDialog } from './components/game-media-dialog/game-media-dialog.tsx'
 import { GameMedia } from './components/game-media/game-media.tsx'
+import { InGameSave } from './components/in-game-save.tsx'
 
 export default function RomPage() {
   const { t } = useTranslation()
@@ -57,6 +58,7 @@ export default function RomPage() {
             <div className='flex flex-col gap-8 lg:flex-col-reverse'>
               <div className='lg:px-4'>
                 <GameButtons lazy />
+                <InGameSave />
               </div>
               <GameInfo rom={rom} />
             </div>

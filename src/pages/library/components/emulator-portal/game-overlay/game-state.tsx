@@ -1,13 +1,15 @@
-import { Badge } from '@radix-ui/themes'
 import { clsx } from 'clsx'
 import type { InferResponseType } from 'hono'
+import { DateTime } from 'luxon'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import useSWRMutation from 'swr/mutation'
 import type { client } from '#@/api/client.ts'
 import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { usePreference } from '#@/pages/library/hooks/use-preference.ts'
+import { useRom } from '#@/pages/library/hooks/use-rom.ts'
 import { getFileUrl } from '#@/pages/library/utils/file.ts'
+import { getRomGoodcodes } from '#@/utils/client/library.ts'
 import { dateFormatMap } from '#@/utils/isomorphic/i18n.ts'
 import { humanizeDate } from '#@/utils/isomorphic/misc.ts'
 import { useGameOverlay } from '../hooks/use-game-overlay.ts'
@@ -20,6 +22,7 @@ export function GameState({
   const { preference } = usePreference()
   const { hide, setIsPending } = useGameOverlay()
   const { core, discs, emulator, switchToDisc } = useSession()
+  const rom = useRom()
   const [loaded, setLoaded] = useState(false)
   const [errored, setErrored] = useState(false)
   const { isMutating, trigger: loadState } = useSWRMutation(
@@ -37,6 +40,10 @@ export function GameState({
   const loadable = core === state.core
   const disabled = !loadable || isMutating
   const dateFormat = preference.ui.dateFormat === 'auto' ? dateFormatMap[i18n.language] : preference.ui.dateFormat
+  const date = humanizeDate(state.createdAt, dateFormat)
+  // Downloaded under the game's name and when the state was made, so several downloads don't overwrite each other
+  const fileName = `${rom ? getRomGoodcodes(rom).rom : 'state'} ${DateTime.fromJSDate(new Date(state.createdAt)).toFormat('yyyy-MM-dd HH-mm')}.state`
+  const ids = { card: `state-${state.id}`, delete: `state-delete-${state.id}`, download: `state-download-${state.id}` }
 
   async function handleClick() {
     setIsPending(true)
@@ -57,7 +64,7 @@ export function GameState({
   }
 
   return (
-    <div className='relative'>
+    <div className='group relative'>
       <button
         className={clsx(
           'game-state flex h-36 w-48 shrink-0 flex-col overflow-hidden rounded border-4 border-(--color-background) bg-(--color-background) shadow',
@@ -67,7 +74,10 @@ export function GameState({
         data-sn-focus-style={JSON.stringify({
           backgroundColor: 'rgba(255, 255, 255, 0.3)',
         })}
+        // With a gamepad or the keyboard, right moves onto the card's download and delete buttons
+        data-sn-right={`#${ids.download}`}
         disabled={disabled}
+        id={ids.card}
         onClick={handleClick}
         type='button'
       >
@@ -106,18 +116,35 @@ export function GameState({
           {isMutating ? (
             <span className='icon-[svg-spinners--180-ring] block size-3 text-(--accent-9)' />
           ) : (
-            <>
-              {state.disc && discs.length > 1 ? (
-                <Badge className='origin-left scale-90'>{t('emulator.disc', { number: state.disc })}</Badge>
-              ) : (
-                <>{t('common.savedAt')} </>
-              )}
-              <Badge className='origin-left scale-90'>{humanizeDate(state.createdAt, dateFormat)}</Badge>
-            </>
+            <span className='px-1'>
+              {state.disc && discs.length > 1 ? `${t('emulator.disc', { number: state.disc })}, ${date}` : date}
+            </span>
           )}
         </div>
       </button>
-      <GameStateDelete id={state.id} />
+      {/* Shown on the card under the pointer or the focus; always shown on touch screens, which have no pointer */}
+      <div
+        className={clsx(
+          'absolute top-2.5 right-2.5 flex gap-1.5 transition-opacity',
+          '[@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-focus-within:opacity-100 [@media(hover:hover)]:group-hover:opacity-100',
+        )}
+      >
+        <a
+          aria-label={t('common.download')}
+          className='flex size-7 items-center justify-center rounded-full bg-black/70 text-white hover:bg-black'
+          data-sn-enabled
+          data-sn-focus-style={JSON.stringify({ backgroundColor: 'rgba(255, 255, 255, 0.5)', borderRadius: '14px' })}
+          data-sn-left={`#${ids.card}`}
+          data-sn-right={`#${ids.delete}`}
+          download={fileName}
+          href={getFileUrl(state.fileId)}
+          id={ids.download}
+          title={t('common.download')}
+        >
+          <span className='icon-[mdi--download] size-4' />
+        </a>
+        <GameStateDelete id={state.id} left={`#${ids.download}`} elementId={ids.delete} />
+      </div>
     </div>
   )
 }
