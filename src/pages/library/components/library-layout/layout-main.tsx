@@ -5,7 +5,7 @@ export function LayoutMain({ children }: Readonly<PropsWithChildren>) {
   return (
     <main
       className={clsx(
-        'relative flex-1 overflow-hidden border-r-[calc(0.5rem+env(safe-area-inset-right))] border-b-[calc(0.5rem+env(safe-area-inset-bottom))] border-l-[calc(0.5rem+env(safe-area-inset-left))] border-(--accent-9)',
+        'relative flex-1 overflow-clip border-r-[calc(0.5rem+env(safe-area-inset-right))] border-b-[calc(0.5rem+env(safe-area-inset-bottom))] border-l-[calc(0.5rem+env(safe-area-inset-left))] border-(--accent-9)',
         'lg:mt-4 lg:mr-4 lg:mb-0 lg:ml-72 lg:border-none lg:pb-12',
       )}
     >

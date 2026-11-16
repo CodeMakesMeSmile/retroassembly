@@ -5,7 +5,8 @@ import { useRoms } from '../../hooks/use-roms.ts'
 import { GameEntry } from '../game-entry/game-entry.tsx'
 import { GameListActions } from './game-list-actions.tsx'
 import { GameListEmpty } from './game-list-empty.tsx'
-import { GameListPagination } from './game-list-pagination.tsx' // Import the Pagination component
+import { GameListLetters, letterOf } from './game-list-letters.tsx'
+import { GameListPagination } from './game-list-pagination.tsx'
 
 export function GameList() {
   const { preference } = usePreference()
@@ -24,10 +25,13 @@ export function GameList() {
     <div className='flex flex-col border border-transparent border-t-(--gray-6) pt-4'>
       <GameListActions />
       {roms?.length ? (
-        <div className='mt-4 grid [--min-width:150px] lg:[--min-width:100%]' style={{ gridTemplateColumns }}>
-          {roms.map((rom) => (
-            <GameEntry key={rom.id} rom={rom} />
-          ))}
+        <div className='mt-4 flex gap-2'>
+          <div className='grid flex-1 [--min-width:150px] lg:[--min-width:100%]' style={{ gridTemplateColumns }}>
+            {roms.map((rom) => (
+              <GameEntry key={rom.id} rom={rom} />
+            ))}
+          </div>
+          <GameListLetters current={letterOf(roms[0]?.fileName ?? undefined)} />
         </div>
       ) : (
         <GameListEmpty />
