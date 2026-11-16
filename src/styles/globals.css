@@ -84,6 +84,17 @@ a.pending:focus {
   }
 }
 
+/* A tilting cover turns as one flat picture, drawn whole on its own surface and then turned: Firefox drew thin lines
+   across it where it split nested 3D layers, and where the turned picture crossed the edges of its screen tiles. The
+   scale layer stays 3D, to pass the perspective on to the turning layer */
+.atropos.atropos-flat-at-rest :is(.atropos-rotate, .atropos-inner) {
+  transform-style: flat;
+}
+
+.atropos.atropos-flat-at-rest[data-tilting] .atropos-rotate {
+  will-change: transform;
+}
+
 /* A cover's 3D tilt layers are drawn flat until it's pointed at (see TiltCover) */
 .atropos.atropos-flat-at-rest:not([data-tilting]),
 .atropos.atropos-flat-at-rest:not([data-tilting]) :is(.atropos-scale, .atropos-rotate, .atropos-inner) {
