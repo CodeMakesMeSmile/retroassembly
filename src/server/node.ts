@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server'
 import { RouterContextProvider, createRequestHandler } from 'react-router'
 import { getAuthMode } from '#@/utils/server/auth.ts'
 import { startCDNCachePrefetch } from '#@/utils/server/cdn-prefetch.ts'
+import { compressPspGames } from '#@/utils/server/compress-psp-games.ts'
 import { initializeDatabase } from '#@/utils/server/migration/initalization.ts'
 import { backfillRawMetadata } from '#@/utils/server/migration/raw-metadata.ts'
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -43,4 +44,5 @@ export async function boot({ hostname, onListening, port }: BootOptions) {
 
   runInBackground('Filling in game info', backfillRawMetadata)
   runInBackground('Downloading CDN files', startCDNCachePrefetch)
+  runInBackground('Compressing PSP games', compressPspGames)
 }

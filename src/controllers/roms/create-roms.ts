@@ -5,6 +5,7 @@ import { DateTime } from 'luxon'
 import { getRunTimeEnv } from '#@/constants/env.ts'
 import { platformMap, type PlatformName } from '#@/constants/platform.ts'
 import { romTable, statusEnum } from '#@/databases/schema.ts'
+import { compressPspGame, getCsoFileId, isCompressible } from '#@/utils/server/compress-psp-games.ts'
 import { getDiscFields, updateDiscGroups } from '#@/utils/server/disc-groups.ts'
 import { DomainError } from '#@/utils/server/domain-error.ts'
 import { getFilePartialDigest } from '#@/utils/server/file.ts'
@@ -103,9 +104,12 @@ export async function createRom(
 
   // Store file
   const digest = await getFilePartialDigest(file)
-  const fileId = path.join('roms', platform, `${digest}${ext}`)
-  const fileExists = await storage.head(fileId)
-  if (!fileExists) {
+  let fileId = path.join('roms', platform, `${digest}${ext}`)
+  // A PSP disc uploaded before is already compressed; a new one is compressed once it's stored
+  const compressible = isCompressible(platform, fileId)
+  if (compressible && (await storage.head(getCsoFileId(fileId)))) {
+    fileId = getCsoFileId(fileId)
+  } else if (!(await storage.head(fileId))) {
     await storage.put(fileId, file)
   }
 
@@ -147,6 +151,9 @@ export async function createRom(
     ;[result] = await library.update(romTable).set(updateData).where(eq(romTable.id, existingRom.id)).returning()
   } else {
     ;[result] = await library.insert(romTable).values(romData).returning()
+  }
+  if (compressible && fileId !== getCsoFileId(fileId)) {
+    void compressPspGame(fileId)
   }
   // A new disc of a game may stand for it now (disc 1 added after disc 2), so its saves and history follow
   if (result.discGroup) {
