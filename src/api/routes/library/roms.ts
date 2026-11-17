@@ -10,6 +10,7 @@ import { countSearchMatches } from '#@/controllers/roms/count-search-matches.ts'
 import { createRom } from '#@/controllers/roms/create-roms.ts'
 import { deleteRom } from '#@/controllers/roms/delete-rom.ts'
 import { deleteRoms } from '#@/controllers/roms/delete-roms.ts'
+import { getOnThisDayPicks, getPlayTogetherPicks, getRediscoverPicks } from '#@/controllers/roms/get-home-picks.ts'
 import { getRomContent } from '#@/controllers/roms/get-rom-content.ts'
 import { searchRoms } from '#@/controllers/roms/search-roms.ts'
 import { updateRom } from '#@/controllers/roms/update-rom.ts'
@@ -224,6 +225,14 @@ export const roms = new Hono()
       return c.json(null)
     },
   )
+
+  // Home's rows of picks: well-rated games never played, games released on a day (the browser's, as MM-DD), and games
+  // for two or more players
+  .get('rediscover', async (c) => c.json(await getRediscoverPicks(c.var.scope)))
+  .get('on_this_day', zValidator('query', z.object({ date: z.string().regex(/^\d{2}-\d{2}$/u) })), async (c) =>
+    c.json(await getOnThisDayPicks(c.var.scope, c.req.valid('query').date)),
+  )
+  .get('play_together', async (c) => c.json(await getPlayTogetherPicks(c.var.scope)))
 
   // How many games match a search, in all and on each console, for the counts in the sidebar
   .get('search_counts', zValidator('query', z.object({ query: z.string().min(1).max(100) })), async (c) => {

@@ -24,6 +24,8 @@ export async function getRomsWithStates(scope: LibraryScope, { page = 1, pageSiz
       gameName: romTable.gameName,
       id: romTable.id,
       isFavorite: favoriteTable.id,
+      /** When this player last saved a state in it */
+      lastSaved: max(stateTable.createdAt),
       launchboxGameId: romTable.launchboxGameId,
       libretroGameId: romTable.libretroGameId,
       platform: romTable.platform,

@@ -1,55 +1,78 @@
 import { useTranslation } from 'react-i18next'
 import { generatePath, useLoaderData } from 'react-router'
-import { useLibraryData } from '#@/pages/library/hooks/use-library-data.ts'
 import { routes } from '#@/pages/routes.ts'
 import type { loader } from '#@/pages/routes/library-home.tsx'
-import { UploadSelectButton } from '../platform/components/upload-select-button.tsx'
-import { GeneralSection } from './components/general-section.tsx'
+import { ConsoleRow } from './components/console-row.tsx'
+import { GameRow } from './components/game-row.tsx'
 import { HomeEmpty } from './components/home-empty.tsx'
-import { JumpBackInSection } from './components/jump-back-in-section.tsx'
+import { HomeHero } from './components/home-hero.tsx'
+import { HomeRow } from './components/home-row.tsx'
+import { LibraryStats } from './components/library-stats.tsx'
+import { OnThisDayRow } from './components/on-this-day-row.tsx'
+import { usePlayTogetherPicks, useRediscoverPicks } from './components/use-home-picks.ts'
+
+// Home: what you're in the middle of, the library at a glance and its consoles, then rows that change from visit to
+// visit. A row with nothing in it is left out
 
 export function LibraryHomePage() {
   const { t } = useTranslation()
   const { favoriteRoms, newAddedRoms } = useLoaderData<typeof loader>()
-  const { recentlyLaunchedRoms } = useLibraryData()
+  const rediscover = useRediscoverPicks()
+  const playTogether = usePlayTogetherPicks()
 
-  const isEmpty = newAddedRoms.length === 0
-
-  if (isEmpty) {
+  if (newAddedRoms.length === 0) {
     return <HomeEmpty />
   }
 
   return (
-    <>
-      <div>
-        <JumpBackInSection />
+    <div className='p-4 lg:p-2'>
+      <HomeHero />
+      <LibraryStats />
+      <ConsoleRow />
 
-        {[
-          {
-            icon: 'icon-[mdi--recent]',
-            link: generatePath(routes.libraryHistory),
-            roms: recentlyLaunchedRoms,
-            title: t('common.recent'),
-          },
-          {
-            icon: 'icon-[mdi--heart]',
-            link: generatePath(routes.libraryFavorites),
-            roms: favoriteRoms,
-            title: t('nav.favorites'),
-          },
-          {
-            icon: 'icon-[mdi--archive-add]',
-            link: [generatePath(routes.libraryRoms), new URLSearchParams({ direction: 'desc', sort: 'added' })].join(
-              '?',
-            ),
-            roms: newAddedRoms,
-            suffix: <UploadSelectButton />,
-            title: t('common.newAdded'),
-          },
-        ].map((props) => (
-          <GeneralSection className='py-4' key={props.title} {...props} />
-        ))}
+      {rediscover.data?.length ? (
+        <HomeRow
+          extra={
+            <button
+              className='rounded-full border border-(--accent-6) px-3 py-0.5 text-xs font-semibold text-(--accent-11) hover:bg-(--accent-3)'
+              onClick={() => rediscover.mutate()}
+              type='button'
+            >
+              {t('home.shuffle')}
+            </button>
+          }
+          note={t('home.rediscoverNote')}
+          title={t('home.rediscover')}
+        >
+          <GameRow roms={rediscover.data} />
+        </HomeRow>
+      ) : null}
+
+      <OnThisDayRow />
+
+      {/* Side by side on a computer when there are both; Recently added alone takes the whole width */}
+      <div className={favoriteRoms.length > 0 ? 'lg:grid lg:grid-cols-2 lg:gap-8' : ''}>
+        {favoriteRoms.length > 0 ? (
+          <HomeRow link={generatePath(routes.libraryFavorites)} title={t('nav.favorites')}>
+            <GameRow roms={favoriteRoms} />
+          </HomeRow>
+        ) : null}
+        <HomeRow
+          link={`${generatePath(routes.libraryRoms)}?${new URLSearchParams({ direction: 'desc', sort: 'added' })}`}
+          title={t('home.recentlyAdded')}
+        >
+          <GameRow roms={newAddedRoms} />
+        </HomeRow>
       </div>
-    </>
+
+      {playTogether.data?.length ? (
+        <HomeRow note={t('home.playTogetherNote')} title={t('home.playTogether')}>
+          <GameRow
+            note={(rom) => (rom.gamePlayers ? t('home.players', { count: rom.gamePlayers }) : undefined)}
+            roms={playTogether.data}
+          />
+        </HomeRow>
+      ) : null}
+    </div>
   )
 }

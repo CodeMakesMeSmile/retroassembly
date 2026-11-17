@@ -2,6 +2,7 @@ import { getContext } from 'hono/context-storage'
 import { getLatestGameSave } from '#@/controllers/game-saves/game-saves.ts'
 import { getLaunchRecords } from '#@/controllers/launch-records/get-launch-records.ts'
 import { type Disc, getDiscs } from '#@/controllers/roms/get-discs.ts'
+import { getLibraryOverview } from '#@/controllers/roms/get-home-picks.ts'
 import { getRom } from '#@/controllers/roms/get-rom.ts'
 import { getRomsWithStates } from '#@/controllers/roms/get-roms-with-states.ts'
 import { getRoms } from '#@/controllers/roms/get-roms.ts'
@@ -12,13 +13,20 @@ import { LibraryHomePage } from '../library/home/page.tsx'
 export async function loader() {
   const { preference } = getContext().var
 
-  const [{ roms: recentlySavedRoms }, { roms: newAddedRoms }, { roms: favoriteRoms }, { roms: recentlyLaunchedRoms }] =
-    await Promise.all([
-      getRomsWithStates(getLibraryScope(), { pageSize: 1 }),
-      getRoms(getLibraryScope(), { direction: 'desc', orderBy: 'added', pageSize: 20 }),
-      getRoms(getLibraryScope(), { favorite: true, pageSize: 20 }),
-      getLaunchRecords(getLibraryScope(), { pageSize: 1 }),
-    ])
+  const [
+    { roms: recentlySavedRoms },
+    { roms: newAddedRoms },
+    { roms: favoriteRoms },
+    { roms: recentlyLaunchedRoms },
+    overview,
+  ] = await Promise.all([
+    // The games with saves, newest first: the first to continue, the next few as "Also in progress"
+    getRomsWithStates(getLibraryScope(), { pageSize: 9 }),
+    getRoms(getLibraryScope(), { direction: 'desc', orderBy: 'added', pageSize: 20 }),
+    getRoms(getLibraryScope(), { favorite: true, pageSize: 20 }),
+    getLaunchRecords(getLibraryScope(), { pageSize: 1 }),
+    getLibraryOverview(getLibraryScope()),
+  ])
 
   const data: {
     discs: Disc[]
@@ -53,7 +61,9 @@ export async function loader() {
     discs: data.discs,
     favoriteRoms,
     gameSave: data.gameSave,
+    inProgressRoms: recentlySavedRoms.filter(({ id }) => id !== data.rom?.id).slice(0, 8),
     newAddedRoms,
+    overview,
     recentlySavedRoms,
     rom: data.rom,
     state: data.state,
