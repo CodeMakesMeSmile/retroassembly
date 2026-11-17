@@ -1,3 +1,5 @@
+import { readStats } from '#@/emulator/game-storage.ts'
+
 // Temporary: on PSP game pages, everything that would help tell why a game doesn't run on a phone is sent to the
 // server's log: the device and its graphics, every console message (the emulator writes its own there), errors, and
 // the frame rate every few seconds. Removed once that's solved
@@ -135,6 +137,12 @@ export function startDiagnostics() {
       )
     }
     Object.assign(audio, { ahead: 0, chunks: 0, gapMs: 0, gaps: 0, made: 0 })
+    if (readStats.reads > 0) {
+      add(
+        `storage ${readStats.reads} reads, ${Math.round(readStats.bytes / 1024)} KB, waited ${Math.round(readStats.ms)}ms`,
+      )
+    }
+    Object.assign(readStats, { bytes: 0, ms: 0, reads: 0 })
     frames = 0
     longest = 0
     send()
