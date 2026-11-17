@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { type BlockerFunction, useBlocker, useLocation } from 'react-router'
+import { startDiagnostics } from '#@/pages/library/utils/diagnostics.ts'
 import { needsCrossOriginIsolation } from '#@/utils/isomorphic/cross-origin-isolation.ts'
 
 // Whether this page was loaded with cross-origin isolation. It can't change without loading a page in full
@@ -22,6 +23,13 @@ export function useCrossOriginIsolatedNavigation() {
     return crosses
   }
   const blocker = useBlocker(shouldBlock)
+
+  // Temporary: PSP game pages report to the server's log while PSP is checked on phones
+  useEffect(() => {
+    if (documentIsolated) {
+      startDiagnostics()
+    }
+  }, [])
 
   useEffect(() => {
     if (blocker.state !== 'blocked') {
