@@ -1,8 +1,9 @@
+import type { ReactNode } from 'react'
 import { FavoriteButton } from './favorite-button.tsx'
 import { SortDropdown } from './sort-dropdown.tsx'
 import { useGameListActions } from './use-game-list-actions.ts'
 
-export function FilterActions() {
+export function FilterActions({ leading }: Readonly<{ leading?: ReactNode }>) {
   const {
     showFavoriteButton,
     showSortDropdown,
@@ -15,7 +16,8 @@ export function FilterActions() {
   } = useGameListActions()
 
   return (
-    <div className='ml-auto flex gap-2'>
+    <div className='ml-auto flex items-center gap-2'>
+      {leading}
       {showFavoriteButton && (
         <FavoriteButton isViewingFavorites={isViewingFavorites} getToggleLink={getFavoriteToggleLink} />
       )}

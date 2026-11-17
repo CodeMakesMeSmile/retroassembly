@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { type ReactNode, useEffect } from 'react'
 import { useSelectedGames } from '../../atoms.ts'
 import { usePreference } from '../../hooks/use-preference.ts'
 import { useRoms } from '../../hooks/use-roms.ts'
@@ -9,7 +9,14 @@ import { GameListLetters, letterOf } from './game-list-letters.tsx'
 import { GameListPagination } from './game-list-pagination.tsx'
 import { GameListSearching } from './game-list-searching.tsx'
 
-export function GameList() {
+export interface GameListProps {
+  /** At the start of the Favorites and Sort line */
+  actionsLeading?: ReactNode
+  /** On a computer the page shows that line in its own header, so the list leaves it out there */
+  actionsInHeader?: boolean
+}
+
+export function GameList({ actionsInHeader, actionsLeading }: Readonly<GameListProps>) {
   const { preference } = usePreference()
   const { roms } = useRoms()
   const [, setSelectedGames] = useSelectedGames()
@@ -25,7 +32,7 @@ export function GameList() {
   return (
     <div className='flex flex-col border border-transparent border-t-(--gray-6) pt-4'>
       <GameListSearching />
-      <GameListActions />
+      <GameListActions className={actionsInHeader ? 'lg:hidden' : undefined} leading={actionsLeading} />
       {roms?.length ? (
         <div className='mt-4 flex gap-2'>
           <div className='grid flex-1 [--min-width:150px] lg:[--min-width:100%]' style={{ gridTemplateColumns }}>

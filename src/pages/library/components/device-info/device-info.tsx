@@ -1,17 +1,28 @@
+import { clsx } from 'clsx'
+import { type ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { platformMap } from '#@/constants/platform.ts'
 import { getPlatformBanner, getPlatformDevicePhoto } from '#@/utils/client/library.ts'
 import { useDate } from '../../hooks/use-date.ts'
 import { CompanyLogo } from '../../platform/components/company-logo.tsx'
-import { DeviceNotes } from './device-notes.tsx'
 
-export function DeviceInfo({ platform }: Readonly<{ platform: string }>) {
+/**
+ * A console's page header, on one line: its logo, when it came out and who made it, and About, which opens the rest (the
+ * full facts, the description and a photo). On a computer the Favorites and Sort line (`actions`) is on this line too
+ */
+export function DeviceInfo({ actions, platform }: Readonly<{ actions?: ReactNode; platform: string }>) {
   const { t } = useTranslation()
+  const [aboutOpen, setAboutOpen] = useState(false)
   const { formatDate, formatDateRelative, isValidDate } = useDate()
 
   const platformData = platformMap[platform]
   if (!platformData?.info) {
-    return <h1 className='text-5xl font-semibold'>{t(platformData?.displayNameI18nKey || '')}</h1>
+    return (
+      <div className='flex w-full items-center gap-4'>
+        <h1 className='text-3xl font-semibold'>{t(platformData?.displayNameI18nKey || '')}</h1>
+        {actions ? <div className='ml-auto hidden min-w-0 lg:block'>{actions}</div> : null}
+      </div>
+    )
   }
 
   const { info } = platformData
@@ -38,79 +49,107 @@ export function DeviceInfo({ platform }: Readonly<{ platform: string }>) {
     manufacturer = 'Atari'
   }
 
+  const year = isValidDate(info.releaseDate) ? new Date(info.releaseDate).getUTCFullYear() : undefined
+  const summary = [year, manufacturer].filter(Boolean).join(', ')
+
   return (
-    <div className='flex flex-col lg:flex-row'>
-      <div className='flex flex-1 flex-col gap-8'>
-        <h1>
-          <img alt={t(platformData.displayNameI18nKey)} className='h-16 w-auto lg:px-8' loading='lazy' src={banner} />
+    <div className='flex w-full min-w-0 flex-col'>
+      <div className='flex items-center gap-3 lg:gap-4'>
+        <h1 className='shrink-0'>
+          <img
+            alt={t(platformData.displayNameI18nKey)}
+            className='h-8 w-auto max-w-32 object-contain object-left lg:h-10 lg:max-w-52'
+            loading='lazy'
+            src={banner}
+          />
         </h1>
+        <div className='min-w-0 flex-1 truncate text-sm text-(--gray-11) lg:flex-none'>
+          {year ? <span className='hidden lg:inline'>{t('common.released')} </span> : null}
+          {summary}
+        </div>
+        <button
+          aria-expanded={aboutOpen}
+          className='flex shrink-0 items-center gap-0.5 text-sm font-semibold text-(--accent-11) hover:underline'
+          data-sn-enabled
+          onClick={() => setAboutOpen(!aboutOpen)}
+          type='button'
+        >
+          {t('common.about')}
+          <span className={clsx('size-4', aboutOpen ? 'icon-[mdi--chevron-up]' : 'icon-[mdi--chevron-down]')} />
+        </button>
+        {actions ? <div className='ml-auto hidden min-w-0 lg:block'>{actions}</div> : null}
+      </div>
 
-        <div className='rounded bg-(--gray-a3) p-4 lg:px-8'>
-          <div className='flex flex-col gap-8 lg:flex-row lg:*:min-w-36'>
-            <div>
-              <div className='flex min-h-6 items-center gap-2 font-semibold'>
-                <span className='icon-[mdi--calendar]' />
-                <span>{t('common.released')}</span>
-              </div>
-              <div className='mt-1 pl-6'>
-                {isValidDate(info.releaseDate) ? (
-                  <>
-                    {formatDate(info.releaseDate)}
-                    <span className='ml-1.5 text-xs opacity-50'>{formatDateRelative(info.releaseDate)}</span>
-                  </>
-                ) : (
-                  <span className='opacity-40'>{t('common.unknown')}</span>
-                )}
-              </div>
-            </div>
-
-            {manufacturer === developer ? (
+      {aboutOpen ? (
+        <div className='mt-3 flex items-center gap-6 rounded bg-(--gray-a3) p-4'>
+          <div className='flex min-w-0 flex-1 flex-col gap-4'>
+            <div className='flex flex-wrap gap-x-8 gap-y-3 lg:*:min-w-36'>
               <div>
                 <div className='flex min-h-6 items-center gap-2 font-semibold'>
-                  <span className='icon-[mdi--factory]' />
-                  <span>
-                    {t('common.developer')} & {t('common.manufacturer')}
-                  </span>
+                  <span className='icon-[mdi--calendar]' />
+                  <span>{t('common.released')}</span>
                 </div>
                 <div className='mt-1 pl-6'>
-                  <CompanyLogo className='h-5' company={manufacturer || ''} fallback={manufacturer} />
+                  {isValidDate(info.releaseDate) ? (
+                    <>
+                      {formatDate(info.releaseDate)}
+                      <span className='ml-1.5 text-xs opacity-50'>{formatDateRelative(info.releaseDate)}</span>
+                    </>
+                  ) : (
+                    <span className='opacity-40'>{t('common.unknown')}</span>
+                  )}
                 </div>
               </div>
-            ) : (
-              <>
+
+              {manufacturer === developer ? (
                 <div>
                   <div className='flex min-h-6 items-center gap-2 font-semibold'>
                     <span className='icon-[mdi--factory]' />
-                    <span>{t('common.developer')}</span>
-                  </div>
-                  <div className='mt-1 pl-6'>
-                    <CompanyLogo className='h-5' company={developer || ''} fallback={developer} />
-                  </div>
-                </div>
-                <div>
-                  <div className='flex min-h-6 items-center gap-2 font-semibold'>
-                    <span className='icon-[mdi--factory]' />
-                    <span>{t('common.manufacturer')}</span>
+                    <span>
+                      {t('common.developer')} & {t('common.manufacturer')}
+                    </span>
                   </div>
                   <div className='mt-1 pl-6'>
                     <CompanyLogo className='h-5' company={manufacturer || ''} fallback={manufacturer} />
                   </div>
                 </div>
-              </>
-            )}
+              ) : (
+                <>
+                  <div>
+                    <div className='flex min-h-6 items-center gap-2 font-semibold'>
+                      <span className='icon-[mdi--factory]' />
+                      <span>{t('common.developer')}</span>
+                    </div>
+                    <div className='mt-1 pl-6'>
+                      <CompanyLogo className='h-5' company={developer || ''} fallback={developer} />
+                    </div>
+                  </div>
+                  <div>
+                    <div className='flex min-h-6 items-center gap-2 font-semibold'>
+                      <span className='icon-[mdi--factory]' />
+                      <span>{t('common.manufacturer')}</span>
+                    </div>
+                    <div className='mt-1 pl-6'>
+                      <CompanyLogo className='h-5' company={manufacturer || ''} fallback={manufacturer} />
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+            {info.notesI18nKey ? (
+              <p className='font-serif text-sm leading-relaxed whitespace-pre-line text-(--color-text)/70'>
+                {t(info.notesI18nKey)}
+              </p>
+            ) : null}
           </div>
+          <img
+            alt={t(platformData.displayNameI18nKey)}
+            className='hidden aspect-video w-72 shrink-0 object-contain drop-shadow-2xl lg:block'
+            loading='lazy'
+            src={devicePhoto}
+          />
         </div>
-        {info.notesI18nKey ? <DeviceNotes key={platform} notes={t(info.notesI18nKey)} /> : null}
-      </div>
-
-      <div className='hidden w-lg shrink-0 pt-20 lg:block'>
-        <img
-          alt={t(platformData.displayNameI18nKey)}
-          className='motion-preset-oscillate motion-duration-2400 mx-auto aspect-video w-4/5 object-contain object-center drop-shadow-2xl [--motion-loop-translate-y:8px]'
-          loading='lazy'
-          src={devicePhoto}
-        />
-      </div>
+      ) : null}
     </div>
   )
 }

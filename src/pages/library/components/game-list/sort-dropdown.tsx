@@ -40,9 +40,17 @@ export function SortDropdown({ currentSort, currentDirection, buildSortLink, sea
       <DropdownMenu.Trigger>
         <Button variant='soft'>
           <span className='icon-[mdi--sort]' />
-          {searching
-            ? t('common.sortCurrent', { sort: sortOptions.find(({ value }) => value === currentSort)?.label })
-            : t('common.sort')}
+          {searching ? (
+            <>
+              {/* On a phone, where the line also has Add (a console's page), only "Sort", so it all fits on one line */}
+              <span className='group-data-crowded/actions:max-lg:hidden'>
+                {t('common.sortCurrent', { sort: sortOptions.find(({ value }) => value === currentSort)?.label })}
+              </span>
+              <span className='hidden group-data-crowded/actions:max-lg:inline'>{t('common.sort')}</span>
+            </>
+          ) : (
+            t('common.sort')
+          )}
           <DropdownMenu.TriggerIcon />
         </Button>
       </DropdownMenu.Trigger>
