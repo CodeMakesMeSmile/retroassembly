@@ -1,8 +1,31 @@
 import scrollIntoView from 'smooth-scroll-into-view-if-needed'
 import SpatialNavigation, { type Direction } from 'spatial-navigation-ts'
 
+/**
+ * What the arrow keys and a gamepad move between: every link, button and box on the page, so nothing that can be clicked
+ * is out of their reach, except what's marked `data-sn-skip` (each game's heart and menu in a list, which its own page
+ * has, so a grid takes one press a game) and what's hidden, such as the unseen box behind each checkbox
+ */
+export const navigableSelector =
+  ':is(a[href], button, input:not([type="hidden"]), select, textarea, [role="combobox"], [tabindex]:not([tabindex="-1"]), [data-sn-enabled]):not([data-sn-skip], [disabled], [aria-hidden="true"])'
+
+/** A box made focusable only to hold controls, such as a group of checkboxes, is passed over for the controls in it */
+function holdsControls(element: HTMLElement) {
+  return !element.matches('a, button, input, select, textarea') && Boolean(element.querySelector(navigableSelector))
+}
+
+export function isNavigable(element: unknown): element is HTMLElement {
+  return element instanceof HTMLElement && element.matches(navigableSelector) && !holdsControls(element)
+}
+
 function isFocusable(element: unknown): element is HTMLElement {
-  const focusableElements = [HTMLAnchorElement, HTMLButtonElement, HTMLInputElement]
+  const focusableElements = [
+    HTMLAnchorElement,
+    HTMLButtonElement,
+    HTMLInputElement,
+    HTMLSelectElement,
+    HTMLTextAreaElement,
+  ]
   const focusable =
     focusableElements.some((clazz) => element instanceof clazz) ||
     (element instanceof HTMLElement && element.getAttribute('tabindex'))
@@ -36,6 +59,52 @@ export function focus(element: unknown) {
   }
 }
 
+const dialogSelector = '[role="dialog"], [role="alertdialog"]'
+
+/** The dialog on top, such as Settings, when one is open */
+function openDialog() {
+  return [...document.querySelectorAll<HTMLElement>(dialogSelector)].at(-1)
+}
+
+/** Whether a dialog is open with the focus in it (or nowhere): the keys then move in the dialog, and back closes it */
+export function isInDialog() {
+  const { activeElement } = document
+  if (activeElement instanceof HTMLElement && activeElement.closest(dialogSelector)) {
+    return true
+  }
+  return Boolean(openDialog()) && (!activeElement || activeElement === document.body)
+}
+
+/** Whether the focus is in an open menu or list, such as Sort's, which moves with its own keys */
+export function isInMenu() {
+  const { activeElement } = document
+  return (
+    activeElement instanceof HTMLElement &&
+    Boolean(activeElement.closest('[role="menu"], [role="listbox"], [data-radix-popper-content-wrapper]'))
+  )
+}
+
+/** Sends a key to the open menu, as if it were pressed: how a gamepad, or a remapped key, works a menu */
+export function pressInMenu(key: string) {
+  document.activeElement?.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, key }))
+}
+
+/**
+ * Whether the arrow keys on this control are for moving around, rather than for the control itself. Controls that take
+ * the arrows (a menu button opens its menu, a group of checkboxes, tabs or options steps through them in reading order)
+ * don't get them, so up is always up; a slider keeps left and right, to change it
+ */
+export function isArrowForMoving(element: unknown, key: string) {
+  if (!(element instanceof HTMLElement) || isInMenu() || element.closest('.game-overlay')) {
+    return false
+  }
+  if (!element.closest(`.library-layout, ${dialogSelector}`)) {
+    return false
+  }
+  const sideways = key === 'ArrowLeft' || key === 'ArrowRight'
+  return !(sideways && element.matches('[role="slider"], [data-sn-adjust]'))
+}
+
 type CancelHandler = () => void
 let cancelHandler: CancelHandler | undefined
 export function onCancel(handler: CancelHandler) {
@@ -54,13 +123,19 @@ export function cancel() {
   } catch {}
 }
 
+function inSidebar(element: unknown) {
+  return element instanceof HTMLElement && Boolean(element.closest('aside'))
+}
+
 let moving = false
 export function move(direction?: Direction) {
   if (moving || !direction) {
     return
   }
+  // With nothing chosen yet, the first press only shows where you are, on the first thing on the page
+  const before = document.activeElement
   resetFocus()
-  if (!document.activeElement) {
+  if (!document.activeElement || document.activeElement !== before) {
     return
   }
   const currentActiveElement = document.activeElement
@@ -73,6 +148,7 @@ export function move(direction?: Direction) {
     currentActiveElement.dispatchEvent(new CustomEvent('sn:adjust', { detail: direction }))
     return
   }
+  const vertical = direction === 'up' || direction === 'down'
   return new Promise<void>((resolve) => {
     const abortController = new AbortController()
     async function handleWillFocus(event: Event) {
@@ -80,11 +156,20 @@ export function move(direction?: Direction) {
       focus(currentActiveElement)
       const nextActiveElement = event.target
       event.preventDefault()
+      // Up and down from the sidebar stay in it; left and right go to the page
+      if (vertical && inSidebar(currentActiveElement) && !inSidebar(nextActiveElement)) {
+        moving = false
+        abortController.abort()
+        resolve()
+        return
+      }
       if (nextActiveElement instanceof HTMLElement) {
         await scrollIntoView(nextActiveElement, {
           block: 'center',
           duration: 300,
           scrollMode: 'if-needed',
+          // Only what really scrolls: a clipped box, like Home's banner behind its art, would otherwise be nudged
+          skipOverflowHiddenElements: true,
         })
       }
       focus(nextActiveElement)
@@ -93,18 +178,30 @@ export function move(direction?: Direction) {
       resolve()
     }
     document.body.addEventListener('sn:willfocus', handleWillFocus, { capture: true, signal: abortController.signal })
+    // Up and down from the page look only in the page: past its end isn't the sidebar's Settings
+    document.documentElement.classList.toggle('sn-in-page', vertical && !inSidebar(currentActiveElement))
     SpatialNavigation.move(direction)
+    document.documentElement.classList.remove('sn-in-page')
   })
 }
 
 export function resetFocus({ force }: { force?: boolean } = {}) {
-  // @ts-expect-error force retrieving dataset
-  if (!document.activeElement?.dataset.snEnabled || force) {
-    const selectors = ['.game-entry', '.launch-button', '.sidebar-link.active']
+  // In a dialog, its first control
+  const dialog = openDialog()
+  if (dialog) {
+    if (!isNavigable(document.activeElement) || !dialog.contains(document.activeElement)) {
+      focus([...dialog.querySelectorAll(navigableSelector)].find((element) => isNavigable(element)))
+    }
+    return
+  }
+  if (!isNavigable(document.activeElement) || force) {
+    // The first thing on the page to go to: Continue or Start where there's a game to play, then the first game in a
+    // list, then anything in the page, such as the first console on the Consoles page, then where you are in the sidebar
+    const selectors = ['.launch-button', '.game-entry', `main ${navigableSelector}`, '.sidebar-link.active']
     for (const selector of selectors) {
-      const element = document.querySelector(selector)
+      const element = [...document.querySelectorAll(selector)].find((candidate) => isNavigable(candidate))
       if (element) {
-        focus(selector)
+        focus(element)
         return
       }
     }
@@ -112,14 +209,23 @@ export function resetFocus({ force }: { force?: boolean } = {}) {
 }
 
 export function init() {
+  SpatialNavigation.set({ navigableFilter: (element: HTMLElement) => !holdsControls(element) })
+
   SpatialNavigation.add({
     restrict: 'self-only',
-    selector: '.library-layout [data-sn-enabled]',
+    // the sidebar is left out while moving up or down in the page (see move)
+    selector: `.library-layout ${navigableSelector}:not(html.sn-in-page aside *)`,
   })
 
   SpatialNavigation.add({
     restrict: 'self-only',
     selector: '.game-overlay [data-sn-enabled]',
+  })
+
+  // a dialog, such as Settings: the keys move only in it
+  SpatialNavigation.add({
+    restrict: 'self-only',
+    selector: `:is(${dialogSelector}) ${navigableSelector}`,
   })
 
   // game-overlay

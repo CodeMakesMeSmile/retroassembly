@@ -36,7 +36,7 @@ export function LayoutHeader() {
       <header className='px-safe-offset-2 fixed inset-x-0 top-0 z-2 flex items-center gap-2 bg-(--accent-9) py-2 lg:hidden'>
         <UploadBadge className='absolute inset-x-0 top-full flex items-center justify-center gap-2 bg-(--accent-9) py-1 text-xs text-white' />
 
-        <Link className='flex shrink-0 items-center gap-2 font-bold' to={routes.libraryHome}>
+        <Link className='flex shrink-0 items-center gap-2 font-bold' data-sn-skip='' to={routes.libraryHome}>
           <Logo height='32' width='32' />
         </Link>
 

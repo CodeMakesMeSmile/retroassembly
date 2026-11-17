@@ -50,7 +50,7 @@ export default function LibraryLayout({ children }: Readonly<PropsWithChildren>)
 
         <SidebarContainer>
           <div className='flex items-center justify-between px-4 pb-4'>
-            <Link className='flex items-center gap-2 font-bold' to={routes.libraryHome}>
+            <Link className='flex items-center gap-2 font-bold' data-sn-skip='' to={routes.libraryHome}>
               <Logo height='32' width='32' />
               <span className='font-serif font-semibold'>{metadata.title}</span>
             </Link>

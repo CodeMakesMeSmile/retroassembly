@@ -5,7 +5,18 @@ import { Gamepad } from '#@/utils/client/gamepad.ts'
 import { useEmulatorLaunched, usePristine, useShowGameOverlayContent, useSpatialNavigationPaused } from '../atoms.ts'
 import { useMouseIdle } from '../components/emulator-portal/hooks/use-mouse-idle.ts'
 import { getKeyNameFromCode } from '../utils/keyboard.ts'
-import { cancel, click, focus, init, move } from '../utils/spatial-navigation.ts'
+import {
+  cancel,
+  click,
+  focus,
+  init,
+  isInDialog,
+  isInMenu,
+  isArrowForMoving,
+  move,
+  navigableSelector,
+  pressInMenu,
+} from '../utils/spatial-navigation.ts'
 import { useFocusIndicator } from './use-focus-indicator.ts'
 import { useInputMapping } from './use-input-mapping.ts'
 import { usePreference } from './use-preference.ts'
@@ -33,7 +44,10 @@ export function useSpatialNavigation() {
 
   const isNavigating = state === 'loading'
   const isPlaying = emulatorLaunched && !showGameOverlay
-  const isSpatialNavigationPaused = isNavigating || isPlaying || spatialNavigationPaused
+  // A dialog pauses the page behind it, but the keys still move in the dialog
+  function isPaused() {
+    return isNavigating || isPlaying || (spatialNavigationPaused && !isInDialog())
+  }
 
   const { showFocusIndicators } = preference.ui
 
@@ -54,7 +68,19 @@ export function useSpatialNavigation() {
 
   // keyboard navigation
   const handleKeydown = useEffectEvent(async (event: KeyboardEvent) => {
-    if (isSpatialNavigationPaused) {
+    if (isPaused()) {
+      return
+    }
+    // An open menu, such as Sort's, takes the arrows and Enter itself; the back key closes it, as Escape does
+    if (isInMenu()) {
+      const keyName = getKeyNameFromCode(event.code)
+      if (event.key !== 'Escape' && (keyName === inputMapping.cancelKey || keyName === 'backspace')) {
+        event.preventDefault()
+        pressInMenu('Escape')
+      } else if (keyName === inputMapping.confirmKey && keyName !== 'enter' && keyName !== 'space') {
+        event.preventDefault()
+        pressInMenu('Enter')
+      }
       return
     }
     const keyboardDirectionMap = {
@@ -84,20 +110,41 @@ export function useSpatialNavigation() {
       click(document.activeElement)
     } else if (keyName === inputMapping.cancelKey || keyName === 'backspace') {
       event.preventDefault()
-      cancel()
+      if (isInDialog()) {
+        pressInMenu('Escape')
+      } else {
+        cancel()
+      }
+    }
+  })
+
+  // Before the control under the focus sees them, so it doesn't use them itself (see isArrowForMoving)
+  const handleKeydownBeforeControls = useEffectEvent((event: KeyboardEvent) => {
+    const arrows = new Set(['ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowUp'])
+    if (
+      !isPaused() &&
+      arrows.has(event.key) &&
+      !isTypingIn(event.target) &&
+      isArrowForMoving(event.target, event.key)
+    ) {
+      event.preventDefault()
     }
   })
 
   useEffect(() => {
     const abortController = new AbortController()
 
+    document.addEventListener('keydown', handleKeydownBeforeControls, {
+      capture: true,
+      signal: abortController.signal,
+    })
     document.addEventListener('keydown', handleKeydown, { signal: abortController.signal })
     return () => abortController.abort()
   }, [])
 
   // gamepad navigation
   const handleButtonDown = useEffectEvent(async ({ button }: { button: number }) => {
-    if (isSpatialNavigationPaused) {
+    if (isPaused()) {
       return
     }
     const gamepadDirectionMap = {
@@ -107,6 +154,10 @@ export function useSpatialNavigation() {
       [inputMapping.gamepad.input_player1_up_btn]: 'up',
     } as const
     const direction = gamepadDirectionMap[button]
+    if (direction && isInMenu()) {
+      pressInMenu({ down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp' }[direction])
+      return
+    }
     if (direction) {
       setPristine(showFocusIndicators === 'never')
       await move(direction)
@@ -114,13 +165,25 @@ export function useSpatialNavigation() {
   })
 
   const handleButtonPress = useEffectEvent(({ button }: { button: number }) => {
-    if (isSpatialNavigationPaused) {
+    if (isPaused()) {
+      return
+    }
+    if (isInMenu()) {
+      if (`${button}` === inputMapping.confirmButton) {
+        pressInMenu('Enter')
+      } else if (`${button}` === inputMapping.cancelButton) {
+        pressInMenu('Escape')
+      }
       return
     }
     if (`${button}` === inputMapping.confirmButton) {
       click(document.activeElement)
     } else if (`${button}` === inputMapping.cancelButton) {
-      cancel()
+      if (isInDialog()) {
+        pressInMenu('Escape')
+      } else {
+        cancel()
+      }
     }
   })
 
@@ -137,7 +200,7 @@ export function useSpatialNavigation() {
   // focus when an element got hovered
   useEffect(() => {
     const eventName = 'mouseover'
-    const selector = '[data-sn-enabled]'
+    const selector = navigableSelector
 
     function handleMouseOver(event: Event) {
       if (!isIdle && event.currentTarget instanceof HTMLElement) {

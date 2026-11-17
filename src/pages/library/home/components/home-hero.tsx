@@ -99,7 +99,7 @@ export function HomeHero() {
 
   return (
     <>
-      <section className='relative overflow-hidden rounded-xl bg-[#1b1b2b] text-white'>
+      <section className='relative overflow-clip rounded-xl bg-[#1b1b2b] text-white'>
         {art ? (
           <img alt='' className='absolute inset-0 size-full scale-110 object-cover opacity-50 blur-md' src={art} />
         ) : null}

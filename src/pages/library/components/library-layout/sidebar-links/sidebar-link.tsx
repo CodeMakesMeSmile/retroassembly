@@ -9,6 +9,7 @@ async function handleFocus(event: FocusEvent<HTMLAnchorElement>) {
     behavior: 'smooth',
     block: 'nearest',
     scrollMode: 'if-needed',
+    skipOverflowHiddenElements: true,
   })
 }
 
