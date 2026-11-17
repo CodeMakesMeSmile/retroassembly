@@ -173,9 +173,6 @@ export async function storeGame(
   return stored.size
 }
 
-/** How many reads the emulator made of a stored game, how much they read, and how long the page waited for them */
-export const readStats = { bytes: 0, ms: 0, reads: 0 }
-
 /** Reads a stored game as the emulator asks, blocking until each read is answered, which takes well under a millisecond */
 export interface GameReader {
   close: () => void
@@ -232,7 +229,6 @@ export async function openGameReader(name: string): Promise<GameReader> {
       }
     },
     read(target, offset, at, length) {
-      const started = performance.now()
       let done = 0
       while (done < length) {
         const count = request(at + done, Math.min(length - done, readChunk))
@@ -243,9 +239,6 @@ export async function openGameReader(name: string): Promise<GameReader> {
         new Uint8Array(target.buffer, target.byteOffset + offset + done, count).set(data.subarray(0, count))
         done += count
       }
-      readStats.bytes += done
-      readStats.ms += performance.now() - started
-      readStats.reads += 1
       return done
     },
     size,

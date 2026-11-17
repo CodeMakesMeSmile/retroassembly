@@ -235,8 +235,6 @@ export function useEmulatorSessionController({
         rewind_enable: preference.emulator.platform[rom.platform].rewindEnabled,
         run_ahead_enabled: launchProfile.runAhead,
         video_smooth: preference.emulator.videoSmooth,
-        // Temporary: the emulator's own messages, for the diagnostics PSP game pages send while PSP is checked on phones
-        ...(launchProfile.threads ? { libretro_log_level: 1, log_verbosity: true } : {}),
         // A larger audio buffer keeps sound from crackling when a frame takes too long
         ...(launchProfile.audioLatency ? { audio_latency: launchProfile.audioLatency } : {}),
       },
