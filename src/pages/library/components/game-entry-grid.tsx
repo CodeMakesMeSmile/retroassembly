@@ -10,7 +10,8 @@ export function GameEntryGrid({ roms }: { readonly roms: any[] }) {
   const gridTemplateColumns = `repeat(auto-fill,minmax(min(calc(var(--spacing)*${size}),var(--min-width)),1fr))`
 
   return (
-    <div className='grid [--min-width:150px] lg:[--min-width:100%]' style={{ gridTemplateColumns }}>
+    // On Home: three across on a phone, so a section shows several games rather than a screenful of two
+    <div className='grid [--min-width:104px] lg:[--min-width:100%]' style={{ gridTemplateColumns }}>
       {roms.map((rom) => (
         <GameEntry key={rom.id} rom={rom} />
       ))}

@@ -13,12 +13,15 @@ export interface LaunchButtonProgress {
 }
 
 interface LaunchButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Smaller, for buttons side by side, as on Home */
+  compact?: boolean
   progress?: LaunchButtonProgress
   variant?: ButtonProps['variant']
 }
 
 export function LaunchButton({
   children,
+  compact = false,
   disabled,
   progress,
   variant = 'solid',
@@ -28,14 +31,16 @@ export function LaunchButton({
     <button
       aria-busy={progress ? 'true' : undefined}
       aria-disabled={disabled ? 'true' : 'false'}
-      className={clsx('launch-button block w-full lg:w-80', { 'opacity-50': disabled && !progress })}
+      className={clsx('launch-button block', compact ? 'min-w-0 flex-1 lg:w-56 lg:flex-none' : 'w-full lg:w-80', {
+        'opacity-50': disabled && !progress,
+      })}
       data-sn-enabled
       {...props}
       type='button'
     >
       <Button asChild radius='small' size='4' variant={variant}>
         <div
-          className={clsx('relative h-16! w-full! overflow-hidden', {
+          className={clsx('relative w-full! overflow-hidden', compact ? 'h-12!' : 'h-16!', {
             'border-2! bg-(--color-background)! shadow-none!': variant === 'outline',
           })}
         >
@@ -50,7 +55,7 @@ export function LaunchButton({
                 style={{ width: `${(progress.fraction ?? 1) * 100}%` }}
               />
               <span aria-live='polite' className='relative flex flex-col items-center leading-tight text-(--accent-12)'>
-                <span className='text-2xl font-semibold'>{progress.label}</span>
+                <span className={clsx('font-semibold', compact ? 'text-lg' : 'text-2xl')}>{progress.label}</span>
                 {progress.detail ? <span className='text-xs font-medium tabular-nums'>{progress.detail}</span> : null}
               </span>
             </>

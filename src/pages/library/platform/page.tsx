@@ -6,7 +6,6 @@ import type { loader } from '#@/pages/routes/library-platform.tsx'
 import { DeviceInfo } from '../components/device-info/device-info.tsx'
 import { GameListMain } from '../components/game-list-main.tsx'
 import { PageStats } from '../components/page-stats.tsx'
-import { SearchStats } from '../components/search-stats.tsx'
 import { PlatformBackground } from './components/platform-background.tsx'
 import { UploadButton } from './components/upload-button.tsx'
 
@@ -33,21 +32,22 @@ export default function PlatformPage() {
             <DeviceInfo platform={platform} />
 
             <PageStats suffix={<UploadButton platform={platform} />}>
-              <span className='icon-[mdi--bar-chart] text-(--color-text)' />
-              {search ? (
-                <SearchStats matchCount={pagination.total} query={search.query} searchedCount={search.searched} />
-              ) : (
-                <Trans
-                  components={{
-                    1: <span className='font-semibold text-(--accent-9)' />,
-                  }}
-                  i18nKey={favorite ? 'stats.platformFavoriteGames' : 'stats.platformGames'}
-                  values={{
-                    game: gameLabel,
-                    gameCount: pagination.total,
-                    platform: t(platformMap[platform].displayNameI18nKey),
-                  }}
-                />
+              {/* While searching, how many match is in the sidebar and above the results instead */}
+              {search ? null : (
+                <>
+                  <span className='icon-[mdi--bar-chart] text-(--color-text)' />
+                  <Trans
+                    components={{
+                      1: <span className='font-semibold text-(--accent-9)' />,
+                    }}
+                    i18nKey={favorite ? 'stats.platformFavoriteGames' : 'stats.platformGames'}
+                    values={{
+                      game: gameLabel,
+                      gameCount: pagination.total,
+                      platform: t(platformMap[platform].displayNameI18nKey),
+                    }}
+                  />
+                </>
               )}
             </PageStats>
           </div>

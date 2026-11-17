@@ -31,7 +31,7 @@ function subscribeNever() {
   return noop
 }
 
-export function GameButtons({ lazy = false }: Readonly<{ lazy?: boolean }>) {
+export function GameButtons({ compact = false, lazy = false }: Readonly<{ compact?: boolean; lazy?: boolean }>) {
   const { rom } = useLoaderData()
   const { t } = useTranslation()
 
@@ -40,7 +40,7 @@ export function GameButtons({ lazy = false }: Readonly<{ lazy?: boolean }>) {
   return (
     <EmulatorSessionProvider lazy={lazy}>
       <div>
-        <GameButtonsContent />
+        <GameButtonsContent compact={compact} />
         {['psx', 'n64', 'nds', 'psp'].includes(rom.platform) ? (
           <div className='mt-1 text-sm opacity-60'>
             {t('platform.emulationExperimental', { platform: platformName })}
@@ -51,7 +51,7 @@ export function GameButtons({ lazy = false }: Readonly<{ lazy?: boolean }>) {
   )
 }
 
-function GameButtonsContent() {
+function GameButtonsContent({ compact }: Readonly<{ compact: boolean }>) {
   const { rom, state } = useLoaderData()
   const { i18n, t } = useTranslation()
   const { error: prepareError, isDownloading, isPreparing, launch, loadingProgress, prepare, warmUp } = useSession()
@@ -202,9 +202,10 @@ function GameButtonsContent() {
   }
 
   return (
-    <div className='flex w-full flex-col gap-4 xl:flex-row'>
+    <div className={clsx('flex w-full', compact ? 'flex-row gap-2 lg:gap-3' : 'flex-col gap-4 xl:flex-row')}>
       {state ? (
         <LaunchButton
+          compact={compact}
           disabled={isPreparing}
           onClick={handleClickContinue}
           progress={pressed === 'continue' ? progress : undefined}
@@ -212,7 +213,7 @@ function GameButtonsContent() {
         >
           <span
             className={clsx(
-              'absolute left-10',
+              compact ? 'absolute left-4' : 'absolute left-10',
               isPreparing || isDownloading
                 ? 'icon-[svg-spinners--180-ring]'
                 : [
@@ -221,12 +222,15 @@ function GameButtonsContent() {
                   ],
             )}
           />
-          <span className='flex-1 text-2xl font-semibold'>{t('common.continue')}</span>
+          <span className={clsx('flex-1 font-semibold', compact ? 'text-lg' : 'text-2xl')}>{t('common.continue')}</span>
           <HoverCard.Root>
             <HoverCard.Trigger>
               <img
                 alt={t('common.state')}
-                className='absolute right-3 size-10 rounded-sm border-2 border-white bg-neutral-200 object-cover shadow'
+                className={clsx(
+                  'absolute rounded-sm border-2 border-white bg-neutral-200 object-cover shadow',
+                  compact ? 'right-2 size-8' : 'right-3 size-10',
+                )}
                 src={getFileUrl(state.thumbnailFileId)}
               />
             </HoverCard.Trigger>
@@ -242,6 +246,7 @@ function GameButtonsContent() {
       ) : null}
 
       <LaunchButton
+        compact={compact}
         disabled={isPreparing}
         onClick={handleClickStart}
         progress={pressed === 'start' ? progress : undefined}
@@ -250,13 +255,13 @@ function GameButtonsContent() {
       >
         <span
           className={clsx(
-            'absolute left-10',
+            compact ? 'absolute left-4' : 'absolute left-10',
             isPreparing || isDownloading
               ? 'icon-[svg-spinners--180-ring]'
               : ['size-6', mayNeedsUserInteraction ? 'icon-[mdi--gesture-touch]' : 'icon-[mdi--play]'],
           )}
         />
-        <span className='flex-1 text-2xl font-semibold'>{t('emulator.start')}</span>
+        <span className={clsx('flex-1 font-semibold', compact ? 'text-lg' : 'text-2xl')}>{t('emulator.start')}</span>
       </LaunchButton>
 
       <EmulatorPortal />

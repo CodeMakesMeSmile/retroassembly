@@ -3,7 +3,6 @@ import { useLoaderData } from 'react-router'
 import type { loader } from '#@/pages/routes/library-roms.tsx'
 import { GameListMain } from '../components/game-list-main.tsx'
 import { PageStats } from '../components/page-stats.tsx'
-import { SearchStats } from '../components/search-stats.tsx'
 import { UploadSelectButton } from '../platform/components/upload-select-button.tsx'
 
 export default function LibraryROMsPage() {
@@ -23,23 +22,24 @@ export default function LibraryROMsPage() {
       </div>
 
       <PageStats suffix={<UploadSelectButton />}>
-        <span className='icon-[mdi--bar-chart] text-(--color-text)' />
-        {search ? (
-          <SearchStats matchCount={pagination.total} query={search.query} searchedCount={search.searched} />
-        ) : (
-          <Trans
-            components={{
-              1: <span className='font-semibold text-(--accent-9)' />,
-              3: <span className='font-semibold text-(--accent-9)' />,
-            }}
-            i18nKey='stats.totalGames'
-            values={{
-              game: gameLabel,
-              gameCount: pagination.total,
-              platform: platformLabel,
-              platformCount,
-            }}
-          />
+        {/* While searching, how many match is in the sidebar and above the results instead */}
+        {search ? null : (
+          <>
+            <span className='icon-[mdi--bar-chart] text-(--color-text)' />
+            <Trans
+              components={{
+                1: <span className='font-semibold text-(--accent-9)' />,
+                3: <span className='font-semibold text-(--accent-9)' />,
+              }}
+              i18nKey='stats.totalGames'
+              values={{
+                game: gameLabel,
+                gameCount: pagination.total,
+                platform: platformLabel,
+                platformCount,
+              }}
+            />
+          </>
         )}
       </PageStats>
     </GameListMain>
