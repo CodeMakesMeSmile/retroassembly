@@ -1,4 +1,3 @@
-import { sortBy } from 'es-toolkit'
 import { useTranslation } from 'react-i18next'
 import { generatePath, useLocation } from 'react-router'
 import { platformMap } from '#@/constants/platform.ts'
@@ -15,7 +14,7 @@ function getPlatformLink(platform?: string) {
 }
 
 export function useNavigationLinks() {
-  const { t } = useTranslation()
+  const { i18n, t } = useTranslation()
   const { preference } = usePreference()
   const platform = usePlatform()
   const location = useLocation()
@@ -29,7 +28,8 @@ export function useNavigationLinks() {
     to: getPlatformLink(platform),
   }))
 
-  const sortedPlatformLinks = sortBy(platformLinks, ['name'])
+  // A to Z by the names shown, in the reader's language, so a console is quick to find in the list
+  const sortedPlatformLinks = platformLinks.toSorted((a, b) => a.text.localeCompare(b.text, i18n.language))
 
   const groups = [
     {
