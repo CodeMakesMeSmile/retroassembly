@@ -135,6 +135,12 @@ export const defaultPreference: ResolvedPreference = {
         mgba_gb_colors: 'DMG Green',
         mgba_skip_bios: 'ON',
       },
+      ppsspp: {
+        // When the emulator falls behind, as phones do in some busy scenes, a frame goes undrawn instead of the sound
+        // breaking up. Frames are only skipped while it's behind, so where it keeps up nothing changes
+        ppsspp_auto_frameskip: 'enabled',
+        ppsspp_frameskip: '1',
+      },
     },
     fullscreen: false,
     platform: mapValues(platformMap, ({ cores: [core] }, name) => ({
