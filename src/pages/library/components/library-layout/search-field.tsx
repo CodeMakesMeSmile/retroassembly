@@ -85,11 +85,12 @@ export function SearchField({ inBar = false, onDone }: Readonly<{ inBar?: boolea
     <div
       className={clsx(
         'group/search flex items-center gap-2 rounded-md border px-3 transition-colors',
-        inBar ? 'h-9 flex-1 border-transparent bg-white text-(--gray-12)' : 'h-10',
-        !inBar && active && 'border-transparent bg-white text-(--gray-12)',
+        // White with dark text in light and dark themes alike, standing out against the red around it
+        inBar ? 'h-9 flex-1 border-transparent bg-white text-[#1d1d20]' : 'h-10',
+        !inBar && active && 'border-transparent bg-white text-[#1d1d20]',
         !inBar &&
           !active &&
-          'border-white/30 bg-white/15 text-white focus-within:border-transparent focus-within:bg-white focus-within:text-(--gray-12)',
+          'border-white/30 bg-white/15 text-white focus-within:border-transparent focus-within:bg-white focus-within:text-[#1d1d20]',
       )}
     >
       {searching ? (
@@ -103,7 +104,9 @@ export function SearchField({ inBar = false, onDone }: Readonly<{ inBar?: boolea
         autoFocus={inBar}
         className={clsx(
           'min-w-0 flex-1 bg-transparent text-sm outline-none',
-          !inBar && !active && 'placeholder:text-white/85 group-focus-within/search:placeholder:text-(--gray-9)',
+          inBar || active
+            ? 'placeholder:text-[#8b8b93]'
+            : 'placeholder:text-white/85 group-focus-within/search:placeholder:text-[#8b8b93]',
         )}
         data-sn-enabled
         enterKeyHint='search'
