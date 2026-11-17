@@ -20,7 +20,11 @@ export function GameListActions({ className, leading }: Readonly<{ className?: s
 
   // A shared library's players can search it (with the search in the sidebar), but not change it or filter by favorites
   if (shouldHideActions) {
-    return leading ? <div className={twMerge('flex items-center gap-2 px-4', className)}>{leading}</div> : null
+    return leading ? (
+      <div className={twMerge('flex items-center gap-2 px-4', className)} data-sn-section=''>
+        {leading}
+      </div>
+    ) : null
   }
 
   return (
@@ -32,6 +36,7 @@ export function GameListActions({ className, leading }: Readonly<{ className?: s
         }),
       )}
       data-crowded={leading ? '' : undefined}
+      data-sn-section=''
     >
       {hasSelectedGames ? (
         <>

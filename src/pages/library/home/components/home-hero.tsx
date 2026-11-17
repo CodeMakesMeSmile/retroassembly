@@ -59,7 +59,7 @@ function AlsoInProgress({ layout, roms }: Readonly<{ layout: 'panel' | 'row'; ro
     )
   }
   return (
-    <div className='mt-3 xl:hidden'>
+    <div className='mt-3 xl:hidden' data-sn-section=''>
       <div className='mb-1.5 px-1 text-sm font-semibold'>{t('home.alsoInProgress')}</div>
       <div className='-mx-4 flex gap-2 overflow-x-auto px-4 pb-1'>
         {roms.map((rom) => (
@@ -99,7 +99,7 @@ export function HomeHero() {
 
   return (
     <>
-      <section className='relative overflow-clip rounded-xl bg-[#1b1b2b] text-white'>
+      <section className='relative overflow-clip rounded-xl bg-[#1b1b2b] text-white' data-sn-section=''>
         {art ? (
           <img alt='' className='absolute inset-0 size-full scale-110 object-cover opacity-50 blur-md' src={art} />
         ) : null}

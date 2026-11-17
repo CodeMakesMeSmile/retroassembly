@@ -12,6 +12,7 @@ import {
   init,
   isInDialog,
   isInMenu,
+  jump,
   isArrowForMoving,
   move,
   navigableSelector,
@@ -104,7 +105,8 @@ export function useSpatialNavigation() {
     if (direction) {
       event.preventDefault()
       setPristine(showFocusIndicators === 'never')
-      await move(direction)
+      // With Shift, a jump: to the next part of the page, or the end of the row
+      await (event.shiftKey ? jump(direction) : move(direction))
     } else if (keyName === inputMapping.confirmKey || keyName === 'enter' || keyName === 'space') {
       event.preventDefault()
       click(document.activeElement)
@@ -154,6 +156,18 @@ export function useSpatialNavigation() {
       [inputMapping.gamepad.input_player1_up_btn]: 'up',
     } as const
     const direction = gamepadDirectionMap[button]
+    // The shoulder buttons jump to the previous and next part of the page, as Shift and up or down do
+    const jumpDirection = (
+      {
+        [inputMapping.gamepad.input_player1_l1_btn]: 'up',
+        [inputMapping.gamepad.input_player1_r1_btn]: 'down',
+      } as const
+    )[button]
+    if (jumpDirection && !isInMenu()) {
+      setPristine(showFocusIndicators === 'never')
+      await jump(jumpDirection)
+      return
+    }
     if (direction && isInMenu()) {
       pressInMenu({ down: 'ArrowDown', left: 'ArrowLeft', right: 'ArrowRight', up: 'ArrowUp' }[direction])
       return

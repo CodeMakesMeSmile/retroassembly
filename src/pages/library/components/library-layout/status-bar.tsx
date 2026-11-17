@@ -38,6 +38,10 @@ export function StatusBar() {
             {t('common.move')}
           </span>
           <span className='flex items-center gap-2'>
+            <div className='scale-80 rounded border-2 border-current px-1 text-xs'>L R</div>
+            {t('nav.jump')}
+          </span>
+          <span className='flex items-center gap-2'>
             {{ nintendo: rightButtonIcon, xbox: downButtonIcon }[confirmButtonStyle]}
             {t('common.confirm')}
           </span>
@@ -65,6 +69,13 @@ export function StatusBar() {
                 .join(' ')}
             </Kbd>
             {t('common.move')}
+          </span>
+
+          <span className='flex items-center gap-2'>
+            <Kbd className='text-(--accent-9)!' size='1'>
+              Shift ↑ ↓ ← →
+            </Kbd>
+            {t('nav.jump')}
           </span>
 
           {keyboarMappingConfirm ? (

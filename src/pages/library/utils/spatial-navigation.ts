@@ -143,6 +143,18 @@ function isBeside(element: HTMLElement) {
   return to.bottom > from.top + 1 && to.top < from.bottom - 1
 }
 
+async function bringIntoView(element: unknown) {
+  if (element instanceof HTMLElement) {
+    await scrollIntoView(element, {
+      block: 'center',
+      duration: 300,
+      scrollMode: 'if-needed',
+      // Only what really scrolls: a clipped box, like Home's banner behind its art, would otherwise be nudged
+      skipOverflowHiddenElements: true,
+    })
+  }
+}
+
 let moving = false
 export function move(direction?: Direction) {
   if (moving || !direction) {
@@ -179,15 +191,7 @@ export function move(direction?: Direction) {
         resolve()
         return
       }
-      if (nextActiveElement instanceof HTMLElement) {
-        await scrollIntoView(nextActiveElement, {
-          block: 'center',
-          duration: 300,
-          scrollMode: 'if-needed',
-          // Only what really scrolls: a clipped box, like Home's banner behind its art, would otherwise be nudged
-          skipOverflowHiddenElements: true,
-        })
-      }
+      await bringIntoView(nextActiveElement)
       focus(nextActiveElement)
       moving = false
       abortController.abort()
@@ -248,4 +252,146 @@ export function init() {
 
   // game-overlay
   resetFocus()
+}
+
+// Shift and an arrow (or a gamepad's shoulder buttons) jump instead of stepping: up and down to the previous or next part
+// of the page, such as Home's rows or a list's games, and left and right to the ends of the row. A part taller than the
+// screen is jumped through a screen at a time
+
+const sectionSelector = '[data-sn-section]'
+
+/** The dialog, sidebar or page the element is in: jumps stay in it */
+function areaOf(element: HTMLElement) {
+  return element.closest<HTMLElement>(`${dialogSelector}, aside, main`)
+}
+
+function shown(element: HTMLElement) {
+  return element.offsetWidth > 0 && element.offsetHeight > 0
+}
+
+function controlsIn(root: HTMLElement) {
+  return [...root.querySelectorAll<HTMLElement>(navigableSelector)].filter(
+    (element) => isNavigable(element) && shown(element),
+  )
+}
+
+/** The part of the page the element is in, or the whole area where it isn't in one */
+function sectionOf(element: HTMLElement, area: HTMLElement) {
+  const section = element.closest<HTMLElement>(sectionSelector)
+  return section && area.contains(section) ? section : area
+}
+
+function centreAcross(element: HTMLElement) {
+  const rect = element.getBoundingClientRect()
+  return rect.left + rect.width / 2
+}
+
+/** The nearest control in the row the element is in, by how far across it is from x */
+function nearestAcross(candidates: HTMLElement[], x: number) {
+  return candidates.toSorted((a, b) => Math.abs(centreAcross(a) - x) - Math.abs(centreAcross(b) - x))[0]
+}
+
+/** A screen further down (or up) in a part taller than the screen, as near across as can be */
+function aScreenOn(current: HTMLElement, section: HTMLElement, step: 1 | -1) {
+  const from = current.getBoundingClientRect()
+  const distance = window.innerHeight * 0.8
+  const candidates = controlsIn(section).filter((element) => {
+    const rect = element.getBoundingClientRect()
+    return step === 1 ? rect.top >= from.top + distance : rect.bottom <= from.bottom - distance
+  })
+  if (candidates.length === 0) {
+    return
+  }
+  const tops = candidates.map((element) => element.getBoundingClientRect().top)
+  const rowTop = step === 1 ? Math.min(...tops) : Math.max(...tops)
+  const row = candidates.filter((element) => Math.abs(element.getBoundingClientRect().top - rowTop) < 4)
+  return nearestAcross(row, from.left + from.width / 2)
+}
+
+/** The first control of the next (or previous) part of the page */
+function nextSection(current: HTMLElement, area: HTMLElement, step: 1 | -1) {
+  const section = sectionOf(current, area)
+  const from = current.getBoundingClientRect()
+  const bounds = section.getBoundingClientRect()
+  const tall =
+    step === 1
+      ? bounds.bottom > from.bottom + window.innerHeight * 0.8
+      : bounds.top < from.top - window.innerHeight * 0.8
+  if (tall) {
+    const target = aScreenOn(current, section, step)
+    if (target) {
+      return target
+    }
+  }
+  // Parts side by side, like Favorites and Recently added, are one step: the next is the nearest wholly below (above)
+  const sections = [...area.querySelectorAll<HTMLElement>(sectionSelector)].filter(
+    (other) =>
+      other !== section && !other.contains(section) && !section.contains(other) && controlsIn(other).length > 0,
+  )
+  const beyond = sections
+    .filter((other) => {
+      const rect = other.getBoundingClientRect()
+      return step === 1 ? rect.top >= bounds.bottom - 4 : rect.bottom <= bounds.top + 4
+    })
+    .toSorted((a, b) => {
+      const ra = a.getBoundingClientRect()
+      const rb = b.getBoundingClientRect()
+      const gap = step === 1 ? ra.top - rb.top : rb.bottom - ra.bottom
+      // the same distance: the one under (over) where you are
+      return Math.abs(gap) > 4 ? gap : Math.abs(ra.left - from.left) - Math.abs(rb.left - from.left)
+    })
+  const next = beyond[0]
+  return next ? landingIn(next) : undefined
+}
+
+/** Where a jump into a part lands: Continue or Start in the banner, else its first game rather than its heading's "See all" */
+function landingIn(section: HTMLElement) {
+  const controls = controlsIn(section)
+  return (
+    controls.find((element) => element.matches('.launch-button')) ??
+    controls.find((element) => !element.closest('[data-sn-heading]')) ??
+    controls[0]
+  )
+}
+
+/** The control at the far end of the row the element is in */
+function rowEnd(current: HTMLElement, area: HTMLElement, step: 1 | -1) {
+  const from = current.getBoundingClientRect()
+  const row = controlsIn(area).filter((element) => {
+    const rect = element.getBoundingClientRect()
+    return rect.bottom > from.top + 1 && rect.top < from.bottom - 1
+  })
+  const lefts = row.map((element) => element.getBoundingClientRect().left)
+  const edge = step === 1 ? Math.max(...lefts) : Math.min(...lefts)
+  return row.find((element) => element.getBoundingClientRect().left === edge)
+}
+
+export async function jump(direction?: Direction) {
+  if (moving || !direction) {
+    return
+  }
+  const before = document.activeElement
+  resetFocus()
+  const current = document.activeElement
+  if (!(current instanceof HTMLElement) || current !== before) {
+    return
+  }
+  const area = areaOf(current)
+  if (!area) {
+    return move(direction)
+  }
+  const step = direction === 'down' || direction === 'right' ? 1 : -1
+  const target =
+    direction === 'up' || direction === 'down' ? nextSection(current, area, step) : rowEnd(current, area, step)
+  if (!target || target === current) {
+    // Already at the start of the row: on to the sidebar, as left does
+    if (direction === 'left') {
+      return move(direction)
+    }
+    return
+  }
+  moving = true
+  await bringIntoView(target)
+  focus(target)
+  moving = false
 }

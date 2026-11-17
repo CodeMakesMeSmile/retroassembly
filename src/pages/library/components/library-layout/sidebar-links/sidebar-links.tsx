@@ -17,7 +17,7 @@ export function SidebarLinks({ part }: Readonly<{ part: 'pinned' | 'rest' }>) {
   const shownGroups = part === 'pinned' ? groups.slice(0, 1) : groups.slice(1)
 
   return (
-    <div className={clsx('w-64', { 'mb-2 border-b border-b-white/30 pb-3': part === 'pinned' })}>
+    <div className={clsx('w-64', { 'mb-2 border-b border-b-white/30 pb-3': part === 'pinned' })} data-sn-section=''>
       {part === 'pinned' ? (
         <div className='mb-3'>
           <SearchField />

@@ -10,7 +10,9 @@ export function GameListMain({
   // it, as the way back to its console
   return (
     <div className='flex min-h-full w-full flex-col gap-5 p-4'>
-      <div className='relative flex flex-col justify-between pt-4 lg:flex-row lg:px-4'>{children}</div>
+      <div className='relative flex flex-col justify-between pt-4 lg:flex-row lg:px-4' data-sn-section=''>
+        {children}
+      </div>
       <GameList actionsInHeader={actionsInHeader} actionsLeading={actionsLeading} />
     </div>
   )

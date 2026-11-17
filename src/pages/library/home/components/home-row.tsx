@@ -15,8 +15,8 @@ export function HomeRow({
 }: Readonly<{ children: ReactNode; extra?: ReactNode; link?: string; note?: string; title: string }>) {
   const { t } = useTranslation()
   return (
-    <section className='mt-6 min-w-0 lg:mt-8'>
-      <div className='mb-2 flex items-center gap-3 px-1'>
+    <section className='mt-6 min-w-0 lg:mt-8' data-sn-section=''>
+      <div className='mb-2 flex items-center gap-3 px-1' data-sn-heading=''>
         <h2 className='text-lg font-semibold lg:text-xl'>{title}</h2>
         {note ? <span className='hidden text-sm text-(--gray-10) sm:inline'>{note}</span> : null}
         <div className='ml-auto flex shrink-0 items-center gap-3'>

@@ -16,7 +16,7 @@ export function LibraryStats() {
     { count: favorites, label: t('home.statFavorites', { count: favorites }), to: routes.libraryFavorites },
   ]
   return (
-    <div className='mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3'>
+    <div className='mt-4 grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3' data-sn-section=''>
       {items.map(({ count, label, to }) => (
         <Link className='rounded-lg border border-(--gray-5) px-3 py-2 hover:border-(--accent-7)' key={label} to={to}>
           <div className='text-xl leading-tight font-bold text-(--accent-11) tabular-nums lg:text-2xl'>

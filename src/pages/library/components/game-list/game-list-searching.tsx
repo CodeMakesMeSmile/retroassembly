@@ -43,7 +43,7 @@ export function GameListSearching() {
   const activeTab = platform?.name ?? (pathname === routes.libraryRoms ? '' : undefined)
 
   return (
-    <div className='px-4 lg:hidden'>
+    <div className='px-4 lg:hidden' data-sn-section=''>
       {tabs.length > 2 ? (
         <div
           className='-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden'

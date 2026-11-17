@@ -52,7 +52,10 @@ export default function ConsolesPage() {
         })}
       </p>
 
-      <div className='grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(13.75rem,1fr))] lg:gap-4'>
+      <div
+        data-sn-section=''
+        className='grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(13.75rem,1fr))] lg:gap-4'
+      >
         {cards.map(({ count, name, platform }) => (
           <NavigatableLink
             className='group flex flex-col overflow-hidden rounded-xl border border-(--gray-5) bg-(--color-background) hover:border-(--accent-7)'

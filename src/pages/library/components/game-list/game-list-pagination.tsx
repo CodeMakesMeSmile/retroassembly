@@ -59,7 +59,11 @@ export function GameListPagination() {
   }
 
   return (
-    <nav aria-label={t('pagination.pages')} className='mt-4 flex items-center justify-center gap-2 px-4'>
+    <nav
+      aria-label={t('pagination.pages')}
+      className='mt-4 flex items-center justify-center gap-2 px-4'
+      data-sn-section=''
+    >
       {arrows.map((arrow) => renderArrow(arrow))}
       <PageBox current={current} key={current} pages={pages} />
       {after.map((arrow) => renderArrow(arrow))}
