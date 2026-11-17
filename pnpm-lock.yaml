@@ -6,6 +6,9 @@ importers:
   .:
     configDependencies: {}
     packageManagerDependencies:
+      '@pnpm/exe':
+        specifier: 12.11.2
+        version: 12.11.2
       pnpm:
         specifier: 12.11.2
         version: 12.11.2
@@ -89,6 +92,11 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@pnpm/exe@12.11.2':
+    resolution: {integrity: sha512-uUudrvXShgp6yYRL/6XjeB2B2kbjE/alBdVWjFBP0jDiOnV5R83OpCWuGtc+Tn4stk0DEgO/x+vhEUTUf4x+Yw==}
+    engines: {node: '>=18.*'}
+    hasBin: true
+
   pnpm@12.11.2:
     resolution: {integrity: sha512-JaUWUqGWeFr18ovabf6NxYLr76SsHRgCIc4TkCMcX7dmN4IupLbkYzznSs3LCnf3Ja8RutOBd/3t2u6BipVcuQ==}
     engines: {node: '>=18.*'}
@@ -138,6 +146,23 @@ snapshots:
   '@pnpm/exe.win32-x64@12.11.2':
     optional: true
 
+  '@pnpm/exe@12.11.2':
+    optionalDependencies:
+      '@pnpm/exe.android-arm64': 12.11.2
+      '@pnpm/exe.android-x64': 12.11.2
+      '@pnpm/exe.darwin-arm64': 12.11.2
+      '@pnpm/exe.darwin-x64': 12.11.2
+      '@pnpm/exe.freebsd-x64': 12.11.2
+      '@pnpm/exe.linux-arm64': 12.11.2
+      '@pnpm/exe.linux-arm64-musl': 12.11.2
+      '@pnpm/exe.linux-ppc64': 12.11.2
+      '@pnpm/exe.linux-riscv64': 12.11.2
+      '@pnpm/exe.linux-s390x': 12.11.2
+      '@pnpm/exe.linux-x64': 12.11.2
+      '@pnpm/exe.linux-x64-musl': 12.11.2
+      '@pnpm/exe.win32-arm64': 12.11.2
+      '@pnpm/exe.win32-x64': 12.11.2
+
   pnpm@12.11.2:
     optionalDependencies:
       '@pnpm/exe.android-arm64': 12.11.2
@@ -164,7 +189,7 @@ settings:
 
 patchedDependencies:
   goodcodes-parser@2.5.0: 0d6b63ddf0231e5a7643df8e6fce96b8eb7f167de7fe13b28159cf77c2a13873
-  nostalgist@0.23.0: 5260aa7b243b8535ab6eac11ea01fb66c3acd040baa7ad758dfe05fec27a9eec
+  nostalgist@0.23.0: de557f9ad9f0776aba5103e73544227379a2c96a4894a537672b8125a00472e7
   selector-set@1.1.5: d9e1ae2c2c305d4a342bb379999ee53e69dbcff1fa8c729ad499740862b311a7
   spatial-navigation-ts@1.0.8: 20e67dd661a3c61ae62b2ac903799529fec664c7b46c0d1b1ec966364973cf86
 
@@ -355,7 +380,7 @@ importers:
         version: 0.12.0
       nostalgist:
         specifier: 0.23.0
-        version: 0.23.0(patch_hash=5260aa7b243b8535ab6eac11ea01fb66c3acd040baa7ad758dfe05fec27a9eec)
+        version: 0.23.0(patch_hash=de557f9ad9f0776aba5103e73544227379a2c96a4894a537672b8125a00472e7)
       path-to-regexp:
         specifier: 8.4.2
         version: 8.4.2
@@ -7902,7 +7927,7 @@ snapshots:
 
   nosleep.js@0.12.0: {}
 
-  nostalgist@0.23.0(patch_hash=5260aa7b243b8535ab6eac11ea01fb66c3acd040baa7ad758dfe05fec27a9eec):
+  nostalgist@0.23.0(patch_hash=de557f9ad9f0776aba5103e73544227379a2c96a4894a537672b8125a00472e7):
     dependencies:
       '@types/emscripten': 1.41.6
       '@types/ini': 4.1.1
