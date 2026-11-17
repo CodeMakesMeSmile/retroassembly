@@ -7,6 +7,7 @@ import { useGamepads } from '#@/pages/library/hooks/use-gamepads.ts'
 import { SettingsTitle } from '../settings-title.tsx'
 import { UpdateButton } from '../update-button.tsx'
 import { GamepadInput } from './gamepad-input.tsx'
+import { GamepadLiveButtons } from './gamepad-live-buttons.tsx'
 import { GamepadTitle } from './gamepad-title.tsx'
 
 interface ButtonGroup {
@@ -169,6 +170,7 @@ export function GamepadInputs() {
             </div>
           </SettingsTitle>
         ) : null}
+        {gamepad?.id ? <GamepadLiveButtons id={gamepad.id} index={gamepad.index} /> : null}
 
         {connected ? (
           <div className='flex flex-col gap-4 p-4'>

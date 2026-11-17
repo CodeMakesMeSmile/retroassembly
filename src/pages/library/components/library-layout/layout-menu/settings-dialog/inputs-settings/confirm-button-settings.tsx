@@ -32,6 +32,13 @@ export function ConfirmButtonSettings() {
           onValueChange={handleConfirmButtonChange}
           value={preference.input.confirmButtonStyle}
         >
+          <RadioCards.Item value='auto'>
+            <span className='icon-[mdi--auto-mode] text-lg' /> {t('settings.automaticStyle')}
+          </RadioCards.Item>
+          <span className='-mt-2 flex flex-wrap items-center gap-1 text-sm'>
+            {t('settings.automaticButtonExplanation')}
+          </span>
+
           <RadioCards.Item value='nintendo'>
             {switchIcon} {t('settings.nintendoStyle')}
           </RadioCards.Item>

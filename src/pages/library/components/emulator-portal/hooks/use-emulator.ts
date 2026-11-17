@@ -30,6 +30,7 @@ import {
   openGameReader,
   storeGame,
 } from '#@/emulator/game-storage.ts'
+import { keepLastFrame } from '#@/emulator/keep-last-frame.ts'
 import { connectOnScreenGamepad, disconnectOnScreenGamepad } from '#@/emulator/on-screen-gamepad.ts'
 import { type SaveFiles, unzipSaveFiles } from '#@/emulator/save-folder.ts'
 import { saveQueue } from '#@/emulator/save-queue.ts'
@@ -286,6 +287,11 @@ export function useEmulatorSessionController({
   )
 
   const emulator = data
+  // So its save pictures aren't black (see keepLastFrame)
+  useEffect(() => {
+    keepLastFrame(launchProfile.canvasThumbnail)
+    return () => keepLastFrame(false)
+  }, [launchProfile.canvasThumbnail])
   // While a lazy game downloads, Start can still be pressed: it waits for the download
   const isPreparing = !rom || (isValidating && !lazy)
   const isDownloading = isValidating

@@ -154,7 +154,9 @@ export const defaultPreference: ResolvedPreference = {
     videoSmooth: false,
   },
   input: {
-    confirmButtonStyle: 'nintendo',
+    // Automatic: Xbox style with a Valve controller, such as a Steam Deck's, whose A button is the bottom one; Nintendo
+    // style otherwise
+    confirmButtonStyle: 'auto',
     gamepadMappings: {},
     keyboardMapping: {
       $pause: 'escape',

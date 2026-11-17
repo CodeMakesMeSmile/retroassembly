@@ -1,6 +1,7 @@
 import { Kbd } from '@radix-ui/themes'
 import { capitalize, uniq } from 'es-toolkit'
 import { useTranslation } from 'react-i18next'
+import { useConfirmButtonStyle } from '../../hooks/use-confirm-button-style.ts'
 import { useGamepads } from '../../hooks/use-gamepads.ts'
 import { useInputMapping } from '../../hooks/use-input-mapping.ts'
 import { usePreference } from '../../hooks/use-preference.ts'
@@ -16,7 +17,7 @@ export function StatusBar() {
   const { keyboard: keyboardMapping } = useInputMapping()
   const { preference } = usePreference()
 
-  const { confirmButtonStyle } = preference.input
+  const confirmButtonStyle = useConfirmButtonStyle()
   const keyboarMappingConfirm = { nintendo: keyboardMapping.input_player1_a, xbox: keyboardMapping.input_player1_b }[
     confirmButtonStyle
   ]
@@ -56,6 +57,11 @@ export function StatusBar() {
         </>
       ) : (
         <>
+          {/* Browsers only report a controller once one of its buttons is pressed on the page */}
+          <span className='flex items-center gap-2 text-white/60'>
+            <span className='icon-[mdi--google-gamepad]' />
+            {t('gamepad.pressToUse')}
+          </span>
           <span className='flex items-center gap-2'>
             <Kbd className='text-(--accent-9)!' size='1'>
               {[

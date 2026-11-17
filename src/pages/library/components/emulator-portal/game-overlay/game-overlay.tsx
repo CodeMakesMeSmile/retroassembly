@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent } from 'react'
 import { useGamepadMapping } from '#@/pages/library/hooks/use-gamepad-mapping.ts'
 import { useKeyboardMapping } from '#@/pages/library/hooks/use-keyboard-mapping.ts'
+import { useFollowTouchControls } from '#@/pages/library/hooks/use-touch-controls.ts'
 import { getKeyNameFromCode } from '#@/pages/library/utils/keyboard.ts'
 import { Gamepad } from '#@/utils/client/gamepad.ts'
 import { useGameOverlay } from '../hooks/use-game-overlay.ts'
@@ -12,6 +13,7 @@ export function GameOverlay() {
   const keyboardMapping = useKeyboardMapping()
   const gamepadMapping = useGamepadMapping()
   const { toggle } = useGameOverlay()
+  useFollowTouchControls()
 
   const handleKeydown = useEffectEvent(async (event: KeyboardEvent) => {
     if (getKeyNameFromCode(event.code) === keyboardMapping.$pause) {

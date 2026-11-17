@@ -1,13 +1,12 @@
 import { useMemo } from 'react'
+import { useConfirmButtonStyle } from './use-confirm-button-style.ts'
 import { useGamepadMapping } from './use-gamepad-mapping.ts'
 import { useKeyboardMapping } from './use-keyboard-mapping.ts'
-import { usePreference } from './use-preference.ts'
 
 export function useInputMapping() {
-  const { preference } = usePreference()
   const gamepadMapping = useGamepadMapping()
   const keyboardMapping = useKeyboardMapping()
-  const { confirmButtonStyle } = preference.input
+  const confirmButtonStyle = useConfirmButtonStyle()
 
   const confirmKey = {
     nintendo: keyboardMapping.input_player1_a,

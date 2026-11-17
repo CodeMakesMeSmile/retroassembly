@@ -9,6 +9,7 @@ import { useSession } from '#@/pages/library/components/emulator-portal/emulator
 import { useGamepads } from '#@/pages/library/hooks/use-gamepads.ts'
 import { usePreference } from '#@/pages/library/hooks/use-preference.ts'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
+import { useTouchControls } from '#@/pages/library/hooks/use-touch-controls.ts'
 import { useGameOverlay } from '../hooks/use-game-overlay.ts'
 import { ArcadeControls } from './arcade-controls.tsx'
 import { Atari2600Controls } from './atari2600-controls.tsx'
@@ -269,6 +270,7 @@ export function GameOverlayVirtualGamepad() {
   const { connected } = useGamepads()
   const [gamepadVisible, setGamepadVisible] = useState(!connected)
   const { show } = useGameOverlay()
+  const touchControls = useTouchControls()
   const [launched] = useEmulatorLaunched()
   const rom = useRom()
   const { preference } = usePreference()
@@ -296,7 +298,9 @@ export function GameOverlayVirtualGamepad() {
   return (
     <div
       className={twMerge(
-        'fixed inset-0 block touch-none lg:hidden',
+        'fixed inset-0 block touch-none',
+        // Shown by how the game is played, not the screen's size (see useTouchControls)
+        clsx({ hidden: !touchControls }),
         // The DS bottom screen is a touchscreen, so touches outside the buttons must reach the game
         clsx({ 'pointer-events-none! *:pointer-events-auto': controls === 'ds' }),
       )}

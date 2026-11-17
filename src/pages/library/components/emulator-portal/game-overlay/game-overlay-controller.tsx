@@ -1,9 +1,11 @@
+import { clsx } from 'clsx'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useEmulatorLaunched } from '#@/pages/library/atoms.ts'
 import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
+import { useTouchControls } from '#@/pages/library/hooks/use-touch-controls.ts'
 import { useGameOverlay } from '../hooks/use-game-overlay.ts'
 import { useMouseIdle } from '../hooks/use-mouse-idle.ts'
 import { ControllerButton } from './controller-button.tsx'
@@ -28,6 +30,7 @@ export function GameOverlayController() {
     await show()
   }
 
+  const touchControls = useTouchControls()
   const controllerVisible = launched && !idle && !visible
 
   // On DS the mouse is the stylus, so it always shows there, though the DS emulator hides it. Elsewhere it shows while
@@ -46,7 +49,11 @@ export function GameOverlayController() {
         <motion.div
           animate={{ opacity: 1 }}
           // Covers the whole game, so only its buttons take clicks: the game gets the rest, which on DS is its touchscreen
-          className='pointer-events-none! hidden flex-col justify-between lg:flex [&_button]:pointer-events-auto'
+          className={clsx(
+            'pointer-events-none! flex-col justify-between [&_button]:pointer-events-auto',
+            // The bar for a mouse and keyboard; played by touch, the on-screen controls have their own
+            touchControls ? 'hidden' : 'flex',
+          )}
           exit={{ opacity: 0 }}
           initial={{ opacity: 0 }}
           role='toolbar'
