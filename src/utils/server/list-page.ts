@@ -35,16 +35,21 @@ export async function loadGamesPage() {
 
 export async function loadFavoritesPage() {
   const query = getRomsQuery()
-  // No search box here yet, so a search in the address is ignored
-  const { pagination, roms } = await getRoms(getLibraryScope(), { ...query, favorite: true, search: undefined })
-  const letters = await lettersFor(query, pagination.pages, { favorite: true })
-  return { letters, pagination, roms, title: getContext().var.t('nav.favorites') }
+  const { matchIds, pagination, roms, search } = await getRoms(getLibraryScope(), { ...query, favorite: true })
+  const letters = await lettersFor(query, pagination.pages, { favorite: true, ids: matchIds })
+  return { letters, pagination, roms, search, title: getContext().var.t('nav.favorites') }
 }
 
 export async function loadHistoryPage() {
-  const { page } = getRomsQuery()
-  const { pagination, roms } = await getLaunchRecords(getLibraryScope(), { page })
-  return { page, pagination, roms, title: getContext().var.t('nav.history') }
+  const { page, search } = getRomsQuery()
+  const { pagination, roms } = await getLaunchRecords(getLibraryScope(), { page, search })
+  return {
+    page,
+    pagination,
+    roms,
+    search: search ? { query: search } : undefined,
+    title: getContext().var.t('nav.history'),
+  }
 }
 
 /** A console's games; a console the app doesn't know is not found */

@@ -2,7 +2,6 @@ import { Button, DropdownMenu } from '@radix-ui/themes'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSettingsDialogOpen, useSpatialNavigationPaused } from '../../../atoms.ts'
-import { useShowSearchModal } from '../atoms.ts'
 import { AboutDialog } from './about-dialog.tsx'
 import { LogoutDialog } from './logout-dialog.tsx'
 import { SettingsDialog } from './settings-dialog/settings-dialog.tsx'
@@ -11,16 +10,10 @@ import { ThemeMenuItem } from './theme-menu-item.tsx'
 export function LayoutMenu() {
   const { t } = useTranslation()
   const [, setSpatialNavigationPaused] = useSpatialNavigationPaused()
-  const [, setShowSearchModal] = useShowSearchModal()
 
   const [settingsDialogOpen, setSettingsDialogOpen] = useSettingsDialogOpen()
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false)
   const [aboutDialogOpen, setAboutDialogOpen] = useState(false)
-
-  function handleClickSearch() {
-    setSpatialNavigationPaused(true)
-    setShowSearchModal(true)
-  }
 
   function handleClickSettings() {
     setSettingsDialogOpen(true)
@@ -37,11 +30,6 @@ export function LayoutMenu() {
         </DropdownMenu.Trigger>
 
         <DropdownMenu.Content variant='solid'>
-          <DropdownMenu.Item className='lg:hidden!' onClick={handleClickSearch}>
-            <span className='icon-[mdi--search]' />
-            {t('common.search')}
-          </DropdownMenu.Item>
-
           <DropdownMenu.Item onClick={handleClickSettings}>
             <span className='icon-[mdi--cog]' />
             {t('nav.settings')}

@@ -31,7 +31,7 @@ interface Candidate {
   title: string
 }
 
-function rank(candidates: Candidate[], query: string) {
+function rank<T extends Candidate>(candidates: T[], query: string) {
   for (const candidate of candidates) {
     candidate.score = scoreRom(candidate, query)
   }

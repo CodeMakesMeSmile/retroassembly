@@ -6,6 +6,7 @@ import { DateTime } from 'luxon'
 import { z } from 'zod'
 import type { PlatformName } from '#@/constants/platform.ts'
 import { deleteLaunchRecord } from '#@/controllers/launch-records/delete-launch-record.ts'
+import { countSearchMatches } from '#@/controllers/roms/count-search-matches.ts'
 import { createRom } from '#@/controllers/roms/create-roms.ts'
 import { deleteRom } from '#@/controllers/roms/delete-rom.ts'
 import { deleteRoms } from '#@/controllers/roms/delete-roms.ts'
@@ -223,6 +224,12 @@ export const roms = new Hono()
       return c.json(null)
     },
   )
+
+  // How many games match a search, in all and on each console, for the counts in the sidebar
+  .get('search_counts', zValidator('query', z.object({ query: z.string().min(1).max(100) })), async (c) => {
+    const { query } = c.req.valid('query')
+    return c.json(await countSearchMatches(c.var.scope, query))
+  })
 
   .get(
     'search',

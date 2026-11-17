@@ -1,13 +1,22 @@
 import { clsx } from 'clsx'
+import { withSearch } from '../../../hooks/use-library-search.ts'
 import { useNavigationLinks } from '../../../hooks/use-navigation-links.ts'
-import { SearchButton } from './search-button.tsx'
+import { getLinkCount, useSearchCounts } from '../../../hooks/use-search-counts.ts'
+import { useSearchQuery } from '../atoms.ts'
+import { SearchField } from '../search-field.tsx'
 import { SidebarLink } from './sidebar-link.tsx'
 
 export function SidebarLinks() {
   const { groups, isActive } = useNavigationLinks()
+  const [query] = useSearchQuery()
+  const counts = useSearchCounts()
 
   return (
     <div className='w-64'>
+      <div className='mb-3'>
+        <SearchField />
+      </div>
+
       {groups.map(({ links, title }, index) => (
         <div className={clsx({ 'mt-4': index })} key={title}>
           {title ? (
@@ -18,21 +27,34 @@ export function SidebarLinks() {
           ) : null}
 
           <div className={clsx('flex w-full flex-col gap-y-2 overflow-hidden', { 'mt-2': title })}>
-            {links.map(({ iconClass, iconUrl, name, text, to }) => (
-              <div className='relative flex items-center' key={name}>
-                <SidebarLink active={isActive(to)} title={text} to={to}>
-                  {iconClass ? <span className={clsx('size-5 p-0.5', iconClass)} /> : null}
+            {links.map(({ iconClass, iconUrl, name, text, to }) => {
+              // While searching, how many of the link's games match; a link with none is dimmed but stays in place
+              const count = getLinkCount(counts, name)
+              return (
+                <div className={clsx('relative flex items-center', { 'opacity-50': count === 0 })} key={name}>
+                  <SidebarLink active={isActive(to)} title={text} to={withSearch(to, query)}>
+                    {iconClass ? <span className={clsx('size-5 p-0.5', iconClass)} /> : null}
 
-                  {iconUrl ? <img alt={text} className='block size-6' src={iconUrl} /> : null}
+                    {iconUrl ? <img alt={text} className='block size-6' src={iconUrl} /> : null}
 
-                  <span className={clsx('truncate', { 'opacity-90 group-hover:opacity-100': !isActive(to) })}>
-                    {text}
-                  </span>
-                </SidebarLink>
+                    <span className={clsx('truncate', { 'opacity-90 group-hover:opacity-100': !isActive(to) })}>
+                      {text}
+                    </span>
 
-                {name === 'home' ? <SearchButton /> : null}
-              </div>
-            ))}
+                    {count === undefined ? null : (
+                      <span
+                        className={clsx(
+                          'ml-auto shrink-0 rounded-full px-2 text-xs leading-5 font-bold tabular-nums',
+                          count ? 'bg-white text-(--accent-9)' : 'font-normal text-white',
+                        )}
+                      >
+                        {count}
+                      </span>
+                    )}
+                  </SidebarLink>
+                </div>
+              )
+            })}
           </div>
         </div>
       ))}

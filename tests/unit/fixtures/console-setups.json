@@ -975,7 +975,7 @@
     "keyboard": "standard",
     "launch": {
       "attachVirtualGamepad": true,
-      "audioLatency": null,
+      "audioLatency": 160,
       "canvasThumbnail": true,
       "dualShockRemap": false,
       "nudgeAfterStart": false,

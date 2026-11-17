@@ -7,6 +7,7 @@ import { GameListActions } from './game-list-actions.tsx'
 import { GameListEmpty } from './game-list-empty.tsx'
 import { GameListLetters, letterOf } from './game-list-letters.tsx'
 import { GameListPagination } from './game-list-pagination.tsx'
+import { GameListSearching } from './game-list-searching.tsx'
 
 export function GameList() {
   const { preference } = usePreference()
@@ -23,6 +24,7 @@ export function GameList() {
 
   return (
     <div className='flex flex-col border border-transparent border-t-(--gray-6) pt-4'>
+      <GameListSearching />
       <GameListActions />
       {roms?.length ? (
         <div className='mt-4 flex gap-2'>

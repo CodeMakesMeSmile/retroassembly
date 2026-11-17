@@ -8,6 +8,7 @@ import { usePageTitle } from '#@/pages/library/hooks/use-library-data.ts'
 import { routes } from '#@/pages/routes.ts'
 import { useCrossOriginIsolatedNavigation } from '../../hooks/use-cross-origin-isolated-navigation.ts'
 import { useFocusRestoration } from '../../hooks/use-focus-restoration.ts'
+import { useSearchFromAddress } from '../../hooks/use-library-search.ts'
 import { useUploadPendingSaves } from '../../hooks/use-upload-pending-saves.ts'
 import { useWarnBeforeLeavingUpload } from '../../hooks/use-uploads.ts'
 import { useViewport } from '../../hooks/use-viewport.ts'
@@ -17,7 +18,7 @@ import { LayoutHeader } from './layout-header/layout-header.tsx'
 import { LayoutMain } from './layout-main.tsx'
 import { LayoutMenu } from './layout-menu/layout-menu.tsx'
 import '../../utils/nostalgist.ts'
-import { SearchModal } from './search-modal/search-modal.tsx'
+import { useSearchShortcut } from './search-field.tsx'
 import { SidebarContainer } from './sidebar-container.tsx'
 import { SidebarLinks } from './sidebar-links/sidebar-links.tsx'
 import { StatusBar } from './status-bar.tsx'
@@ -34,6 +35,8 @@ export default function LibraryLayout({ children }: Readonly<PropsWithChildren>)
 
   useFocusRestoration()
   useCrossOriginIsolatedNavigation()
+  useSearchFromAddress()
+  useSearchShortcut()
 
   return (
     <>
@@ -63,8 +66,6 @@ export default function LibraryLayout({ children }: Readonly<PropsWithChildren>)
         <div className='inset-y-0 right-0 z-11 hidden h-full w-4 bg-(--accent-9) lg:fixed lg:block' />
         <StatusBar />
       </div>
-
-      <SearchModal />
 
       <FocusIndicator />
 

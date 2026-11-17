@@ -4,6 +4,7 @@ import { libraryModeEnum } from '#@/databases/schema.ts'
 import { useGlobalLoaderData } from '#@/pages/hooks/use-global-loader-data.ts'
 import { routes } from '../../../routes.ts'
 import { useSelectedGames } from '../../atoms.ts'
+import { isSearchablePath } from '../../hooks/use-library-search.ts'
 import { useRoms } from '../../hooks/use-roms.ts'
 
 export function useGameListActions() {
@@ -19,7 +20,7 @@ export function useGameListActions() {
 
   const searchParams = new URLSearchParams(search)
   // The Games page and a console's page can be searched
-  const isSearchable = pathname === routes.libraryRoms || pathname.startsWith('/library/platform/')
+  const isSearchable = isSearchablePath(pathname)
   const query = isSearchable ? (searchParams.get('q') ?? '') : ''
   const sort = getListOrder(searchParams.get('sort'), Boolean(query))
   const direction = searchParams.get('direction') || getDefaultRomsDirection(sort)

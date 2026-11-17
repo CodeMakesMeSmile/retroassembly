@@ -14,9 +14,15 @@ export function useLibraryRefresh() {
 
   return async function refresh() {
     await revalidate()
-    await mutate((key) => isPlainObject(key) && isMatch(key, { endpoint: 'roms/search' }), undefined, {
-      revalidate: false,
-    })
+    await mutate(
+      (key) =>
+        isPlainObject(key) &&
+        (isMatch(key, { endpoint: 'roms/search' }) || isMatch(key, { endpoint: 'roms/search_counts' })),
+      undefined,
+      {
+        revalidate: false,
+      },
+    )
     setSpatialNavigationPaused(false)
   }
 }
