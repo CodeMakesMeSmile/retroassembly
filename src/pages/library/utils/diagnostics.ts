@@ -95,6 +95,25 @@ export function startDiagnostics() {
     }
   })
 
+  // The emulator's sound: each chunk is queued to start where the last ends. A chunk that comes after that point leaves
+  // a gap, heard as the sound cutting out. Also how far ahead sound is queued (heard as lag), and how much sound the
+  // emulator makes each second, which is short of a second when it runs slower than the game
+  const audio = { ahead: 0, chunks: 0, end: 0, gapMs: 0, gaps: 0, made: 0 }
+  const originalStart = AudioBufferSourceNode.prototype.start
+  AudioBufferSourceNode.prototype.start = function start(this: AudioBufferSourceNode, when = 0, ...rest: number[]) {
+    const now = this.context.currentTime
+    const duration = this.buffer?.duration ?? 0
+    if (audio.end > 0 && when - audio.end > 0.002) {
+      audio.gaps += 1
+      audio.gapMs += (when - audio.end) * 1000
+    }
+    audio.end = Math.max(audio.end, when + duration)
+    audio.ahead += when - now
+    audio.chunks += 1
+    audio.made += duration
+    return originalStart.call(this, when, ...rest)
+  }
+
   // Frames the page draws each second, and the longest gap between two, with whether the game is showing
   let frames = 0
   let longest = 0
@@ -110,6 +129,12 @@ export function startDiagnostics() {
     const canvas = document.querySelector<HTMLCanvasElement>('canvas#canvas, canvas')
     const game = canvas ? `canvas ${canvas.width}x${canvas.height} shown=${canvas.style.opacity === '1'}` : 'no canvas'
     add(`frames ${Math.round(frames / 5)}/s longest ${Math.round(longest)}ms ${game}`)
+    if (audio.chunks > 0) {
+      add(
+        `sound ${(audio.made / 5).toFixed(2)}s/s, ${audio.gaps} gaps ${Math.round(audio.gapMs)}ms, queued ahead ${Math.round((audio.ahead / audio.chunks) * 1000)}ms`,
+      )
+    }
+    Object.assign(audio, { ahead: 0, chunks: 0, gapMs: 0, gaps: 0, made: 0 })
     frames = 0
     longest = 0
     send()

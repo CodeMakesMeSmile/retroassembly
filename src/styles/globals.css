@@ -119,3 +119,21 @@ a.pending:focus {
   background-image: repeating-linear-gradient(-45deg, var(--white-a6) 0 10px, transparent 10px 20px);
   background-size: 28px 28px;
 }
+
+/*
+ * PSP controls in landscape: each side's group is centred in the height below the top bar, instead of sitting at the
+ * bottom, so on short phones, where they're drawn small, they come up level with the thumbs. --controls-height is the
+ * group's drawn height. Where it fills the height already, it stays at the bottom
+ */
+@media (orientation: landscape) {
+  .controls-centred {
+    bottom: auto;
+    top: min(
+      calc(
+        env(safe-area-inset-top) + 44px +
+          (100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 44px + var(--controls-height)) / 2
+      ),
+      calc(100dvh - env(safe-area-inset-bottom))
+    );
+  }
+}
