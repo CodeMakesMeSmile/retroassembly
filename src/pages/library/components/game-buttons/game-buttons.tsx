@@ -202,7 +202,15 @@ function GameButtonsContent({ compact }: Readonly<{ compact: boolean }>) {
   }
 
   return (
-    <div className={clsx('flex w-full', compact ? 'flex-row gap-2 lg:gap-3' : 'flex-col gap-4 xl:flex-row')}>
+    <div
+      className={clsx(
+        'flex w-full',
+        compact
+          ? // Continue, with the save's picture, gets more of the row than Start
+            'flex-row gap-2 lg:gap-3 lg:[&>button]:flex-none! [&>button:first-of-type:not(:last-of-type)]:flex-[3] [&>button:last-of-type]:flex-[2]'
+          : 'flex-col gap-4 xl:flex-row',
+      )}
+    >
       {state ? (
         <LaunchButton
           compact={compact}
@@ -213,7 +221,7 @@ function GameButtonsContent({ compact }: Readonly<{ compact: boolean }>) {
         >
           <span
             className={clsx(
-              compact ? 'absolute left-4' : 'absolute left-10',
+              compact ? 'absolute left-3' : 'absolute left-10',
               isPreparing || isDownloading
                 ? 'icon-[svg-spinners--180-ring]'
                 : [
@@ -222,14 +230,19 @@ function GameButtonsContent({ compact }: Readonly<{ compact: boolean }>) {
                   ],
             )}
           />
-          <span className={clsx('flex-1 font-semibold', compact ? 'text-lg' : 'text-2xl')}>{t('common.continue')}</span>
+          {/* Compact, the name is centred in the room between the icon and the save's picture, so it never runs under it */}
+          <span
+            className={clsx('flex-1 truncate font-semibold', compact ? 'pr-8 pl-6 text-base lg:text-lg' : 'text-2xl')}
+          >
+            {t('common.continue')}
+          </span>
           <HoverCard.Root>
             <HoverCard.Trigger>
               <img
                 alt={t('common.state')}
                 className={clsx(
                   'absolute rounded-sm border-2 border-white bg-neutral-200 object-cover shadow',
-                  compact ? 'right-2 size-8' : 'right-3 size-10',
+                  compact ? 'right-1.5 size-7' : 'right-3 size-10',
                 )}
                 src={getFileUrl(state.thumbnailFileId)}
               />
@@ -255,13 +268,15 @@ function GameButtonsContent({ compact }: Readonly<{ compact: boolean }>) {
       >
         <span
           className={clsx(
-            compact ? 'absolute left-4' : 'absolute left-10',
+            compact ? 'absolute left-3' : 'absolute left-10',
             isPreparing || isDownloading
               ? 'icon-[svg-spinners--180-ring]'
               : ['size-6', mayNeedsUserInteraction ? 'icon-[mdi--gesture-touch]' : 'icon-[mdi--play]'],
           )}
         />
-        <span className={clsx('flex-1 font-semibold', compact ? 'text-lg' : 'text-2xl')}>{t('emulator.start')}</span>
+        <span className={clsx('flex-1 truncate font-semibold', compact ? 'pl-6 text-base lg:text-lg' : 'text-2xl')}>
+          {t('emulator.start')}
+        </span>
       </LaunchButton>
 
       <EmulatorPortal />
