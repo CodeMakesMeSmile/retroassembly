@@ -1,17 +1,18 @@
 diff --git a/dist/nostalgist.js b/dist/nostalgist.js
-index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..5c64d700193c3b803e408f0c3f126f0d2b0de970 100644
+index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..ccbb845117ca6b9e365987b18fde9de813fd53b2 100644
 --- a/dist/nostalgist.js
 +++ b/dist/nostalgist.js
-@@ -951,6 +951,8 @@ var ResolvableFile = class ResolvableFile {
+@@ -951,6 +951,9 @@ var ResolvableFile = class ResolvableFile {
  		return this.arrayBuffer;
  	}
  	getBlob() {
 +		// A large download is kept only as an array (see loadResponse); a Blob of it is made only if something asks
 +		if (!this.blob && this.arrayBuffer) this.blob = new Blob([this.arrayBuffer], { type: this.blobType });
++		if (!this.blob && this.uint8Array) this.blob = new Blob([this.uint8Array], { type: this.blobType });
  		if (!this.blob) throw new Error("blob is not available");
  		return this.blob;
  	}
-@@ -1024,7 +1026,10 @@ var ResolvableFile = class ResolvableFile {
+@@ -1024,12 +1027,16 @@ var ResolvableFile = class ResolvableFile {
  			if (extracted) this.name ||= extractValidFileName(extracted);
  		}
  		if (!response.ok) throw new Error("Failed to load response", { cause: response });
@@ -23,7 +24,14 @@ index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..5c64d700193c3b803e408f0c3f126f0d
  		this.name ||= extractValidFileName(response.url);
  	}
  	loadUint8Array(uint8Array) {
-@@ -2270,7 +2275,18 @@ function isEsmScript(js) {
+ 		this.uint8Array = uint8Array;
+-		this.blob = new Blob([uint8Array], { type: this.blobType });
++		// A Blob of it would be a second full copy of a game the app downloaded itself; one is made only if something asks
++		if (uint8Array.byteLength < 1048576) this.blob = new Blob([uint8Array], { type: this.blobType });
+ 	}
+ };
+ //#endregion
+@@ -2270,7 +2277,18 @@ function isEsmScript(js) {
  async function patchCoreJs({ js, name }) {
  	let jsContent = await js.getText();
  	name = name.replaceAll("-", "_");
@@ -42,7 +50,7 @@ index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..5c64d700193c3b803e408f0c3f126f0d
          ${jsContent};
          Module.FS = FS;
          Module.PATH = PATH;
-@@ -2280,20 +2296,35 @@ async function patchCoreJs({ js, name }) {
+@@ -2280,20 +2298,35 @@ async function patchCoreJs({ js, name }) {
            Browser: typeof Browser === 'undefined' ? null: Browser,
            JSEvents,
            Module,
@@ -81,7 +89,7 @@ index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..5c64d700193c3b803e408f0c3f126f0d
            ...Module,
          }));`)};
      export function getEmscripten({ Module }) {
-@@ -2416,6 +2447,13 @@ var EmulatorFileSystem = class EmulatorFileSystem {
+@@ -2416,6 +2449,13 @@ var EmulatorFileSystem = class EmulatorFileSystem {
  		const directory = path$1.dirname(filePath);
  		const fileName = path$1.basename(filePath);
  		const buffer = await (await ResolvableFile.create(fileContent)).getUint8Array();
@@ -95,7 +103,7 @@ index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..5c64d700193c3b803e408f0c3f126f0d
  		FS.createDataFile("/", fileName, buffer, true, false);
  		const encoding = "binary";
  		const data = this.readFile(fileName, encoding);
-@@ -2540,10 +2578,31 @@ var Emulator = class {
+@@ -2540,10 +2580,31 @@ var Emulator = class {
  		return this.setCheatsEnabled(target, true);
  	}
  	exit(statusCode = 0) {
@@ -128,7 +136,7 @@ index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..5c64d700193c3b803e408f0c3f126f0d
  		JSEvents.removeAllEventListeners();
  		this.removeGlobalDOMEventListeners();
  		if (this.blobUrlWasm !== void 0) {
-@@ -2556,6 +2615,12 @@ var Emulator = class {
+@@ -2556,6 +2617,12 @@ var Emulator = class {
  		}
  		uninstallSetImmediatePolyfill();
  		this.gameStatus = "terminated";
@@ -141,7 +149,7 @@ index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..5c64d700193c3b803e408f0c3f126f0d
  	}
  	getCheats() {
  		return this.options.cheats.map((cheat) => ({ ...cheat }));
-@@ -2794,20 +2859,20 @@ var Emulator = class {
+@@ -2794,20 +2861,20 @@ var Emulator = class {
  		this.updateKeyboardEventHandlers();
  		if (this.enabledCheats.length > 0) this.syncCheats();
  	}
