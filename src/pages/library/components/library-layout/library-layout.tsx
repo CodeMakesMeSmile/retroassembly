@@ -18,6 +18,7 @@ import { LayoutHeader } from './layout-header/layout-header.tsx'
 import { LayoutMain } from './layout-main.tsx'
 import { LayoutMenu } from './layout-menu/layout-menu.tsx'
 import '../../utils/nostalgist.ts'
+import { PhoneSearchScreen } from './phone-search/phone-search-screen.tsx'
 import { useSearchShortcut } from './search-field.tsx'
 import { SidebarContainer } from './sidebar-container.tsx'
 import { SidebarLinks } from './sidebar-links/sidebar-links.tsx'
@@ -68,6 +69,7 @@ export default function LibraryLayout({ children }: Readonly<PropsWithChildren>)
       </div>
 
       <FocusIndicator />
+      <PhoneSearchScreen />
 
       <PendingMask />
     </>

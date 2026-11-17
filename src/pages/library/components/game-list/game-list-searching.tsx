@@ -56,8 +56,9 @@ export function GameListSearching() {
   const activeTab = platform?.name ?? (pathname === routes.libraryRoms ? '' : undefined)
 
   return (
-    <div className='mb-3 px-4'>
-      <div className='flex items-center gap-3 rounded-md bg-(--accent-3) px-3 py-2 text-sm text-(--accent-11)'>
+    <div className='px-4 lg:mb-3'>
+      {/* On a phone the search shows in the red bar instead, with its own x */}
+      <div className='hidden items-center gap-3 rounded-md bg-(--accent-3) px-3 py-2 text-sm text-(--accent-11) lg:flex'>
         <span className='icon-[mdi--magnify] size-4 shrink-0' />
         <span className='min-w-0 flex-1'>{summary}</span>
         <button className='shrink-0 font-semibold hover:underline' onClick={clear} type='button'>
@@ -66,7 +67,7 @@ export function GameListSearching() {
       </div>
 
       {tabs.length > 2 ? (
-        <div className='-mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden'>
+        <div className='-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden'>
           {tabs.map(({ count, name, text, to }) => (
             <Link
               className={clsx(

@@ -7,6 +7,11 @@ const { $get } = client.roms.search_counts
 /** While searching, how many games match on each console, in all, and among favorites and played games */
 export function useSearchCounts() {
   const [query] = useSearchQuery()
+  return useSearchCountsFor(query)
+}
+
+/** The same counts for any search, such as what's being typed in the phone's search screen */
+export function useSearchCountsFor(query: string) {
   const { data } = useSWR(
     query ? { endpoint: 'roms/search_counts', query: { query } } : null,
     ({ query }) => parseResponse($get({ query })),

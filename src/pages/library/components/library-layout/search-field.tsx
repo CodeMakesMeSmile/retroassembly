@@ -6,15 +6,15 @@ import { useNavigation } from 'react-router'
 import { normalizeSearch, useLibrarySearch } from '../../hooks/use-library-search.ts'
 import { useViewport } from '../../hooks/use-viewport.ts'
 import { focus } from '../../utils/spatial-navigation.ts'
-import { usePhoneSearchOpen } from './atoms.ts'
+import { useOpenPhoneSearch } from './phone-search/phone-search-screen.tsx'
 
 const fieldName = 'library-search'
 
 /**
- * The library's search box: in the sidebar, at the top of the menu, and on a phone in the red bar. What's typed is
- * searched for a moment after typing stops
+ * The library's search box, in the sidebar at the top of the menu. What's typed is searched for a moment after typing
+ * stops. Phones have a search screen of their own instead
  */
-export function SearchField({ inBar = false, onDone }: Readonly<{ inBar?: boolean; onDone?: () => void }>) {
+export function SearchField() {
   const { t } = useTranslation()
   const navigation = useNavigation()
   const { apply, query } = useLibrarySearch()
@@ -58,7 +58,6 @@ export function SearchField({ inBar = false, onDone }: Readonly<{ inBar?: boolea
       } else {
         await apply(text)
       }
-      onDone?.()
     } else if (event.key === 'Escape') {
       event.preventDefault()
       event.stopPropagation()
@@ -67,7 +66,6 @@ export function SearchField({ inBar = false, onDone }: Readonly<{ inBar?: boolea
         await apply('')
       } else {
         event.currentTarget.blur()
-        onDone?.()
       }
     }
   }
@@ -85,11 +83,10 @@ export function SearchField({ inBar = false, onDone }: Readonly<{ inBar?: boolea
     <div
       className={clsx(
         'group/search flex items-center gap-2 rounded-md border px-3 transition-colors',
+        'h-10',
         // White with dark text in light and dark themes alike, standing out against the red around it
-        inBar ? 'h-9 flex-1 border-transparent bg-white text-[#1d1d20]' : 'h-10',
-        !inBar && active && 'border-transparent bg-white text-[#1d1d20]',
-        !inBar &&
-          !active &&
+        active && 'border-transparent bg-white text-[#1d1d20]',
+        !active &&
           'border-white/30 bg-white/15 text-white focus-within:border-transparent focus-within:bg-white focus-within:text-[#1d1d20]',
       )}
     >
@@ -101,10 +98,9 @@ export function SearchField({ inBar = false, onDone }: Readonly<{ inBar?: boolea
       <input
         aria-label={t('common.search')}
         autoComplete='off'
-        autoFocus={inBar}
         className={clsx(
           'min-w-0 flex-1 bg-transparent text-sm outline-none',
-          inBar || active
+          active
             ? 'placeholder:text-[#8b8b93]'
             : 'placeholder:text-white/85 group-focus-within/search:placeholder:text-[#8b8b93]',
         )}
@@ -137,7 +133,7 @@ export function SearchField({ inBar = false, onDone }: Readonly<{ inBar?: boolea
 /** / or Cmd or Ctrl + K, anywhere in the library, goes to the search box: the sidebar's, or on a phone the red bar's */
 export function useSearchShortcut() {
   const { isLargeScreen } = useViewport()
-  const [, setPhoneSearchOpen] = usePhoneSearchOpen()
+  const openPhoneSearch = useOpenPhoneSearch()
 
   useEffect(() => {
     function handleKeyDown(event: globalThis.KeyboardEvent) {
@@ -152,10 +148,10 @@ export function useSearchShortcut() {
       if (isLargeScreen) {
         focus(`input[name="${fieldName}"]`)
       } else {
-        setPhoneSearchOpen(true)
+        openPhoneSearch().catch(noop)
       }
     }
     globalThis.addEventListener('keydown', handleKeyDown)
     return () => globalThis.removeEventListener('keydown', handleKeyDown)
-  }, [isLargeScreen, setPhoneSearchOpen])
+  })
 }

@@ -8,9 +8,3 @@ const searchQueryAtom = atom('')
 export function useSearchQuery() {
   return useAtom(searchQueryAtom)
 }
-
-/** On a phone, whether the red bar shows the search box in place of the page picker */
-const phoneSearchOpenAtom = atom(false)
-export function usePhoneSearchOpen() {
-  return useAtom(phoneSearchOpenAtom)
-}
