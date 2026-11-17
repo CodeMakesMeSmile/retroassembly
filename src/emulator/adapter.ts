@@ -114,6 +114,52 @@ export function installSystemFiles(emulator: Nostalgist, files: SaveFiles) {
 // RetroArch only takes a controller type for a core from its remap file, which is written before each launch
 const dualShock = 517
 
+const contentDirectory = '/home/web_user/retroarch/userdata/content'
+
+// The parts of Emscripten's file system used to put a game in place that's read from storage as it plays
+interface FileNode {
+  stream_ops: Record<string, (...args: never[]) => unknown>
+}
+interface GameFileSystem {
+  createFile: (parent: string, name: string, properties: object, canRead: boolean, canWrite: boolean) => FileNode
+  readdir: (path: string) => string[]
+  unlink: (path: string) => void
+  writeFile: (path: string, data: Uint8Array, options?: { canOwn?: boolean }) => void
+}
+
+/**
+ * Puts the game in the emulator's content folder, in place of the placeholder it was prepared with: either its bytes,
+ * or a file whose every read comes from `reader`, so the game itself never has to be in memory
+ */
+export function installGame(
+  emulator: Nostalgist,
+  game:
+    | { bytes: Uint8Array }
+    | {
+        reader: { read: (target: Int8Array, offset: number, position: number, length: number) => number; size: number }
+      },
+) {
+  getInner(emulator).on('beforeLaunch', () => {
+    const fs = emulator.getEmscriptenFS() as unknown as GameFileSystem
+    const [name] = fs.readdir(contentDirectory).filter((entry) => entry !== '.' && entry !== '..')
+    const path = `${contentDirectory}/${name}`
+    fs.unlink(path)
+    if ('bytes' in game) {
+      fs.writeFile(path, game.bytes, { canOwn: true })
+      return
+    }
+    const { reader } = game
+    const node = fs.createFile(contentDirectory, name, {}, true, false)
+    // Its size, for the emulator to see, while the bytes stay in storage
+    Object.defineProperty(node, 'usedBytes', { get: () => reader.size })
+    node.stream_ops = {
+      ...node.stream_ops,
+      read: (_stream: unknown, buffer: Int8Array, offset: number, length: number, position: number) =>
+        position >= reader.size ? 0 : reader.read(buffer, offset, position, Math.min(length, reader.size - position)),
+    }
+  })
+}
+
 /** Tells the PlayStation's emulator its controller is a DualShock, with a remap file written before it launches */
 export function setDualShockController(emulator: Nostalgist, remapDirectory: string) {
   getInner(emulator).on('beforeLaunch', () => {

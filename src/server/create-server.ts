@@ -35,8 +35,9 @@ export function createServer({ client, pages }: ServerOptions) {
       for (const [name, value] of Object.entries(crossOriginIsolationHeaders)) {
         c.header(name, value)
       }
-    } else if (c.req.path.startsWith('/api/v1/files/')) {
-      // A stored file opened in a frame on such a page, like a game's PDF manual, has to allow it too
+    } else if (c.req.path.startsWith('/api/v1/files/') || /\.worker-[\w-]+\.js$/u.test(c.req.path)) {
+      // A stored file opened in a frame on such a page, like a game's PDF manual, has to allow it too, and so does a
+      // worker such a page starts, like the one reading a game kept in the browser's storage
       c.header('Cross-Origin-Embedder-Policy', crossOriginIsolationHeaders['Cross-Origin-Embedder-Policy'])
     }
   })

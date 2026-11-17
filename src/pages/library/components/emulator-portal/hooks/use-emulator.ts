@@ -10,6 +10,7 @@ import { resolveConsole } from '#@/consoles/registry.ts'
 import type { Rom } from '#@/controllers/roms/get-roms.ts'
 import {
   closeAudioContexts,
+  installGame,
   installSystemFiles,
   readGameSave,
   readGameSaveFolder,
@@ -20,6 +21,15 @@ import {
   startWithoutCamera,
   switchDisc,
 } from '#@/emulator/adapter.ts'
+import {
+  canStoreGames,
+  type GameReader,
+  getStoredName,
+  hasStoredGame,
+  markPlayed,
+  openGameReader,
+  storeGame,
+} from '#@/emulator/game-storage.ts'
 import { connectOnScreenGamepad, disconnectOnScreenGamepad } from '#@/emulator/on-screen-gamepad.ts'
 import { type SaveFiles, unzipSaveFiles } from '#@/emulator/save-folder.ts'
 import { saveQueue } from '#@/emulator/save-queue.ts'
@@ -34,7 +44,7 @@ import {
 import { useLibraryRefresh } from '#@/pages/library/hooks/use-library-refresh.ts'
 import { useRom } from '#@/pages/library/hooks/use-rom.ts'
 import { bundledSystemFiles } from '#@/pages/library/utils/bundled-cores.ts'
-import { type DownloadKind, downloadWithProgress } from '#@/pages/library/utils/download.ts'
+import { DownloadError, type DownloadKind, downloadWithProgress } from '#@/pages/library/utils/download.ts'
 import { getFileUrl } from '#@/pages/library/utils/file.ts'
 import { type Download, getLoadingProgress } from '#@/pages/library/utils/loading-progress.ts'
 import { onCoreDownloadProgress } from '#@/pages/library/utils/nostalgist.ts'
@@ -192,8 +202,11 @@ export function useEmulatorSessionController({
               fileName,
             })),
           ]
-        : { fileContent: download('game', 'game', romUrl), fileName: rom?.fileName },
-    [discs, download, multiDisc, rom, romUrl],
+        : // A game read from storage as it plays is put in place at launch; until then the emulator holds a placeholder
+          launchProfile.threads
+          ? { fileContent: new Uint8Array(1), fileName: rom?.fileName }
+          : { fileContent: download('game', 'game', romUrl), fileName: rom?.fileName },
+    [discs, download, launchProfile.threads, multiDisc, rom, romUrl],
   )
   const { bioses } = preference.emulator.platform[rom.platform]
   const bios = useMemo(
@@ -297,6 +310,34 @@ export function useEmulatorSessionController({
     [core, report],
   )
 
+  // The game, for an emulator that reads it as it plays (PPSSPP): kept in the browser's storage where it can be, else
+  // downloaded into memory. Fetched once per launch, from the moment the player looks about to start
+  const gameFile = useRef<Promise<{ bytes: Uint8Array } | { name: string }> | undefined>(undefined)
+  const gameReader = useRef<GameReader | undefined>(undefined)
+  function reportGameProgress(loaded: number, total: number | undefined) {
+    report('game', { kind: 'game', loaded, total })
+  }
+  function getGameFile() {
+    gameFile.current ??= (async () => {
+      if (canStoreGames()) {
+        const name = getStoredName(rom.fileId)
+        try {
+          if (!(await hasStoredGame(name, romUrl))) {
+            await storeGame(name, romUrl, reportGameProgress)
+          }
+          return { name }
+        } catch (error) {
+          console.warn("Couldn't keep the game in the browser's storage, so it's loaded into memory", error)
+        }
+      }
+      return { bytes: await download('game', 'game', romUrl)() }
+    })()
+    gameFile.current.catch(() => {
+      gameFile.current = undefined
+    })
+    return gameFile.current
+  }
+
   // Files the emulator needs besides the game (PPSSPP's fonts), downloaded alongside it
   function getEmulatorFiles() {
     return getSystemFiles(core, (loaded, total) => report('system', { kind: 'files', loaded, total }))
@@ -304,7 +345,11 @@ export function useEmulatorSessionController({
 
   async function warmUp() {
     if (lazy && !data) {
-      await Promise.all([attemptAsync(async () => await getEmulatorFiles()), attemptAsync(prepareOnce)])
+      await Promise.all([
+        attemptAsync(async () => await getEmulatorFiles()),
+        attemptAsync(prepareOnce),
+        launchProfile.threads ? attemptAsync(getGameFile) : undefined,
+      ])
     }
   }
 
@@ -322,6 +367,22 @@ export function useEmulatorSessionController({
     const files = await emulatorFiles
     if (files) {
       installSystemFiles(emulator, files)
+    }
+    if (launchProfile.threads) {
+      const game = await getGameFile()
+      // The next launch fetches it again, or finds it in storage
+      gameFile.current = undefined
+      if ('name' in game) {
+        try {
+          gameReader.current = await openGameReader(game.name)
+        } catch (error) {
+          throw new DownloadError('game', error)
+        }
+        markPlayed(game.name)
+        installGame(emulator, { reader: gameReader.current })
+      } else {
+        installGame(emulator, game)
+      }
     }
     const save = await getGameSave()
     if (save && saveFolder) {
@@ -459,6 +520,8 @@ export function useEmulatorSessionController({
       // Otherwise the browser would keep the shut-down emulator, and the game in its memory, for as long as the page is open
       disconnectOnScreenGamepad(gamepad.current)
       gamepad.current = undefined
+      gameReader.current?.close()
+      gameReader.current = undefined
       await attemptAsync(closeAudioContexts)
       noSleep.current?.disable()
       const promises: Promise<void>[] = []
