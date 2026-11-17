@@ -11,7 +11,7 @@ export function LibraryStats() {
   const { consoles, favorites, games, playedThisMonth } = overview.stats
   const items = [
     { count: games, label: t('home.statGames', { count: games }), to: routes.libraryRoms },
-    { count: consoles, label: t('home.statConsoles', { count: consoles }), to: '#consoles' },
+    { count: consoles, label: t('home.statConsoles', { count: consoles }), to: routes.libraryConsoles },
     { count: playedThisMonth, label: t('home.statPlayedThisMonth'), to: routes.libraryHistory },
     { count: favorites, label: t('home.statFavorites', { count: favorites }), to: routes.libraryFavorites },
   ]

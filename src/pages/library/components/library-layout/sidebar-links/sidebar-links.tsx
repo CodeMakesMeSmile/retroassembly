@@ -26,14 +26,7 @@ export function SidebarLinks({ part }: Readonly<{ part: 'pinned' | 'rest' }>) {
 
       {shownGroups.map(({ links, title }, index) => (
         <div className={clsx({ 'mt-4': index })} key={title}>
-          {title ? (
-            <h3 className='flex items-center gap-2 px-4 text-sm text-white/50 capitalize'>
-              <span className='icon-[mdi--gamepad-classic] size-5 p-0.5' />
-              {title}
-            </h3>
-          ) : null}
-
-          <div className={clsx('flex w-full flex-col gap-y-2 overflow-hidden', { 'mt-2': title })}>
+          <div className='flex w-full flex-col gap-y-2 overflow-hidden'>
             {links.map(({ iconClass, iconUrl, name, text, to }) => {
               // While searching, how many of the link's games match; a link with none is dimmed but stays in place
               const count = getLinkCount(counts, name)

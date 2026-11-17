@@ -65,12 +65,21 @@ export function useNavigationLinks() {
       ],
       title: '',
     },
-    { links: sortedPlatformLinks, title: t('common.platform_other') },
+    { links: sortedPlatformLinks, title: t('nav.consoles') },
   ]
+
+  // The page with every console, reached from the consoles' heading (a computer) or the top of their menu (a phone)
+  const consolesLink = {
+    iconClass: 'icon-[mdi--gamepad-classic]',
+    iconUrl: '',
+    name: 'consoles',
+    text: t('nav.allConsoles'),
+    to: generatePath(routes.libraryConsoles),
+  }
 
   function isActive(link: string) {
     return location.pathname === link || getPlatformLink(platform?.name) === link
   }
 
-  return { groups, isActive }
+  return { consolesLink, groups, isActive }
 }

@@ -22,6 +22,7 @@ import { PhoneNavBar } from './phone-nav-bar.tsx'
 import { PhoneSearchScreen } from './phone-search/phone-search-screen.tsx'
 import { useSearchShortcut } from './search-field.tsx'
 import { SidebarContainer } from './sidebar-container.tsx'
+import { SidebarConsolesHeading } from './sidebar-links/sidebar-consoles-heading.tsx'
 import { SidebarLinks } from './sidebar-links/sidebar-links.tsx'
 import { StatusBar } from './status-bar.tsx'
 
@@ -55,6 +56,7 @@ export default function LibraryLayout({ children }: Readonly<PropsWithChildren>)
             </Link>
           </div>
           <SidebarLinks part='pinned' />
+          <SidebarConsolesHeading />
           <ScrollArea className='flex-1' size='2'>
             <SidebarLinks part='rest' />
           </ScrollArea>

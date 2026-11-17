@@ -14,13 +14,13 @@ import { HeaderLinkItem } from './header-link-item.tsx'
 
 export function LayoutHeader() {
   const navitate = useNavigate()
-  const { groups, isActive } = useNavigationLinks()
+  const { consolesLink, groups, isActive } = useNavigationLinks()
   const { isNotLargeScreen } = useViewport()
   const { t } = useTranslation()
   const { clear, query } = useLibrarySearch()
   const openSearch = useOpenPhoneSearch()
 
-  const groupLinks = groups.flatMap(({ links }) => links)
+  const groupLinks = [...groups.flatMap(({ links }) => links), consolesLink]
   const currentLink = groupLinks.find(({ to }) => isActive(to))
   const currentRouteName = currentLink?.name
 
@@ -75,6 +75,12 @@ export function LayoutHeader() {
                   {groups.map(({ links, title }, i) => (
                     <Fragment key={title}>
                       <Select.Group>
+                        {/* The page with every console, first among the consoles */}
+                        {i > 0 ? (
+                          <Select.Item value={consolesLink.name}>
+                            <HeaderLinkItem link={consolesLink} />
+                          </Select.Item>
+                        ) : null}
                         {links.map((link) => (
                           <Select.Item key={link.name} value={link.name}>
                             <HeaderLinkItem link={link} />

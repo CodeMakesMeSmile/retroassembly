@@ -2,6 +2,7 @@ import { index, route, type RouteConfig } from '@react-router/dev/routes'
 
 export const routes = {
   home: '/',
+  libraryConsoles: '/library/consoles',
   libraryFavorites: '/library/favorites',
   libraryHistory: '/library/history',
   libraryHome: '/library',
@@ -20,6 +21,7 @@ export default [
   route(routes.libraryHome, 'routes/library-layout.tsx', { id: 'library' }, [
     index('routes/library-home.tsx'),
     route('roms', 'routes/library-roms.tsx'),
+    route('consoles', 'routes/library-consoles.tsx'),
     route('favorites', 'routes/library-favorites.tsx'),
     route('history', 'routes/library-history.tsx'),
     route('platform/:platform', 'routes/library-platform.tsx'),
