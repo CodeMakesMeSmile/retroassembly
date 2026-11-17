@@ -7,7 +7,8 @@ import { LogoutDialog } from './logout-dialog.tsx'
 import { SettingsDialog } from './settings-dialog/settings-dialog.tsx'
 import { ThemeMenuItem } from './theme-menu-item.tsx'
 
-export function LayoutMenu() {
+/** Settings, theme, about and log out. `inBar` is the phone's red bar, where it's a large icon like search beside it */
+export function LayoutMenu({ inBar = false }: Readonly<{ inBar?: boolean }>) {
   const { t } = useTranslation()
   const [, setSpatialNavigationPaused] = useSpatialNavigationPaused()
 
@@ -24,9 +25,20 @@ export function LayoutMenu() {
     <>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger>
-          <Button aria-label={t('common.menu')} type='button'>
-            <span className='icon-[mdi--menu]' />
-          </Button>
+          {inBar ? (
+            <button
+              aria-label={t('common.menu')}
+              className='grid size-10 place-items-center text-white'
+              title={t('common.menu')}
+              type='button'
+            >
+              <span className='icon-[mdi--menu] size-6' />
+            </button>
+          ) : (
+            <Button aria-label={t('common.menu')} type='button'>
+              <span className='icon-[mdi--menu]' />
+            </Button>
+          )}
         </DropdownMenu.Trigger>
 
         <DropdownMenu.Content variant='solid'>

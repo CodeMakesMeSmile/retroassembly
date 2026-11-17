@@ -1,4 +1,5 @@
 import { clsx } from 'clsx'
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { withSearch } from '../../hooks/use-library-search.ts'
 import { useNavigationLinks } from '../../hooks/use-navigation-links.ts'
@@ -6,19 +7,21 @@ import { usePlatform } from '../../hooks/use-platform.ts'
 import { useSearchQuery } from './atoms.ts'
 
 /**
- * On a phone, Home, Games, Favorites and History in a bar pinned to the bottom, so they're a tap away however far down
- * the page is scrolled. A console's page, or a game's, is part of Games, so Games is lit there
+ * On a phone, Home, Games, Consoles, Favorites and History in a bar pinned to the bottom, a tap away however far down
+ * the page is scrolled. On a console's page, or a game's, Consoles is lit
  */
 export function PhoneNavBar() {
-  const { groups, isActive } = useNavigationLinks()
+  const { t } = useTranslation()
+  const { consolesLink, groups, isActive } = useNavigationLinks()
   const platform = usePlatform()
   const [query] = useSearchQuery()
-  const [{ links }] = groups
+  const [{ links: pageLinks }] = groups
+  const links = [...pageLinks.slice(0, 2), { ...consolesLink, text: t('nav.consoles') }, ...pageLinks.slice(2)]
 
   return (
     <nav className='px-safe pb-safe fixed inset-x-0 bottom-0 z-2 flex bg-(--accent-9) text-white shadow-[0_-2px_8px_rgb(0_0_0/0.12)] lg:hidden'>
       {links.map(({ iconClass, name, text, to }) => {
-        const active = isActive(to) || (name === 'library' && Boolean(platform))
+        const active = isActive(to) || (name === 'consoles' && Boolean(platform))
         return (
           <Link
             aria-current={active ? 'page' : undefined}

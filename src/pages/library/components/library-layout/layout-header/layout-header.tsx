@@ -1,5 +1,4 @@
 import { Select } from '@radix-ui/themes'
-import { Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router'
 import { Logo } from '#@/pages/components/logo.tsx'
@@ -20,12 +19,14 @@ export function LayoutHeader() {
   const { clear, query } = useLibrarySearch()
   const openSearch = useOpenPhoneSearch()
 
-  const groupLinks = [...groups.flatMap(({ links }) => links), consolesLink]
-  const currentLink = groupLinks.find(({ to }) => isActive(to))
+  // The menu here picks a console: Home, Games, Consoles, Favorites and History are in the bar at the bottom
+  const consoleLinks = groups.at(-1)?.links ?? []
+  const currentLink = consoleLinks.find(({ to }) => isActive(to))
   const currentRouteName = currentLink?.name
+  const pickerLabel = currentLink ?? { ...consolesLink, text: t('nav.consoles') }
 
   async function handleValueChange(value: string) {
-    const link = groupLinks.find(({ name }) => name === value)
+    const link = consoleLinks.find(({ name }) => name === value)
     if (link?.to) {
       await navitate(withSearch(link.to, query))
     }
@@ -33,7 +34,7 @@ export function LayoutHeader() {
 
   return (
     <>
-      <header className='px-safe-offset-2 fixed inset-x-0 top-0 z-2 flex items-center gap-2 bg-(--accent-9) py-2 lg:hidden'>
+      <header className='px-safe-offset-2 fixed inset-x-0 top-0 z-2 flex items-center gap-1 bg-(--accent-9) py-1 lg:hidden'>
         <UploadBadge className='absolute inset-x-0 top-full flex items-center justify-center gap-2 bg-(--accent-9) py-1 text-xs text-white' />
 
         <Link className='flex shrink-0 items-center gap-2 font-bold' data-sn-skip='' to={routes.libraryHome}>
@@ -67,28 +68,20 @@ export function LayoutHeader() {
         ) : (
           <>
             <div className='flex h-5 flex-1 justify-center'>
-              <Select.Root onValueChange={handleValueChange} size='2' value={currentRouteName}>
-                <Select.Trigger className='text-white!' variant='ghost'>
-                  <HeaderLinkItem link={currentLink} />
+              <Select.Root onValueChange={handleValueChange} size='2' value={currentRouteName ?? ''}>
+                {/* Shown as the placeholder too, for when the page isn't a console's (typed as text, but shown as given) */}
+                <Select.Trigger
+                  className='text-white!'
+                  placeholder={(<HeaderLinkItem link={pickerLabel} />) as unknown as string}
+                  variant='ghost'
+                >
+                  <HeaderLinkItem link={pickerLabel} />
                 </Select.Trigger>
                 <Select.Content>
-                  {groups.map(({ links, title }, i) => (
-                    <Fragment key={title}>
-                      <Select.Group>
-                        {/* The page with every console, first among the consoles */}
-                        {i > 0 ? (
-                          <Select.Item value={consolesLink.name}>
-                            <HeaderLinkItem link={consolesLink} />
-                          </Select.Item>
-                        ) : null}
-                        {links.map((link) => (
-                          <Select.Item key={link.name} value={link.name}>
-                            <HeaderLinkItem link={link} />
-                          </Select.Item>
-                        ))}
-                      </Select.Group>
-                      {i < groups.length - 1 ? <Select.Separator /> : null}
-                    </Fragment>
+                  {consoleLinks.map((link) => (
+                    <Select.Item key={link.name} value={link.name}>
+                      <HeaderLinkItem link={link} />
+                    </Select.Item>
                   ))}
                 </Select.Content>
               </Select.Root>
@@ -96,7 +89,7 @@ export function LayoutHeader() {
 
             <button
               aria-label={t('common.search')}
-              className='grid size-8 shrink-0 place-items-center text-white'
+              className='grid size-10 shrink-0 place-items-center text-white'
               onClick={() => openSearch('')}
               title={t('common.search')}
               type='button'
@@ -106,7 +99,7 @@ export function LayoutHeader() {
           </>
         )}
 
-        <div className='-mr-3 h-8 w-10 shrink-0'>{isNotLargeScreen ? <LayoutMenu /> : null}</div>
+        <div className='size-10 shrink-0'>{isNotLargeScreen ? <LayoutMenu inBar /> : null}</div>
       </header>
       <div className='h-12 w-full bg-(--accent-9) lg:hidden' />
     </>

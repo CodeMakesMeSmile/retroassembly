@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react'
 import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { useLaunchButton } from '../../atoms.ts'
 import { useAutosave } from './hooks/use-autosave.ts'
+import { useBlackBarsWhilePlaying } from './hooks/use-black-bars-while-playing.ts'
 import { useKeepGameSave } from './hooks/use-keep-game-save.ts'
 import { useSaveOnHide } from './hooks/use-save-on-hide.ts'
 
@@ -21,6 +22,7 @@ export function GameAnimatePresence() {
   const initialStyle = rect ? { height: rect.height, left: rect.left, top: rect.top, width: rect.width } : {}
 
   useAutosave()
+  useBlackBarsWhilePlaying()
   useSaveOnHide()
   useKeepGameSave()
 
