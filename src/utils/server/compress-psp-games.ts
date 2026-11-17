@@ -3,7 +3,7 @@ import { and, eq, like } from 'drizzle-orm'
 import { noop } from 'es-toolkit'
 import { getDirectories } from '#@/constants/env.ts'
 import { romTable, statusEnum } from '#@/databases/schema.ts'
-import { checkCso, compressIsoToCso } from './cso.ts'
+import { checkCso, compressIsoToCso, repairCsoEnd } from './cso.ts'
 import { getDatabase } from './drizzle.ts'
 import { getStoragePath } from './storage-path.ts'
 
@@ -116,6 +116,11 @@ export async function compressPspGames() {
   const directory = getStoragePath(storageDirectory, 'roms/psp')
   if (!directory || !(await fs.pathExists(directory))) {
     return
+  }
+  for (const name of await fs.readdir(directory)) {
+    if (/\.cso$/iu.test(name) && (await repairCsoEnd(path.join(directory, name)).catch(() => false))) {
+      console.info(`Repaired the end of roms/psp/${name}`)
+    }
   }
   for (const name of await fs.readdir(directory)) {
     const fileId = path.posix.join('roms', 'psp', name)

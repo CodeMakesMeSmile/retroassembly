@@ -39,28 +39,33 @@ function makeHeader(totalBytes: number, align: number) {
   return header
 }
 
-/** The smallest alignment that lets every block's position fit the index's 31 bits, even if nothing compresses */
-function getAlign(totalBytes: number, blockCount: number) {
-  const largest = headerSize + (blockCount + 1) * 4 + totalBytes + blockCount * blockSize
+/**
+ * The smallest alignment that lets every block's position fit the index's 31 bits, even if nothing compresses: blocks
+ * start at multiples of 2^align, and the index holds their positions divided by it
+ */
+export function getAlign(blockCount: number) {
   let align = 0
-  while (largest / 2 ** align > 0x7f_ff_ff_ff) {
+  for (;;) {
+    const largest = headerSize + (blockCount + 1) * 4 + blockCount * (blockSize + 2 ** align - 1)
+    if (largest / 2 ** align <= 0x7f_ff_ff_ff) {
+      return align
+    }
     align += 1
   }
-  return align
 }
 
 /**
  * Compresses the ISO at `isoPath` into a CSO at `csoPath`. Written under a temporary name first, so an interrupted
  * compression never leaves a partial file behind. Returns the CSO's size
  */
-export async function compressIsoToCso(isoPath: string, csoPath: string) {
+export async function compressIsoToCso(isoPath: string, csoPath: string, options: { align?: number } = {}) {
   const partialPath = `${csoPath}.partial`
   const input = await open(isoPath, 'r')
   const output = await open(partialPath, 'w')
   try {
     const { size: totalBytes } = await input.stat()
     const blockCount = Math.ceil(totalBytes / blockSize)
-    const align = getAlign(totalBytes, blockCount)
+    const align = options.align ?? getAlign(blockCount)
     const index = new Uint32Array(blockCount + 1)
     let position = headerSize + index.byteLength
     const padding = Buffer.alloc(2 ** align)
@@ -90,7 +95,13 @@ export async function compressIsoToCso(isoPath: string, csoPath: string) {
       }
       await output.writev(written, batchStart)
     }
-    index[blockCount] = Math.ceil(position / 2 ** align)
+    // The file ends on a multiple of 2^align too, where the last index entry says it does
+    const end = Math.ceil(position / 2 ** align) * 2 ** align
+    if (end > position) {
+      await output.write(padding, 0, end - position, position)
+      position = end
+    }
+    index[blockCount] = position / 2 ** align
     await output.write(makeHeader(totalBytes, align), 0, headerSize, 0)
     await output.write(Buffer.from(index.buffer), 0, index.byteLength, headerSize)
     await output.close()
@@ -133,6 +144,11 @@ export async function checkCso(csoPath: string, isoPath: string) {
     function start(number: number) {
       return (entry(number) & ~plainFlag) * 2 ** align
     }
+    // An emulator refuses a CSO shorter than its index says, as cut short
+    const { size: csoSize } = await cso.stat()
+    if (start(blockCount) > csoSize) {
+      throw new Error(`The CSO ends at ${csoSize}, before its index's end at ${start(blockCount)}`)
+    }
 
     const original = Buffer.alloc(batchSize * blockSize)
     for (let first = 0; first < blockCount; first += batchSize) {
@@ -160,5 +176,34 @@ export async function checkCso(csoPath: string, isoPath: string) {
   } finally {
     await cso.close()
     await iso.close()
+  }
+}
+
+/**
+ * Fixes a CSO written by an earlier version of this app, which could end up to 2^align - 1 bytes short of where its
+ * index says it ends, so an emulator refused it as cut short. The missing bytes are padding, so they're added as zeros.
+ * Returns whether it was fixed
+ */
+export async function repairCsoEnd(csoPath: string) {
+  const cso = await open(csoPath, 'r+')
+  try {
+    const header = Buffer.alloc(headerSize)
+    await cso.read(header, 0, headerSize, 0)
+    if (header.toString('latin1', 0, 4) !== 'CISO' || header.readUInt32LE(16) !== blockSize) {
+      return false
+    }
+    const align = header.readUInt8(21)
+    const blockCount = Math.ceil(Number(header.readBigUInt64LE(8)) / blockSize)
+    const last = Buffer.alloc(4)
+    await cso.read(last, 0, 4, headerSize + blockCount * 4)
+    const end = (last.readUInt32LE(0) & ~plainFlag) * 2 ** align
+    const { size } = await cso.stat()
+    if (end <= size || end - size >= 2 ** align) {
+      return false
+    }
+    await cso.write(Buffer.alloc(end - size), 0, end - size, size)
+    return true
+  } finally {
+    await cso.close()
   }
 }

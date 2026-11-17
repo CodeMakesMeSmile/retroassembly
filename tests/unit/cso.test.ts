@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict'
 import { randomBytes } from 'node:crypto'
-import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, stat, truncate, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { after, before, describe, it } from 'node:test'
 import { inflateRawSync } from 'node:zlib'
 import { getCsoFileId, isCompressible } from '#@/utils/server/compress-psp-games.ts'
-import { checkCso, compressIsoToCso } from '#@/utils/server/cso.ts'
+import { checkCso, compressIsoToCso, getAlign, repairCsoEnd } from '#@/utils/server/cso.ts'
 
 // Reads a CSO the way an emulator does: each block found through the index, and unpacked on its own
 function readCso(cso: Buffer) {
@@ -67,6 +67,46 @@ await describe('PSP games compressed to CSO', async () => {
   await it('leaves nothing behind when it fails', async () => {
     await assert.rejects(compressIsoToCso(path.join(directory, 'missing.iso'), path.join(directory, 'missing.cso')))
     await assert.rejects(stat(path.join(directory, 'missing.cso.partial')))
+  })
+
+  await it('ends where its index says, when blocks are aligned', async () => {
+    const iso = path.join(directory, 'aligned.iso')
+    const cso = path.join(directory, 'aligned.cso')
+    await writeFile(iso, disc)
+    const size = await compressIsoToCso(iso, cso, { align: 2 })
+    const content = await readFile(cso)
+    const blocks = Math.ceil(disc.length / 2048)
+    assert.equal(content.readUInt8(21), 2)
+    assert.equal(size % 4, 0)
+    assert.equal(content.readUInt32LE(24 + blocks * 4) * 4, content.length)
+    assert.deepEqual(readCso(content), disc)
+    await checkCso(cso, iso)
+  })
+
+  await it('repairs a CSO an earlier version left short of its end', async () => {
+    const iso = path.join(directory, 'short.iso')
+    const cso = path.join(directory, 'short.cso')
+    await writeFile(iso, disc)
+    const size = await compressIsoToCso(iso, cso, { align: 2 })
+    // The earlier version stopped where the last block's data did, before the padding to a multiple of 4
+    const content = await readFile(cso)
+    let padding = 0
+    while (padding < 3 && content[size - 1 - padding] === 0) {
+      padding += 1
+    }
+    assert.ok(padding > 0)
+    await truncate(cso, size - padding)
+    await assert.rejects(checkCso(cso, iso), /before its index's end/u)
+    assert.equal(await repairCsoEnd(cso), true)
+    await checkCso(cso, iso)
+    assert.equal(await repairCsoEnd(cso), false)
+  })
+
+  await it('aligns only discs too large for positions in 31 bits', () => {
+    // LEGO Batman's 1.1 GB, and a full 1.8 GB UMD
+    assert.equal(getAlign(Math.ceil(1_136_689_152 / 2048)), 0)
+    assert.equal(getAlign(Math.ceil(1_900_000_000 / 2048)), 0)
+    assert.equal(getAlign(Math.ceil(4_000_000_000 / 2048)), 1)
   })
 
   await it('applies to PSP ISOs only', () => {
