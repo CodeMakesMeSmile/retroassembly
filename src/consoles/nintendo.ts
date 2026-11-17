@@ -225,7 +225,7 @@ export const nintendoConsoles = {
       developer: 'Nintendo',
       manufacturer: 'Nintendo',
       notesI18nKey: 'platform.snesNote',
-      releaseDate: '1994-06-01T00:00:00-07:00',
+      releaseDate: '1990-11-21T00:00:00+09:00',
     },
     libretroName: 'Nintendo - Super Nintendo Entertainment System',
     // Every Snes9x reads the controller's buttons as they are
