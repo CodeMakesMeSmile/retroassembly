@@ -14,6 +14,20 @@ import { usePlayTogetherPicks, useRediscoverPicks } from './components/use-home-
 // Home: what you're in the middle of, the library at a glance and its consoles, then rows that change from visit to
 // visit. A row with nothing in it is left out
 
+/** Picks another handful for a row of random picks */
+function ShuffleButton({ onClick }: Readonly<{ onClick: () => void }>) {
+  const { t } = useTranslation()
+  return (
+    <button
+      className='rounded-full border border-(--accent-6) px-3 py-0.5 text-xs font-semibold text-(--accent-11) hover:bg-(--accent-3)'
+      onClick={onClick}
+      type='button'
+    >
+      {t('home.shuffle')}
+    </button>
+  )
+}
+
 export function LibraryHomePage() {
   const { t } = useTranslation()
   const { favoriteRoms, newAddedRoms } = useLoaderData<typeof loader>()
@@ -35,15 +49,7 @@ export function LibraryHomePage() {
 
       {rediscover.data?.length ? (
         <HomeRow
-          extra={
-            <button
-              className='rounded-full border border-(--accent-6) px-3 py-0.5 text-xs font-semibold text-(--accent-11) hover:bg-(--accent-3)'
-              onClick={() => rediscover.mutate()}
-              type='button'
-            >
-              {t('home.shuffle')}
-            </button>
-          }
+          extra={<ShuffleButton onClick={() => rediscover.mutate()} />}
           note={t('home.rediscoverNote')}
           title={t('home.rediscover')}
         >
@@ -69,7 +75,11 @@ export function LibraryHomePage() {
       </div>
 
       {playTogetherRoms?.length ? (
-        <HomeRow note={t('home.playTogetherNote')} title={t('home.playTogether')}>
+        <HomeRow
+          extra={<ShuffleButton onClick={() => playTogether.mutate()} />}
+          note={t('home.playTogetherNote')}
+          title={t('home.playTogether')}
+        >
           <GameRow
             note={(rom) => (rom.gamePlayers ? t('home.players', { count: rom.gamePlayers }) : undefined)}
             roms={playTogetherRoms}
