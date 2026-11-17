@@ -42,7 +42,8 @@ export function LibraryHomePage() {
   }
 
   return (
-    <div className='p-4 lg:p-2'>
+    // On a computer, the same 32-point margin as the other pages; on a very wide screen, no wider than 1600 points, centred
+    <div className='p-4 lg:mx-auto lg:max-w-[1664px] lg:p-8'>
       <HomeHero />
       <LibraryStats />
       <ConsoleRow />

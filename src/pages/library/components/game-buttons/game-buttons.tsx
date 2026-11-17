@@ -206,8 +206,9 @@ function GameButtonsContent({ compact }: Readonly<{ compact: boolean }>) {
       className={clsx(
         'flex w-full',
         compact
-          ? // Continue, with the save's picture, gets more of the row than Start
-            'flex-row gap-2 lg:gap-3 lg:[&>button]:flex-none! [&>button:first-of-type:not(:last-of-type)]:flex-[3] [&>button:last-of-type]:flex-[2]'
+          ? // Continue, with the save's picture, gets more of the row than Start; each stops at its usual width, so
+            // neither runs past a narrow banner
+            'flex-row gap-2 lg:gap-3 [&>button:first-of-type:not(:last-of-type)]:flex-[3] [&>button:last-of-type]:flex-[2]'
           : 'flex-col gap-4 xl:flex-row',
       )}
     >

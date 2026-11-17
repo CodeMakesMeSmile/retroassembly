@@ -31,13 +31,16 @@ function SmallCover({ rom }: Readonly<{ rom: InProgressRom }>) {
   )
 }
 
-/** The other games with saves, newest first: beside the banner on a computer, in a row of their own on a phone */
+/**
+ * The other games with saves, newest first: at the banner's right on a wide screen, in a row of their own under it on a
+ * phone or a computer under 1280 points wide, where the banner has no room for it
+ */
 function AlsoInProgress({ layout, roms }: Readonly<{ layout: 'panel' | 'row'; roms: InProgressRom[] }>) {
   const { t } = useTranslation()
   const ago = useAgo()
   if (layout === 'panel') {
     return (
-      <div className='hidden w-72 shrink-0 self-stretch rounded-lg bg-black/25 p-3 lg:block'>
+      <div className='ml-auto hidden w-72 shrink-0 self-stretch rounded-lg bg-black/25 p-3 xl:block'>
         <div className='mb-1 text-xs tracking-wider uppercase opacity-75'>{t('home.alsoInProgress')}</div>
         {roms.slice(0, 3).map((rom) => (
           <Link
@@ -56,7 +59,7 @@ function AlsoInProgress({ layout, roms }: Readonly<{ layout: 'panel' | 'row'; ro
     )
   }
   return (
-    <div className='mt-3 lg:hidden'>
+    <div className='mt-3 xl:hidden'>
       <div className='mb-1.5 px-1 text-sm font-semibold'>{t('home.alsoInProgress')}</div>
       <div className='-mx-4 flex gap-2 overflow-x-auto px-4 pb-1'>
         {roms.map((rom) => (
@@ -116,7 +119,7 @@ export function HomeHero() {
             </div>
           </div>
 
-          <div className='flex min-w-0 flex-col gap-3'>
+          <div className='flex min-w-0 flex-col gap-3 lg:flex-1'>
             <div className='hidden lg:block'>
               <div className='text-xs tracking-wider uppercase opacity-75'>{t('home.continuePlaying')}</div>
               <Link className='block text-3xl leading-tight font-bold hover:underline' to={romPath(rom)}>
