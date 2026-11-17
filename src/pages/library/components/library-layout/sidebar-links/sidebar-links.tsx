@@ -6,18 +6,25 @@ import { useSearchQuery } from '../atoms.ts'
 import { SearchField } from '../search-field.tsx'
 import { SidebarLink } from './sidebar-link.tsx'
 
-export function SidebarLinks() {
+/**
+ * The sidebar's links. `pinned` is the search box and Home to History, which stay in place; `rest` is the consoles, which
+ * scroll under them
+ */
+export function SidebarLinks({ part }: Readonly<{ part: 'pinned' | 'rest' }>) {
   const { groups, isActive } = useNavigationLinks()
   const [query] = useSearchQuery()
   const counts = useSearchCounts()
+  const shownGroups = part === 'pinned' ? groups.slice(0, 1) : groups.slice(1)
 
   return (
-    <div className='w-64'>
-      <div className='mb-3'>
-        <SearchField />
-      </div>
+    <div className={clsx('w-64', { 'mb-2 border-b border-b-white/30 pb-3': part === 'pinned' })}>
+      {part === 'pinned' ? (
+        <div className='mb-3'>
+          <SearchField />
+        </div>
+      ) : null}
 
-      {groups.map(({ links, title }, index) => (
+      {shownGroups.map(({ links, title }, index) => (
         <div className={clsx({ 'mt-4': index })} key={title}>
           {title ? (
             <h3 className='flex items-center gap-2 px-4 text-sm text-white/50 capitalize'>

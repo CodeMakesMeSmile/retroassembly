@@ -7,8 +7,8 @@ import { useDate } from '../../hooks/use-date.ts'
 import { CompanyLogo } from '../../platform/components/company-logo.tsx'
 
 /**
- * A console's page header, on one line: its logo, when it came out and who made it, and About, which opens the rest (the
- * full facts, the description and a photo). On a computer the Favorites and Sort line (`actions`) is on this line too
+ * A console's page header, on one line: its logo, and About, which opens when it came out, who made it, the description
+ * and a photo. On a computer the Favorites and Sort line (`actions`) is on this line too
  */
 export function DeviceInfo({ actions, platform }: Readonly<{ actions?: ReactNode; platform: string }>) {
   const { t } = useTranslation()
@@ -49,9 +49,6 @@ export function DeviceInfo({ actions, platform }: Readonly<{ actions?: ReactNode
     manufacturer = 'Atari'
   }
 
-  const year = isValidDate(info.releaseDate) ? new Date(info.releaseDate).getUTCFullYear() : undefined
-  const summary = [year, manufacturer].filter(Boolean).join(', ')
-
   return (
     <div className='flex w-full min-w-0 flex-col'>
       <div className='flex items-center gap-3 lg:gap-4'>
@@ -63,10 +60,6 @@ export function DeviceInfo({ actions, platform }: Readonly<{ actions?: ReactNode
             src={banner}
           />
         </h1>
-        <div className='min-w-0 flex-1 truncate text-sm text-(--gray-11) lg:flex-none'>
-          {year ? <span className='hidden lg:inline'>{t('common.released')} </span> : null}
-          {summary}
-        </div>
         <button
           aria-expanded={aboutOpen}
           className='flex shrink-0 items-center gap-0.5 text-sm font-semibold text-(--accent-11) hover:underline'

@@ -18,6 +18,7 @@ import { LayoutHeader } from './layout-header/layout-header.tsx'
 import { LayoutMain } from './layout-main.tsx'
 import { LayoutMenu } from './layout-menu/layout-menu.tsx'
 import '../../utils/nostalgist.ts'
+import { PhoneNavBar } from './phone-nav-bar.tsx'
 import { PhoneSearchScreen } from './phone-search/phone-search-screen.tsx'
 import { useSearchShortcut } from './search-field.tsx'
 import { SidebarContainer } from './sidebar-container.tsx'
@@ -53,8 +54,9 @@ export default function LibraryLayout({ children }: Readonly<PropsWithChildren>)
               <span className='font-serif font-semibold'>{metadata.title}</span>
             </Link>
           </div>
+          <SidebarLinks part='pinned' />
           <ScrollArea className='flex-1' size='2'>
-            <SidebarLinks />
+            <SidebarLinks part='rest' />
           </ScrollArea>
           <div className='flex items-center justify-between border-t border-t-white/30 py-2'>
             {isLargeScreen ? <LayoutMenu /> : null}
@@ -66,6 +68,7 @@ export default function LibraryLayout({ children }: Readonly<PropsWithChildren>)
         <div className='top-0 right-0 left-72 z-11 hidden h-4 bg-(--accent-9) lg:fixed lg:block' />
         <div className='inset-y-0 right-0 z-11 hidden h-full w-4 bg-(--accent-9) lg:fixed lg:block' />
         <StatusBar />
+        <PhoneNavBar />
       </div>
 
       <FocusIndicator />

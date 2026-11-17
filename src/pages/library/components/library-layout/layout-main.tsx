@@ -5,7 +5,9 @@ export function LayoutMain({ children }: Readonly<PropsWithChildren>) {
   return (
     <main
       className={clsx(
-        'relative flex-1 overflow-clip border-r-[calc(0.5rem+env(safe-area-inset-right))] border-b-[calc(0.5rem+env(safe-area-inset-bottom))] border-l-[calc(0.5rem+env(safe-area-inset-left))] border-(--accent-9)',
+        'relative flex-1 overflow-clip border-r-[calc(0.5rem+env(safe-area-inset-right))] border-b-[0.5rem] border-l-[calc(0.5rem+env(safe-area-inset-left))] border-(--accent-9)',
+        // on a phone, room under the page for the bar pinned at the bottom, which keeps clear of the home indicator itself
+        'mb-[calc(3.5rem+env(safe-area-inset-bottom))]',
         'lg:mt-4 lg:mr-4 lg:mb-0 lg:ml-72 lg:border-none lg:pb-12',
       )}
     >
