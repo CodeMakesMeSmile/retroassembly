@@ -113,8 +113,9 @@ export function PspControls({ visible }: Readonly<{ visible: boolean }>) {
   const hidden = clsx({ hidden: !visible })
   const { launched } = useSession()
   useFitGameBelowTopBar(launched && visible)
-  // Each side's controls are about 150 points wide, and 450 tall in portrait; they shrink on smaller screens
-  const scale = useControlsScale(150, 480 / 272, 450)
+  // Each side's controls are about 150 points wide, and 450 tall in portrait; they shrink on smaller screens. Sideways
+  // the game starts below the top bar, which leaves them more room beside it
+  const scale = useControlsScale(150, 480 / 272, 450, topBarHeight)
   // In landscape each side is centred in the height below the top bar; its tallest part, L or R, tops out at 336 points
   const side = { '--controls-height': `${336 * scale}px`, scale } as CSSProperties
 

@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 // The bar with pause above the game in portrait
 const topBarHeight = 44
 
-function getControlsScale(sideWidth: number, gameAspectRatio: number, portraitHeight?: number) {
+function getControlsScale(sideWidth: number, gameAspectRatio: number, portraitHeight?: number, gameTop = 0) {
   if (globalThis.innerWidth === undefined) {
     return 1
   }
@@ -17,27 +17,28 @@ function getControlsScale(sideWidth: number, gameAspectRatio: number, portraitHe
     const belowGame = height - topBarHeight - width / gameAspectRatio
     return Math.min(1, width / 390, portraitHeight ? belowGame / portraitHeight : 1)
   }
-  const besideGame = (width - height * gameAspectRatio) / 2
+  const besideGame = (width - (height - gameTop) * gameAspectRatio) / 2
   return Math.max(0.6, Math.min(1, height / 390, besideGame / sideWidth))
 }
 
 /**
  * The scale for on-screen controls; `sideWidth` is how wide one side's controls are at full size in landscape,
  * `gameAspectRatio` the shape of the game's picture, and `portraitHeight`, for controls tall enough to reach the game
- * on a short phone, how tall they are at full size in portrait.
+ * on a short phone, how tall they are at full size in portrait. `gameTop` is how far down the game starts in landscape,
+ * where a game moved below the top bar is narrower and leaves more room beside it.
  */
-export function useControlsScale(sideWidth: number, gameAspectRatio = 4 / 3, portraitHeight?: number) {
-  const [scale, setScale] = useState(() => getControlsScale(sideWidth, gameAspectRatio, portraitHeight))
+export function useControlsScale(sideWidth: number, gameAspectRatio = 4 / 3, portraitHeight?: number, gameTop = 0) {
+  const [scale, setScale] = useState(() => getControlsScale(sideWidth, gameAspectRatio, portraitHeight, gameTop))
 
   useEffect(() => {
     function update() {
-      setScale(getControlsScale(sideWidth, gameAspectRatio, portraitHeight))
+      setScale(getControlsScale(sideWidth, gameAspectRatio, portraitHeight, gameTop))
     }
     update()
     const abortController = new AbortController()
     globalThis.addEventListener('resize', update, { signal: abortController.signal })
     return () => abortController.abort()
-  }, [sideWidth, gameAspectRatio, portraitHeight])
+  }, [sideWidth, gameAspectRatio, portraitHeight, gameTop])
 
   return scale
 }
