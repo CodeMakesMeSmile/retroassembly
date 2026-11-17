@@ -272,9 +272,18 @@ export function useEmulatorSessionController({
     error,
     isValidating,
     mutate: prepare,
-  } = useSWRImmutable(options, () => Nostalgist.prepare(options), {
-    revalidateOnMount: !lazy && (!cached || cached.getStatus() === 'terminated'),
-  })
+  } = useSWRImmutable(
+    options,
+    // An emulator with threads can only start on an isolated page (a PSP game's own). Anywhere else nothing is prepared,
+    // whatever asks: such a page sends the player to the game's page to play it
+    () =>
+      launchProfile.threads && !globalThis.crossOriginIsolated
+        ? Promise.resolve(undefined)
+        : Nostalgist.prepare(options),
+    {
+      revalidateOnMount: !lazy && (!cached || cached.getStatus() === 'terminated'),
+    },
+  )
 
   const emulator = data
   // While a lazy game downloads, Start can still be pressed: it waits for the download
@@ -344,6 +353,11 @@ export function useEmulatorSessionController({
   }
 
   async function warmUp() {
+    // An emulator with threads runs only on an isolated page (a PSP game's own), and is prepared there; on any other page,
+    // such as Home's Continue, preparing it ahead would only fail
+    if (launchProfile.threads && !globalThis.crossOriginIsolated) {
+      return
+    }
     if (lazy && !data) {
       await Promise.all([
         attemptAsync(async () => await getEmulatorFiles()),
