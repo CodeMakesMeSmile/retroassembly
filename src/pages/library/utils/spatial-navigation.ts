@@ -127,6 +127,22 @@ function inSidebar(element: unknown) {
   return element instanceof HTMLElement && Boolean(element.closest('aside'))
 }
 
+/** Where a left or right move starts from, while it's looking for where to go */
+let sidewaysFrom: HTMLElement | undefined
+
+/**
+ * Left and right go only to something beside you, in the same row: at the end of a row the focus stays there, rather
+ * than jumping to the row above or its "See all". Going between the page and the sidebar is the exception
+ */
+function isBeside(element: HTMLElement) {
+  if (!sidewaysFrom || inSidebar(sidewaysFrom) !== inSidebar(element)) {
+    return true
+  }
+  const from = sidewaysFrom.getBoundingClientRect()
+  const to = element.getBoundingClientRect()
+  return to.bottom > from.top + 1 && to.top < from.bottom - 1
+}
+
 let moving = false
 export function move(direction?: Direction) {
   if (moving || !direction) {
@@ -180,7 +196,9 @@ export function move(direction?: Direction) {
     document.body.addEventListener('sn:willfocus', handleWillFocus, { capture: true, signal: abortController.signal })
     // Up and down from the page look only in the page: past its end isn't the sidebar's Settings
     document.documentElement.classList.toggle('sn-in-page', vertical && !inSidebar(currentActiveElement))
+    sidewaysFrom = vertical || !(currentActiveElement instanceof HTMLElement) ? undefined : currentActiveElement
     SpatialNavigation.move(direction)
+    sidewaysFrom = undefined
     document.documentElement.classList.remove('sn-in-page')
   })
 }
@@ -209,7 +227,7 @@ export function resetFocus({ force }: { force?: boolean } = {}) {
 }
 
 export function init() {
-  SpatialNavigation.set({ navigableFilter: (element: HTMLElement) => !holdsControls(element) })
+  SpatialNavigation.set({ navigableFilter: (element: HTMLElement) => !holdsControls(element) && isBeside(element) })
 
   SpatialNavigation.add({
     restrict: 'self-only',
