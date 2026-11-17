@@ -1,5 +1,4 @@
 import { clsx } from 'clsx'
-import { useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { generatePath, Link, useLoaderData, useLocation } from 'react-router'
 import { platformMap, type PlatformName } from '#@/constants/platform.ts'
@@ -22,13 +21,6 @@ export function GameListSearching() {
   const { clear } = useLibrarySearch()
   const platform = usePlatform()
   const counts = useSearchCounts()
-
-  const tabsRef = useRef<HTMLDivElement>(null)
-  useLayoutEffect(() => {
-    if (tabsRef.current) {
-      tabsRef.current.scrollLeft = tabsScrollLeft
-    }
-  }, [pathname])
 
   const query = new URLSearchParams(search).get('q')
   if (!query) {
@@ -78,7 +70,15 @@ export function GameListSearching() {
       </div>
 
       {tabs.length > 2 ? (
-        <div className='-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden' ref={tabsRef}>
+        <div
+          className='-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden'
+          key={pathname}
+          ref={(row) => {
+            if (row) {
+              row.scrollLeft = tabsScrollLeft
+            }
+          }}
+        >
           {tabs.map(({ count, name, text, to }) => (
             <Link
               className={clsx(
@@ -86,8 +86,8 @@ export function GameListSearching() {
                 activeTab === name ? 'bg-(--accent-9) text-white' : 'bg-(--gray-3) text-(--gray-12)',
               )}
               key={name || 'all'}
-              onClick={() => {
-                tabsScrollLeft = tabsRef.current?.scrollLeft ?? 0
+              onClick={(event) => {
+                tabsScrollLeft = event.currentTarget.parentElement?.scrollLeft ?? 0
               }}
               // Switching console keeps the page where it is, so the tabs stay under the finger
               preventScrollReset
