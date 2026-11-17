@@ -1,4 +1,5 @@
 import { clsx } from 'clsx'
+import { useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { generatePath, Link, useLoaderData, useLocation } from 'react-router'
 import { platformMap, type PlatformName } from '#@/constants/platform.ts'
@@ -11,6 +12,9 @@ import { useSearchCounts } from '../../hooks/use-search-counts.ts'
  * Above a list being searched: what it's searched for and how many games match, with Clear. On a phone, also a row of
  * tabs with each console's matches, since the sidebar with its counts is hidden there
  */
+/** Where the row of console tabs was scrolled to, so a tab's page opens with the row as it was when the tab was tapped */
+let tabsScrollLeft = 0
+
 export function GameListSearching() {
   const { t } = useTranslation()
   const { pathname, search } = useLocation()
@@ -18,6 +22,13 @@ export function GameListSearching() {
   const { clear } = useLibrarySearch()
   const platform = usePlatform()
   const counts = useSearchCounts()
+
+  const tabsRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    if (tabsRef.current) {
+      tabsRef.current.scrollLeft = tabsScrollLeft
+    }
+  }, [pathname])
 
   const query = new URLSearchParams(search).get('q')
   if (!query) {
@@ -67,7 +78,7 @@ export function GameListSearching() {
       </div>
 
       {tabs.length > 2 ? (
-        <div className='-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden'>
+        <div className='-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden' ref={tabsRef}>
           {tabs.map(({ count, name, text, to }) => (
             <Link
               className={clsx(
@@ -75,6 +86,11 @@ export function GameListSearching() {
                 activeTab === name ? 'bg-(--accent-9) text-white' : 'bg-(--gray-3) text-(--gray-12)',
               )}
               key={name || 'all'}
+              onClick={() => {
+                tabsScrollLeft = tabsRef.current?.scrollLeft ?? 0
+              }}
+              // Switching console keeps the page where it is, so the tabs stay under the finger
+              preventScrollReset
               to={withSearch(to, query)}
             >
               {text}
