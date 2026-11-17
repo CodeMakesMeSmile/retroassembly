@@ -6,12 +6,19 @@ import type { loader } from '#@/pages/routes/library-home.tsx'
 import { getPlatformIcon } from '#@/utils/client/library.ts'
 import { HomeRow } from './home-row.tsx'
 
-/** The library's consoles, most games first, each a way to its games */
+/** When a console came out, for sorting */
+function released(platform: keyof typeof platformMap) {
+  return Date.parse(platformMap[platform].info.releaseDate) || 0
+}
+
+/** The library's consoles, newest console first (by when it came out), each a way to its games */
 export function ConsoleRow() {
   const { overview } = useLoaderData<typeof loader>()
   const { i18n, t } = useTranslation()
   const format = new Intl.NumberFormat(i18n.language)
-  const consoles = overview.consoles.filter(({ platform }) => platform in platformMap)
+  const consoles = overview.consoles
+    .filter(({ platform }) => platform in platformMap)
+    .toSorted((a, b) => released(b.platform) - released(a.platform))
   if (consoles.length < 2) {
     return null
   }

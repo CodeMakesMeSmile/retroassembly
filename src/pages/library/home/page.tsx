@@ -19,6 +19,9 @@ export function LibraryHomePage() {
   const { favoriteRoms, newAddedRoms } = useLoaderData<typeof loader>()
   const rediscover = useRediscoverPicks()
   const playTogether = usePlayTogetherPicks()
+  // A game can qualify for both rows; it's shown in Rediscover only
+  const shownInRediscover = new Set(rediscover.data?.map(({ id }) => id))
+  const playTogetherRoms = playTogether.data?.filter(({ id }) => !shownInRediscover.has(id))
 
   if (newAddedRoms.length === 0) {
     return <HomeEmpty />
@@ -65,11 +68,11 @@ export function LibraryHomePage() {
         </HomeRow>
       </div>
 
-      {playTogether.data?.length ? (
+      {playTogetherRoms?.length ? (
         <HomeRow note={t('home.playTogetherNote')} title={t('home.playTogether')}>
           <GameRow
             note={(rom) => (rom.gamePlayers ? t('home.players', { count: rom.gamePlayers }) : undefined)}
-            roms={playTogether.data}
+            roms={playTogetherRoms}
           />
         </HomeRow>
       ) : null}
