@@ -49,10 +49,18 @@ export const emulators = {
   },
   picodrive: { displayName: 'PicoDrive', source: 'retroarch' },
   // PSP, built for this fork from EmulatorJS's copy of PPSSPP, which keeps it building for browsers. Its games save
-  // into folders on the memory stick
+  // into folders on the memory stick. Its sound keeps 80 ms queued as a reserve against short stalls (patched into its
+  // build), which RetroArch keeps there by aiming for half of this latency
   ppsspp: {
     displayName: 'PPSSPP',
-    launch: { attachVirtualGamepad: true, canvasThumbnail: true, heavy: true, stickAxes: 'left', threads: true },
+    launch: {
+      attachVirtualGamepad: true,
+      audioLatency: 160,
+      canvasThumbnail: true,
+      heavy: true,
+      stickAxes: 'left',
+      threads: true,
+    },
     saveFileType: 'zip',
     saveFolder: 'PPSSPP/PSP/SAVEDATA',
     source: 'bundled',
