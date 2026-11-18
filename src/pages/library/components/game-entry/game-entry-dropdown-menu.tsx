@@ -56,7 +56,7 @@ export function GameEntryDropdownMenu({ rom }) {
 
   if (selectedGames.length > 0) {
     return (
-      <div className='absolute top-1 right-1 z-10'>
+      <div className='absolute top-1 right-1 z-1'>
         <Checkbox checked={selectedGames.includes(rom.id)} onCheckedChange={handleCheckedChange} value={rom.id} />
       </div>
     )
@@ -67,7 +67,9 @@ export function GameEntryDropdownMenu({ rom }) {
       <DropdownMenu.Root onOpenChange={setMenuOpen} open={menuOpen}>
         <DropdownMenu.Trigger>
           <div
-            className={clsx('absolute top-1 right-1 z-10 transition-opacity group-hover:opacity-100', {
+            // Above the game's cover, but below the red bars at the top and bottom of a phone's screen, so a tap on a bar
+            // never lands on it
+            className={clsx('absolute top-1 right-1 z-1 transition-opacity group-hover:opacity-100', {
               'opacity-0': !menuOpen,
             })}
           >

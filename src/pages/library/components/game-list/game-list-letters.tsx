@@ -84,7 +84,7 @@ export function GameListLetters({ current }: Readonly<{ current: RomLetter }>) {
   }
 
   return (
-    <div className='sticky top-4 z-10 shrink-0 self-start'>
+    <div className='sticky top-4 z-1 shrink-0 self-start'>
       {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- the letters are links; the strip follows a finger sliding across them */}
       <nav
         aria-label={t('pagination.jumpToLetter')}

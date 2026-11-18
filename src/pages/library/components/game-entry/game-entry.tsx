@@ -40,7 +40,7 @@ export function GameEntry({ rom }) {
             <GamePlatform platform={rom.platform} />
             <GameTitle rom={rom} />
             {isPending ? (
-              <div className='absolute inset-0 z-10 hidden bg-(--color-background)/50 group-focus:block'>
+              <div className='absolute inset-0 z-1 hidden bg-(--color-background)/50 group-focus:block'>
                 <div className='flex aspect-square w-full items-center justify-center'>
                   <div className='flex rounded-full bg-(--color-background) p-2 ring-1 ring-(--gray-4)'>
                     <span className='icon-[svg-spinners--180-ring] text-(--accent-9)' />
