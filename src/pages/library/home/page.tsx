@@ -7,12 +7,11 @@ import { GameRow } from './components/game-row.tsx'
 import { HomeEmpty } from './components/home-empty.tsx'
 import { HomeHero } from './components/home-hero.tsx'
 import { HomeRow } from './components/home-row.tsx'
-import { LibraryStats } from './components/library-stats.tsx'
 import { OnThisDayRow } from './components/on-this-day-row.tsx'
 import { usePlayTogetherPicks, useRediscoverPicks } from './components/use-home-picks.ts'
 
-// Home: what you're in the middle of, the library at a glance and its consoles, then rows that change from visit to
-// visit. A row with nothing in it is left out
+// Home: what you're in the middle of and the consoles, then rows that change from visit to visit. A row with nothing in
+// it is left out
 
 /** Picks another handful for a row of random picks */
 function ShuffleButton({ onClick }: Readonly<{ onClick: () => void }>) {
@@ -44,8 +43,8 @@ export function LibraryHomePage() {
   return (
     // On a computer, the same 32-point margin as the other pages; on a very wide screen, no wider than 1600 points, centred
     <div className='p-4 lg:mx-auto lg:max-w-[1664px] lg:p-8'>
+      <h1 className='sr-only'>{t('nav.home')}</h1>
       <HomeHero />
-      <LibraryStats />
       <ConsoleRow />
 
       {rediscover.data?.length ? (

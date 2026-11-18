@@ -20,7 +20,7 @@ export default function HistoryPage() {
         <span className='icon-[mdi--bar-chart] text-(--color-text)' />
         <Trans
           components={{
-            1: <span className='font-bold text-(--accent-9)' />,
+            1: <span className='font-bold text-(--accent-11)' />,
           }}
           i18nKey='stats.playedGames'
           values={{
