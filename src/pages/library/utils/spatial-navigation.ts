@@ -143,6 +143,28 @@ function isBeside(element: HTMLElement) {
   return to.bottom > from.top + 1 && to.top < from.bottom - 1
 }
 
+/** Whether a move is up or down, while it's looking for where to go */
+let movingVertically = false
+
+/**
+ * Up and down land only on something mostly in view: in a row that scrolls sideways, a picture cut off at its edge is
+ * passed over for one beside it, rather than for whatever is below the row. Left and right still reach it, scrolling it
+ * into view
+ */
+function isMostlyShown(element: HTMLElement) {
+  if (!movingVertically) {
+    return true
+  }
+  const row = element.parentElement?.closest<HTMLElement>('.overflow-x-auto, .overflow-x-scroll')
+  if (!row) {
+    return true
+  }
+  const shown = row.getBoundingClientRect()
+  const rect = element.getBoundingClientRect()
+  const across = Math.min(rect.right, shown.right) - Math.max(rect.left, shown.left)
+  return across >= rect.width / 2
+}
+
 async function bringIntoView(element: unknown) {
   if (element instanceof HTMLElement) {
     await scrollIntoView(element, {
@@ -201,8 +223,10 @@ export function move(direction?: Direction) {
     // Up and down from the page look only in the page: past its end isn't the sidebar's Settings
     document.documentElement.classList.toggle('sn-in-page', vertical && !inSidebar(currentActiveElement))
     sidewaysFrom = vertical || !(currentActiveElement instanceof HTMLElement) ? undefined : currentActiveElement
+    movingVertically = vertical
     SpatialNavigation.move(direction)
     sidewaysFrom = undefined
+    movingVertically = false
     document.documentElement.classList.remove('sn-in-page')
   })
 }
@@ -231,7 +255,9 @@ export function resetFocus({ force }: { force?: boolean } = {}) {
 }
 
 export function init() {
-  SpatialNavigation.set({ navigableFilter: (element: HTMLElement) => !holdsControls(element) && isBeside(element) })
+  SpatialNavigation.set({
+    navigableFilter: (element: HTMLElement) => !holdsControls(element) && isBeside(element) && isMostlyShown(element),
+  })
 
   SpatialNavigation.add({
     restrict: 'self-only',

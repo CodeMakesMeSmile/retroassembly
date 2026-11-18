@@ -16,6 +16,7 @@ import type { loader } from '#@/pages/routes/library-platform-rom.tsx'
 import { getRomGoodcodes } from '#@/utils/client/library.ts'
 import { dateFormatMap } from '#@/utils/isomorphic/i18n.ts'
 import { humanizeDate } from '#@/utils/isomorphic/misc.ts'
+import { aimAtSnapshots } from './snapshots.tsx'
 import { useAgo } from './use-ago.ts'
 
 // Files a save from another emulator may come as: RetroArch's .srm, the common .sav, and DeSmuME's .dsv; or, for an
@@ -61,7 +62,16 @@ export function InGameSave() {
   const name = getRomGoodcodes(rom).rom
 
   return (
-    <div className='mt-4 flex items-center gap-2 border-t border-(--gray-5) pt-3' data-sn-section=''>
+    <div
+      className='mt-4 flex items-center gap-2 border-t border-(--gray-5) pt-3'
+      data-sn-section=''
+      // Up from these buttons goes to the snapshot above, not past the row
+      onFocusCapture={(event) => {
+        if (event.target instanceof HTMLElement) {
+          aimAtSnapshots(event.target, 'up')
+        }
+      }}
+    >
       <h2 className='text-base font-semibold'>{t('emulator.inGameSave')}</h2>
       <span className='mr-auto text-(--gray-11)' suppressHydrationWarning>
         {/* With none, the line is just its name and the upload button */}

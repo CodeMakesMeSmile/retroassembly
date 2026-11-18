@@ -4,7 +4,6 @@ import type { loader } from '#@/pages/routes/library-platform-rom.tsx'
 import { getRomGoodcodes } from '#@/utils/client/library.ts'
 import { FavoriteButton } from '../../components/favorite-button.tsx'
 import { GameButtons } from '../../components/game-buttons/game-buttons.tsx'
-import { PageBreadcrumb } from '../../components/page-breadcrumb.tsx'
 import { RomBackground } from '../../components/rom-background.tsx'
 import { useViewport } from '../../hooks/use-viewport.ts'
 import { DownloadButton } from './components/download-button.tsx'
@@ -29,8 +28,6 @@ export default function RomPage() {
       <RomBackground rom={rom} />
 
       <div className='relative'>
-        <PageBreadcrumb />
-
         <div className='flex min-h-full w-full flex-col gap-4 p-4 lg:flex-row'>
           <div className='group lg:sticky'>
             <GameCover className='top-4 block w-full lg:w-64' parallax={isLargeScreen} rom={rom} />

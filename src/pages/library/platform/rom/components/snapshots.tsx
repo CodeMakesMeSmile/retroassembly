@@ -20,6 +20,34 @@ export type PickSnapshot = (snapshot: Snapshot, event: MouseEvent<HTMLButtonElem
 const shownInRow = 10
 
 /**
+ * Has up or down from `from` (See all above the row, the game save's buttons below it) land on the snapshot nearest it
+ * across that's mostly in view. Left to itself, the move would pass over the row, since the snapshot straight above or
+ * below is the one cut off at the row's edge
+ */
+export function aimAtSnapshots(from: HTMLElement, direction: 'down' | 'up') {
+  const attribute = `data-sn-${direction}`
+  const row = document.querySelector('[data-snapshot-row]')
+  const shown = row?.getBoundingClientRect()
+  const centre = from.getBoundingClientRect().left + from.offsetWidth / 2
+  let nearest: HTMLElement | undefined
+  let nearestDistance = Infinity
+  for (const snapshot of row?.querySelectorAll<HTMLElement>('button[id]') ?? []) {
+    const rect = snapshot.getBoundingClientRect()
+    const across = Math.min(rect.right, shown?.right ?? 0) - Math.max(rect.left, shown?.left ?? 0)
+    const distance = Math.abs(rect.left + rect.width / 2 - centre)
+    if (across >= rect.width / 2 && distance < nearestDistance) {
+      nearest = snapshot
+      nearestDistance = distance
+    }
+  }
+  if (nearest) {
+    from.setAttribute(attribute, `#${CSS.escape(nearest.id)}`)
+  } else {
+    from.removeAttribute(attribute)
+  }
+}
+
+/**
  * The game's snapshots on its page: their pictures, newest first, each continuing the game from there. See all shows
  * every one, where they can also be downloaded or deleted
  */
@@ -36,7 +64,7 @@ export function Snapshots({ disabled, onPick }: Readonly<{ disabled: boolean; on
         {states.length > 0 ? <SeeAllSnapshots disabled={disabled} onPick={onPick} /> : null}
       </div>
       {states.length > 0 ? (
-        <div className='scrollbar-on-hover mt-2 flex gap-2.5 overflow-x-auto pb-1'>
+        <div className='scrollbar-on-hover mt-2 flex gap-2.5 overflow-x-auto pb-1' data-snapshot-row=''>
           {states.slice(0, shownInRow).map((snapshot) => (
             <SnapshotButton disabled={disabled} key={snapshot.id} onPick={onPick} snapshot={snapshot} />
           ))}
@@ -60,6 +88,7 @@ function SnapshotButton({
       aria-label={t('emulator.continueFrom', { time })}
       className='group w-28 shrink-0 text-left text-xs text-(--gray-11) disabled:opacity-60'
       disabled={disabled}
+      id={`snapshot-${snapshot.id}`}
       onClick={(event) => onPick(snapshot, event)}
       // How long ago is worked out again in the browser, a moment after the server did
       suppressHydrationWarning
@@ -92,6 +121,7 @@ function SeeAllSnapshots({ disabled, onPick }: Readonly<{ disabled: boolean; onP
       <Dialog.Trigger>
         <button
           className='ml-auto flex items-center text-sm font-semibold text-(--accent-9) hover:underline'
+          onFocus={(event) => aimAtSnapshots(event.currentTarget, 'down')}
           type='button'
         >
           {t('home.seeAll')}
