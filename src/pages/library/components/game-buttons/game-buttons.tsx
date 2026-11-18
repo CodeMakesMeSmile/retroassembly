@@ -15,7 +15,9 @@ import type { LoadingProgress } from '#@/pages/library/utils/loading-progress.ts
 import { routes } from '#@/pages/routes.ts'
 import { formatBytes } from '#@/utils/client/format-bytes.ts'
 import { needsCrossOriginIsolation } from '#@/utils/isomorphic/cross-origin-isolation.ts'
+import { InGameSave } from '../../platform/rom/components/in-game-save.tsx'
 import { LaunchButton, type LaunchButtonProgress } from '../../platform/rom/components/launch-button.tsx'
+import { type Snapshot, Snapshots } from '../../platform/rom/components/snapshots.tsx'
 import { EmulatorPortal } from '../emulator-portal/emulator-portal.tsx'
 import { EmulatorSessionProvider } from '../emulator-portal/emulator-session-provider.tsx'
 import { BioseMissingMessage } from './biose-missing-message.tsx'
@@ -31,17 +33,25 @@ function subscribeNever() {
   return noop
 }
 
-export function GameButtons({ compact = false, lazy = false }: Readonly<{ compact?: boolean; lazy?: boolean }>) {
+/**
+ * Continue and Start for a game. On the game's page (`saves`), its snapshots and its own save follow, and a snapshot
+ * picked there continues the game from it
+ */
+export function GameButtons({
+  compact = false,
+  lazy = false,
+  saves = false,
+}: Readonly<{ compact?: boolean; lazy?: boolean; saves?: boolean }>) {
   return (
     <EmulatorSessionProvider lazy={lazy}>
       <div>
-        <GameButtonsContent compact={compact} />
+        <GameButtonsContent compact={compact} saves={saves} />
       </div>
     </EmulatorSessionProvider>
   )
 }
 
-function GameButtonsContent({ compact }: Readonly<{ compact: boolean }>) {
+function GameButtonsContent({ compact, saves }: Readonly<{ compact: boolean; saves: boolean }>) {
   const { rom, state } = useLoaderData()
   const { i18n, t } = useTranslation()
   const { error: prepareError, isDownloading, isPreparing, launch, loadingProgress, prepare, warmUp } = useSession()
@@ -59,11 +69,11 @@ function GameButtonsContent({ compact }: Readonly<{ compact: boolean }>) {
     return () => clearTimeout(timer)
   }, [pressed])
 
-  async function launchFrom(button: 'continue' | 'start', withState: boolean) {
+  async function launchFrom(button: 'continue' | 'start', withState: boolean, from?: Snapshot) {
     setPressed(button)
     setLaunchError(undefined)
     try {
-      await launch({ withState })
+      await launch({ from, withState })
     } catch (error) {
       setLaunchError(error)
     } finally {
@@ -121,6 +131,15 @@ function GameButtonsContent({ compact }: Readonly<{ compact: boolean }>) {
     }
   }
 
+  // A snapshot picked on the game's page continues the game from it, as Continue does from the newest
+  async function handlePickSnapshot(snapshot: Snapshot, event: MouseEvent<HTMLButtonElement>) {
+    if (isPreparing || (mayNeedsUserInteraction && !event?.clientX && !event?.clientY)) {
+      return
+    }
+    handleClickCommon(event)
+    await launchFrom('continue', true, snapshot)
+  }
+
   async function handleClickContinue(event: MouseEvent<HTMLButtonElement>) {
     if (isPreparing || (mayNeedsUserInteraction && !event?.clientX && !event?.clientY)) {
       event.preventDefault()
@@ -161,37 +180,61 @@ function GameButtonsContent({ compact }: Readonly<{ compact: boolean }>) {
     }
   }
 
+  // The game's snapshots and own save, on its page. They stay when the game can't be played here, for downloading
+  const savesShown = saves ? (
+    <>
+      <Snapshots
+        disabled={isPreparing || Boolean(missingBioses?.length) || cannotIsolate}
+        onPick={handlePickSnapshot}
+      />
+      <InGameSave />
+    </>
+  ) : null
+
   if (missingBioses?.length) {
-    return <BioseMissingMessage bioses={missingBioses} />
+    return (
+      <>
+        <BioseMissingMessage bioses={missingBioses} />
+        {savesShown}
+      </>
+    )
   }
 
   if (cannotIsolate) {
     return (
-      <div className='flex min-h-16 w-full items-center justify-center gap-2 rounded bg-(--accent-3) p-3 lg:w-80'>
-        <span className='icon-[mdi--warning-decagram] shrink-0' />
-        <span className='text-sm opacity-60'>
-          {t('error.browserCannotRunPlatform', { platform: t(platformMap[rom.platform].displayNameI18nKey) })}
-        </span>
-      </div>
+      <>
+        <div className='flex min-h-16 w-full items-center justify-center gap-2 rounded bg-(--accent-3) p-3 lg:w-80'>
+          <span className='icon-[mdi--warning-decagram] shrink-0' />
+          <span className='text-sm opacity-60'>
+            {t('error.browserCannotRunPlatform', { platform: t(platformMap[rom.platform].displayNameI18nKey) })}
+          </span>
+        </div>
+        {savesShown}
+      </>
     )
   }
 
   if (!isPreparing && error) {
     return (
-      <div className='flex h-16 w-full items-center justify-center gap-2 rounded bg-(--accent-3) lg:w-80'>
-        <span className='icon-[mdi--warning-decagram]' />
-        <span className='text-sm opacity-60'>
-          {error instanceof DownloadError ? t(`error.failedToDownload.${error.kind}`) : t('error.failedToLoadEmulator')}
-        </span>
-        <Button onClick={handleClickRetry} size='1' type='button'>
-          <span className='icon-[mdi--reload]' />
-          {t('common.retry')}
-        </Button>
-      </div>
+      <>
+        <div className='flex h-16 w-full items-center justify-center gap-2 rounded bg-(--accent-3) lg:w-80'>
+          <span className='icon-[mdi--warning-decagram]' />
+          <span className='text-sm opacity-60'>
+            {error instanceof DownloadError
+              ? t(`error.failedToDownload.${error.kind}`)
+              : t('error.failedToLoadEmulator')}
+          </span>
+          <Button onClick={handleClickRetry} size='1' type='button'>
+            <span className='icon-[mdi--reload]' />
+            {t('common.retry')}
+          </Button>
+        </div>
+        {savesShown}
+      </>
     )
   }
 
-  return (
+  const buttons = (
     <div
       className={clsx(
         'flex w-full',
@@ -272,5 +315,12 @@ function GameButtonsContent({ compact }: Readonly<{ compact: boolean }>) {
 
       <EmulatorPortal />
     </div>
+  )
+
+  return (
+    <>
+      {buttons}
+      {savesShown}
+    </>
   )
 }

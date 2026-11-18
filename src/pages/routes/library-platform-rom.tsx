@@ -27,12 +27,13 @@ export async function loader({ params }: Route.LoaderArgs) {
   }
   const { preference } = getContext().var
   const core = preference.emulator.platform[rom.platform]?.core
-  const [[state], gameSave] = await Promise.all([
-    getStates(getLibraryScope(), { core, limit: 1, rom: rom?.id, type: 'any' }),
+  const [states, gameSave] = await Promise.all([
+    // Every snapshot this game's emulator can load, newest first: the newest is the one Continue uses
+    getStates(getLibraryScope(), { core, rom: rom?.id, type: 'any' }),
     // The game's own save, put back before it boots
     core ? getLatestGameSave(getLibraryScope(), { core, rom: rom.id }) : undefined,
   ])
-  return { discs, gameSave, rom, state, title: getRomGoodcodes(rom).rom }
+  return { discs, gameSave, rom, state: states[0], states, title: getRomGoodcodes(rom).rom }
 }
 
 export default function LibraryPlatformRomRoute() {

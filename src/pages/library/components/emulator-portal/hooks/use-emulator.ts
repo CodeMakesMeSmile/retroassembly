@@ -15,6 +15,7 @@ import {
   installSystemFiles,
   readGameSave,
   readGameSaveFolder,
+  replaceAutoState,
   restoreGameSave,
   restoreGameSaveFolder,
   setDualShockController,
@@ -117,6 +118,12 @@ function hasAnalogStickOnScreen() {
   return globalThis.matchMedia?.('(pointer: coarse)').matches ?? false
 }
 
+/** A snapshot to continue from: its file, and the disc it was taken on, for a game on several discs */
+export interface ChosenState {
+  disc?: null | number
+  fileId: string
+}
+
 /**
  * Runs one game: prepares it, launches and starts it, saves and exits it. Used once per game, by the session provider
  * around it; components read it with useSession()
@@ -136,6 +143,9 @@ export function useEmulatorSessionController({
   const [currentDisc, setCurrentDisc] = useState(discs[0]?.number ?? 1)
   // Whether the game was launched to continue from the latest save
   const withStateRef = useRef(false)
+  // A snapshot other than the newest, picked on the game's page to continue from, for a game on several discs: loaded
+  // once the game has started and its disc is in
+  const chosenStateRef = useRef<ChosenState | undefined>(undefined)
   // The game's own save as this page last knew it: put back at launch, or read out while playing. `from` is the server's
   // save it came from, so a newer one from another device is fetched instead
   const knownGameSave = useRef<{ content?: Uint8Array; from?: string }>({})
@@ -374,7 +384,11 @@ export function useEmulatorSessionController({
     }
   }
 
-  async function launch({ withState }: { withState?: boolean } = {}) {
+  /**
+   * Launches the game: from the start, from the newest snapshot (`withState`), or from a snapshot picked on the game's
+   * page (`from`)
+   */
+  async function launch({ from, withState }: { from?: ChosenState; withState?: boolean } = {}) {
     // Fullscreen now, while the tap on Start or Continue still counts: a browser only allows it just after one, and a
     // game can take longer than that to get ready. Nothing is waited for before this
     if (goesFullscreen(preference.emulator.fullscreen) && !document.fullscreenElement) {
@@ -387,8 +401,15 @@ export function useEmulatorSessionController({
       return
     }
 
-    if (!withState) {
+    // The newest snapshot is put in place before the game boots, and so is any other picked on the game's page. A game
+    // on several discs boots without one, and has it loaded once its disc is in
+    const chosen = from && from.fileId !== state?.fileId ? from : undefined
+    if (!withState || (chosen && multiDisc)) {
       skipAutoState(emulator)
+    }
+    chosenStateRef.current = multiDisc ? chosen : undefined
+    if (chosen && !multiDisc) {
+      replaceAutoState(emulator, await download('state', 'files', getFileUrl(chosen.fileId))())
     }
     const files = await emulatorFiles
     if (files) {
@@ -420,7 +441,7 @@ export function useEmulatorSessionController({
     } else if (save) {
       restoreGameSave(emulator, save)
     }
-    withStateRef.current = Boolean(withState)
+    withStateRef.current = Boolean(withState) && !chosen
     setCurrentDisc(discs[0]?.number ?? 1)
 
     if (launchProfile.dualShockRemap && hasAnalogStickOnScreen()) {
@@ -500,7 +521,8 @@ export function useEmulatorSessionController({
     }
     onCancel(noop)
     noSleep.current ||= new NoSleep()
-    await noSleep.current.enable()
+    // A browser may refuse to keep the screen on; the game goes on regardless
+    await attemptAsync(() => noSleep.current?.enable() ?? Promise.resolve())
 
     // ad-hoc patch for mupen64plus_next
     if (launchProfile.nudgeAfterStart) {
@@ -510,9 +532,15 @@ export function useEmulatorSessionController({
       emulator.sendCommand('PAUSE_TOGGLE')
     }
 
-    if (multiDisc && withStateRef.current && state?.fileId) {
-      await switchToDisc(state.disc ?? discs[0].number, discs[0].number)
-      await emulator.loadState(getFileUrl(state.fileId))
+    // A game on several discs is continued once started, after its disc is put in
+    const chosen = chosenStateRef.current
+    chosenStateRef.current = undefined
+    const continueFrom = chosen ?? (multiDisc && withStateRef.current ? state : undefined)
+    if (continueFrom?.fileId) {
+      if (multiDisc) {
+        await switchToDisc(continueFrom.disc ?? discs[0].number, discs[0].number)
+      }
+      await emulator.loadState(getFileUrl(continueFrom.fileId))
     }
   }
 

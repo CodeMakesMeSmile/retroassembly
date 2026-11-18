@@ -61,7 +61,7 @@ export function GameOverlayButtons() {
 
       <GameOverlayButton onClick={handleClickSaveState}>
         <span className='icon-[mdi--content-save] size-5' />
-        {t('emulator.saveState')}
+        {t('emulator.takeSnapshot')}
       </GameOverlayButton>
 
       <div className='hidden lg:block lg:flex-1' />

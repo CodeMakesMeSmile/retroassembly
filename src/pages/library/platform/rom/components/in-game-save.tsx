@@ -1,7 +1,6 @@
 import { Button, Dialog, IconButton } from '@radix-ui/themes'
 import { fileOpen } from 'browser-fs-access'
 import { clsx } from 'clsx'
-import { DateTime } from 'luxon'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLoaderData } from 'react-router'
@@ -17,54 +16,97 @@ import type { loader } from '#@/pages/routes/library-platform-rom.tsx'
 import { getRomGoodcodes } from '#@/utils/client/library.ts'
 import { dateFormatMap } from '#@/utils/isomorphic/i18n.ts'
 import { humanizeDate } from '#@/utils/isomorphic/misc.ts'
+import { useAgo } from './use-ago.ts'
 
 // Files a save from another emulator may come as: RetroArch's .srm, the common .sav, and DeSmuME's .dsv; or, for an
 // emulator that keeps its saves in a folder (PPSSPP's SAVEDATA), that folder as a zip
 const uploadExtensions = ['.srm', '.sav', '.dsv']
 const folderUploadExtensions = ['.zip']
 
-function useAgo() {
-  const { i18n } = useTranslation()
-  return (date: Date | string) =>
-    DateTime.fromJSDate(new Date(date)).toRelative({ locale: i18n.language, style: 'short' }) ?? ''
+type Rom = Awaited<ReturnType<typeof loader>>['rom']
+
+/** Picks a save file from another emulator and keeps it as the game's save; `done` runs once it's kept */
+function useGameSaveUpload(rom: Rom, done: () => Promise<unknown>) {
+  const { t } = useTranslation()
+  const { preference } = usePreference()
+  const core = preference.emulator.platform[rom.platform]?.core ?? ''
+  const { saveFileType, saveFolder } = resolveConsole(rom.platform, core)
+
+  return useSWRMutation('game_saves/upload', async () => {
+    const file = await fileOpen({ extensions: saveFolder ? folderUploadExtensions : uploadExtensions })
+    if (!file.size) {
+      return
+    }
+    try {
+      await client.game_saves.$post({ form: { core, file, fileType: saveFileType, rom: rom.id } })
+    } catch {
+      alert(t('error.failedToUploadSave'))
+      return
+    }
+    await done()
+  })
 }
 
 /**
- * The game's own save (memory card, battery save) on its page: a line saying when it was last kept, which opens its
- * versions. A version can be downloaded or restored, and a save file from another emulator uploaded; either takes
- * effect the next time the game starts
+ * The game's own save (memory card, battery save) on its page: when it was last kept, with buttons to download it,
+ * upload one from another emulator, and see its earlier versions. A change takes effect the next time the game starts
  */
 export function InGameSave() {
   const { t } = useTranslation()
   const { gameSave, rom } = useLoaderData<typeof loader>()
   const [open, setOpen] = useState(false)
+  const refresh = useLibraryRefresh()
   const ago = useAgo()
+  const { isMutating: isUploading, trigger: upload } = useGameSaveUpload(rom, refresh)
+  const name = getRomGoodcodes(rom).rom
 
   return (
-    <DialogRoot onOpenChange={setOpen} open={open}>
-      <Dialog.Trigger>
-        <button
-          className='mt-3 inline-flex items-center gap-1.5 text-sm text-(--gray-11) hover:text-(--accent-9)'
-          data-sn-enabled
-          type='button'
-        >
-          <span className='icon-[mdi--sd] size-4' />
-          {gameSave ? t('emulator.savedInGame', { time: ago(gameSave.createdAt) }) : t('emulator.noInGameSave')}
-          <span className='icon-[mdi--chevron-right] size-4' />
-        </button>
-      </Dialog.Trigger>
-      {open ? <InGameSaveDialog rom={rom} /> : null}
-    </DialogRoot>
+    <div className='mt-4 flex items-center gap-2 border-t border-(--gray-5) pt-3' data-sn-section=''>
+      <h2 className='text-base font-semibold'>{t('emulator.inGameSave')}</h2>
+      <span className='mr-auto text-(--gray-11)' suppressHydrationWarning>
+        {gameSave ? ago(gameSave.createdAt) : t('emulator.noneYet')}
+      </span>
+      {gameSave ? (
+        <IconButton asChild variant='soft'>
+          <a
+            aria-label={t('common.download')}
+            title={t('common.download')}
+            download={`${name}.${gameSave.fileId.split('.').pop()}`}
+            href={getFileUrl(gameSave.fileId)}
+          >
+            <span className='icon-[mdi--download] size-5' />
+          </a>
+        </IconButton>
+      ) : null}
+      <IconButton
+        aria-label={t('common.upload')}
+        loading={isUploading}
+        onClick={() => upload()}
+        title={t('common.upload')}
+        variant='soft'
+      >
+        <span className='icon-[mdi--upload] size-5' />
+      </IconButton>
+      {gameSave ? (
+        <DialogRoot onOpenChange={setOpen} open={open}>
+          <Dialog.Trigger>
+            <IconButton aria-label={t('emulator.earlierVersions')} title={t('emulator.earlierVersions')} variant='soft'>
+              <span className='icon-[mdi--history] size-5' />
+            </IconButton>
+          </Dialog.Trigger>
+          {open ? <InGameSaveDialog rom={rom} /> : null}
+        </DialogRoot>
+      ) : null}
+    </div>
   )
 }
 
-function InGameSaveDialog({ rom }: Readonly<{ rom: Awaited<ReturnType<typeof loader>>['rom'] }>) {
+function InGameSaveDialog({ rom }: Readonly<{ rom: Rom }>) {
   const { i18n, t } = useTranslation()
   const { preference } = usePreference()
   const refresh = useLibraryRefresh()
   const ago = useAgo()
   const core = preference.emulator.platform[rom.platform]?.core ?? ''
-  const { saveFileType, saveFolder } = resolveConsole(rom.platform, core)
   const dateFormat = preference.ui.dateFormat === 'auto' ? dateFormatMap[i18n.language] : preference.ui.dateFormat
   const name = getRomGoodcodes(rom).rom
 
@@ -90,19 +132,7 @@ function InGameSaveDialog({ rom }: Readonly<{ rom: Awaited<ReturnType<typeof loa
     },
   )
 
-  const { isMutating: isUploading, trigger: upload } = useSWRMutation('game_saves/upload', async () => {
-    const file = await fileOpen({ extensions: saveFolder ? folderUploadExtensions : uploadExtensions })
-    if (!file.size) {
-      return
-    }
-    try {
-      await client.game_saves.$post({ form: { core, file, fileType: saveFileType, rom: rom.id } })
-    } catch {
-      alert(t('error.failedToUploadSave'))
-      return
-    }
-    await changed()
-  })
+  const { isMutating: isUploading, trigger: upload } = useGameSaveUpload(rom, changed)
 
   return (
     <Dialog.Content aria-describedby={undefined} maxWidth='480px'>

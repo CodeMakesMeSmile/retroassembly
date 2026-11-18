@@ -30,6 +30,19 @@ export function skipAutoState(emulator: Nostalgist) {
   })
 }
 
+/**
+ * Has the game continue from `state` when it boots, in place of the snapshot it was prepared with: written where the
+ * emulator loads its automatic snapshot from, after the player has put the prepared one there
+ */
+export function replaceAutoState(emulator: Nostalgist, state: Uint8Array) {
+  getInner(emulator).on('beforeLaunch', () => {
+    const fs = emulator.getEmscriptenFS()
+    const filePath = `${getInner(emulator).stateFilePath}.auto`
+    fs.mkdirTree(filePath.slice(0, filePath.lastIndexOf('/')))
+    fs.writeFile(filePath, state)
+  })
+}
+
 /** Puts the game's own save (memory card, battery save) where the emulator looks for it, before the game boots */
 export function restoreGameSave(emulator: Nostalgist, save: Uint8Array) {
   getInner(emulator).on('beforeLaunch', () => {
