@@ -1,5 +1,5 @@
 diff --git a/dist/nostalgist.js b/dist/nostalgist.js
-index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..ccbb845117ca6b9e365987b18fde9de813fd53b2 100644
+index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..0553899f1f4abe3a7df657d684c5d696dbd1fbec 100644
 --- a/dist/nostalgist.js
 +++ b/dist/nostalgist.js
 @@ -951,6 +951,9 @@ var ResolvableFile = class ResolvableFile {
@@ -50,7 +50,7 @@ index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..ccbb845117ca6b9e365987b18fde9de8
          ${jsContent};
          Module.FS = FS;
          Module.PATH = PATH;
-@@ -2280,20 +2298,35 @@ async function patchCoreJs({ js, name }) {
+@@ -2280,20 +2298,41 @@ async function patchCoreJs({ js, name }) {
            Browser: typeof Browser === 'undefined' ? null: Browser,
            JSEvents,
            Module,
@@ -58,6 +58,8 @@ index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..ccbb845117ca6b9e365987b18fde9de8
 +          clearTimers,
 +          exit: _emscripten_force_exit,
 +          freeBrowser: typeof PlatformEmscriptenFreeBrowser === 'function' ? PlatformEmscriptenFreeBrowser : null,
++          // Whether the emulator is paused mid-frame, waiting to resume: a command sent then can't be run safely
++          Asyncify: typeof Asyncify === 'undefined' ? null : Asyncify,
           }
        }`;
 -	else if (isEsmScript(jsContent)) jsContent = `${jsContent.replace("var setImmediate", "").replace("readyPromiseResolve(Module)", `readyPromiseResolve({
@@ -79,6 +81,8 @@ index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..ccbb845117ca6b9e365987b18fde9de8
 +          clearTimers,
 +          exit: _emscripten_force_exit,
 +          freeBrowser: typeof PlatformEmscriptenFreeBrowser === 'function' ? PlatformEmscriptenFreeBrowser : null,
++          // Whether the emulator is paused mid-frame, waiting to resume: a command sent then can't be run safely
++          Asyncify: typeof Asyncify === 'undefined' ? null : Asyncify,
          })`).replace("return moduleRtn;", `return moduleRtn.then((Module) => ({
            AL: typeof AL === 'undefined' ? null: AL,
            Browser: typeof Browser === 'undefined' ? null: Browser,
@@ -86,10 +90,12 @@ index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..ccbb845117ca6b9e365987b18fde9de8
 +          clearTimers,
            exit: _emscripten_force_exit,
 +          freeBrowser: typeof PlatformEmscriptenFreeBrowser === 'function' ? PlatformEmscriptenFreeBrowser : null,
++          // Whether the emulator is paused mid-frame, waiting to resume: a command sent then can't be run safely
++          Asyncify: typeof Asyncify === 'undefined' ? null : Asyncify,
            ...Module,
          }));`)};
      export function getEmscripten({ Module }) {
-@@ -2416,6 +2449,13 @@ var EmulatorFileSystem = class EmulatorFileSystem {
+@@ -2416,6 +2455,13 @@ var EmulatorFileSystem = class EmulatorFileSystem {
  		const directory = path$1.dirname(filePath);
  		const fileName = path$1.basename(filePath);
  		const buffer = await (await ResolvableFile.create(fileContent)).getUint8Array();
@@ -103,7 +109,24 @@ index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..ccbb845117ca6b9e365987b18fde9de8
  		FS.createDataFile("/", fileName, buffer, true, false);
  		const encoding = "binary";
  		const data = this.readFile(fileName, encoding);
-@@ -2540,10 +2580,31 @@ var Emulator = class {
+@@ -2526,8 +2572,14 @@ var Emulator = class {
+ 		this.options.cheats.push(normalizeCheat(cheat));
+ 		return this.syncCheats();
+ 	}
+-	callCommand(command) {
+-		const { Module } = this.getEmscripten();
++	callCommand(command, waitedMs = 0) {
++		const { Asyncify, Module } = this.getEmscripten();
++		// An emulator built to pause mid-frame (such as the N64's) loops forever if a command runs while it's paused
++		// there, waiting to resume: the command waits until the frame has finished, and is dropped after 5 seconds
++		if (Asyncify?.currData) {
++			if (waitedMs < 5e3) setTimeout(() => this.callCommand(command, waitedMs + 4), 4);
++			return;
++		}
+ 		Module[command]?.();
+ 	}
+ 	clearCheats() {
+@@ -2540,10 +2592,31 @@ var Emulator = class {
  		return this.setCheatsEnabled(target, true);
  	}
  	exit(statusCode = 0) {
@@ -136,7 +159,7 @@ index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..ccbb845117ca6b9e365987b18fde9de8
  		JSEvents.removeAllEventListeners();
  		this.removeGlobalDOMEventListeners();
  		if (this.blobUrlWasm !== void 0) {
-@@ -2556,6 +2617,12 @@ var Emulator = class {
+@@ -2556,6 +2629,12 @@ var Emulator = class {
  		}
  		uninstallSetImmediatePolyfill();
  		this.gameStatus = "terminated";
@@ -149,7 +172,7 @@ index b5b7d3d8d52d95e3beb1234f8202dec2b5985412..ccbb845117ca6b9e365987b18fde9de8
  	}
  	getCheats() {
  		return this.options.cheats.map((cheat) => ({ ...cheat }));
-@@ -2794,20 +2861,20 @@ var Emulator = class {
+@@ -2794,20 +2873,20 @@ var Emulator = class {
  		this.updateKeyboardEventHandlers();
  		if (this.enabledCheats.length > 0) this.syncCheats();
  	}

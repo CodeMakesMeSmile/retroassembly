@@ -41,6 +41,15 @@ export function restoreGameSave(emulator: Nostalgist, save: Uint8Array) {
 }
 
 /**
+ * Whether the emulator is paused part-way through a frame, waiting to resume (the N64's can be): a command run then would
+ * send it into a loop forever, so Nostalgist's commands wait (see its patch), and what needs one straight away gives up
+ */
+export function isMidFrame(emulator: Nostalgist) {
+  const { Asyncify } = emulator.getEmscripten() as { Asyncify?: { currData?: unknown } | null }
+  return Boolean(Asyncify?.currData)
+}
+
+/**
  * Reads the game's own save as it is now. RetroArch writes it out when told, straight away, so this needs no frames to
  * run and works while the game is paused or the page is being hidden. Nothing is returned when the game has nothing
  * saved yet (some emulators write no file until the game saves)
@@ -49,6 +58,7 @@ export function readGameSave(emulator: Nostalgist) {
   const fs = emulator.getEmscriptenFS()
   const inner = getInner(emulator)
   try {
+    // Mid-frame the command waits for the frame to finish, and the save is read as it was last written
     inner.callCommand('_cmd_savefiles')
     return new Uint8Array(fs.readFile(inner.sramFilePath) as Uint8Array)
   } catch {}
@@ -198,7 +208,8 @@ export async function startWithoutCamera(emulator: Nostalgist) {
 export function saveStateImmediately(emulator: Nostalgist): undefined | { state: Blob; thumbnail: Blob } {
   const { Module } = emulator.getEmscripten() as { Module: { runMainLoopIterations?: (count: number) => boolean } }
   const { runMainLoopIterations } = Module
-  if (!runMainLoopIterations) {
+  // Mid-frame it can't be saved straight away (see isMidFrame); the caller saves the usual way instead
+  if (!runMainLoopIterations || isMidFrame(emulator)) {
     return
   }
   const inner = getInner(emulator)
