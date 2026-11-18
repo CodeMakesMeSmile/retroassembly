@@ -32,20 +32,10 @@ function subscribeNever() {
 }
 
 export function GameButtons({ compact = false, lazy = false }: Readonly<{ compact?: boolean; lazy?: boolean }>) {
-  const { rom } = useLoaderData()
-  const { t } = useTranslation()
-
-  const platformName = t(platformMap[rom.platform].displayNameI18nKey)
-
   return (
     <EmulatorSessionProvider lazy={lazy}>
       <div>
         <GameButtonsContent compact={compact} />
-        {['psx', 'n64', 'nds', 'psp'].includes(rom.platform) ? (
-          <div className='mt-1 text-sm opacity-60'>
-            {t('platform.emulationExperimental', { platform: platformName })}
-          </div>
-        ) : null}
       </div>
     </EmulatorSessionProvider>
   )
