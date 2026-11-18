@@ -1,3 +1,4 @@
+import { delay } from 'es-toolkit'
 import type { Nostalgist } from 'nostalgist'
 import { type SaveFiles, zipSaveFiles } from './save-folder.ts'
 
@@ -60,6 +61,23 @@ export function restoreGameSave(emulator: Nostalgist, save: Uint8Array) {
 export function isMidFrame(emulator: Nostalgist) {
   const { Asyncify } = emulator.getEmscripten() as { Asyncify?: { currData?: unknown } | null }
   return Boolean(Asyncify?.currData)
+}
+
+// The emulator's own function that pauses or resumes the game, as Nostalgist's PAUSE_TOGGLE runs it
+const togglePauseFunction = '_cmd_toggle_pause'
+
+/**
+ * The N64 emulator's nudge just after it starts: paused and resumed at once, so it carries on running. A game continued
+ * from a snapshot starts part-way through a frame and stays there until this frees it, so these go straight through,
+ * not held back until the frame finishes as other commands are (they would wait for ever, and be dropped)
+ */
+export async function nudge(emulator: Nostalgist) {
+  const { Module } = emulator.getEmscripten() as { Module: Record<string, (() => void) | undefined> }
+  const togglePause = Module[togglePauseFunction]
+  await delay(0)
+  togglePause?.()
+  await delay(0)
+  togglePause?.()
 }
 
 /**

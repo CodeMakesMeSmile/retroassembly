@@ -1,4 +1,4 @@
-import { attemptAsync, delay, noop } from 'es-toolkit'
+import { attemptAsync, noop } from 'es-toolkit'
 import NoSleep from 'nosleep.js'
 import { Nostalgist } from 'nostalgist'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -13,6 +13,7 @@ import {
   closeAudioContexts,
   installGame,
   installSystemFiles,
+  nudge,
   readGameSave,
   readGameSaveFolder,
   replaceAutoState,
@@ -526,10 +527,7 @@ export function useEmulatorSessionController({
 
     // ad-hoc patch for mupen64plus_next
     if (launchProfile.nudgeAfterStart) {
-      await delay(0)
-      emulator.sendCommand('PAUSE_TOGGLE')
-      await delay(0)
-      emulator.sendCommand('PAUSE_TOGGLE')
+      await nudge(emulator)
     }
 
     // A game on several discs is continued once started, after its disc is put in
