@@ -1,8 +1,7 @@
 import { clsx } from 'clsx'
-import { type CSSProperties, useEffect } from 'react'
+import type { CSSProperties } from 'react'
 import { twMerge } from 'tailwind-merge'
 import type { RetroPadButton } from '#@/input/retropad.ts'
-import { useSession } from '#@/pages/library/components/emulator-portal/emulator-session-provider.tsx'
 import { useControlsScale } from '#@/pages/library/hooks/use-controls-scale.ts'
 import { DPad } from './dpad.tsx'
 import { pressed } from './psx-controls.tsx'
@@ -61,60 +60,14 @@ const shoulder = twMerge(
 const topBarButton =
   'rounded p-2 text-[10px] font-semibold tracking-wider text-white/75 data-[touching=true]:bg-white/25'
 
-// The top bar with pause, Select and Start
+// The top bar with pause, Select and Start, drawn over the top of the game's picture
 const topBarHeight = 44
-
-/**
- * Sideways, the game's picture goes below the top bar instead of under it. At the PSP's wide shape that also narrows it,
- * which leaves the controls at the sides clear of it too. Only the canvas's CSS top and height are set: RetroArch sizes
- * the picture from them, and is told by a resize event
- */
-function useFitGameBelowTopBar(enabled: boolean) {
-  const { emulator } = useSession()
-
-  useEffect(() => {
-    const canvas = emulator?.getCanvas()
-    if (!enabled || !canvas) {
-      return
-    }
-    function fit() {
-      if (!canvas) {
-        return
-      }
-      const landscape = globalThis.matchMedia('(orientation: landscape)').matches
-      const viewportHeight = globalThis.visualViewport?.height ?? globalThis.innerHeight
-      const top = landscape ? `${topBarHeight}px` : '0px'
-      const height = landscape ? `${Math.floor(viewportHeight - topBarHeight)}px` : '100%'
-      // Set again only when they differ, since setting them is itself watched below
-      if (canvas.style.top !== top || canvas.style.height !== height) {
-        canvas.style.top = top
-        canvas.style.height = height
-        globalThis.dispatchEvent(new Event('resize'))
-      }
-    }
-    fit()
-    const abortController = new AbortController()
-    globalThis.addEventListener('resize', fit, { signal: abortController.signal })
-    globalThis.visualViewport?.addEventListener('resize', fit, { signal: abortController.signal })
-    // The emulator puts its own full-screen style back when it starts, after this has run
-    const styleObserver = new MutationObserver(fit)
-    styleObserver.observe(canvas, { attributeFilter: ['style'] })
-    return () => {
-      abortController.abort()
-      styleObserver.disconnect()
-      canvas.style.top = '0'
-      canvas.style.height = '100%'
-      globalThis.dispatchEvent(new Event('resize'))
-    }
-  }, [enabled, emulator])
-}
 
 export function PspControls({ visible }: Readonly<{ visible: boolean }>) {
   const hidden = clsx({ hidden: !visible })
-  const { launched } = useSession()
-  useFitGameBelowTopBar(launched && visible)
-  // Each side's controls are about 150 points wide, and 450 tall in portrait; they shrink on smaller screens. Sideways
-  // the game starts below the top bar, which leaves them more room beside it
+  // Each side's controls are about 150 points wide, and 450 tall in portrait; they shrink on smaller screens. Sideways the
+  // game fills the screen's height, under the top bar, and the controls sit over its edges: they keep the size they had
+  // when the game was kept below the bar, rather than shrinking to stay clear of it
   const scale = useControlsScale(150, 480 / 272, 450, topBarHeight)
   // In landscape each side is centred in the height below the top bar; its tallest part, L or R, tops out at 336 points
   const side = { '--controls-height': `${336 * scale}px`, scale } as CSSProperties

@@ -7,6 +7,7 @@ import { unstable_serialize, useSWRConfig } from 'swr'
 import useSWRImmutable from 'swr/immutable'
 import { client } from '#@/api/client.ts'
 import { resolveConsole } from '#@/consoles/registry.ts'
+import { goesFullscreen } from '#@/constants/preference.ts'
 import type { Rom } from '#@/controllers/roms/get-roms.ts'
 import {
   closeAudioContexts,
@@ -374,6 +375,11 @@ export function useEmulatorSessionController({
   }
 
   async function launch({ withState }: { withState?: boolean } = {}) {
+    // Fullscreen now, while the tap on Start or Continue still counts: a browser only allows it just after one, and a
+    // game can take longer than that to get ready. Nothing is waited for before this
+    if (goesFullscreen(preference.emulator.fullscreen) && !document.fullscreenElement) {
+      void toggleFullscreen()
+    }
     // In a lazy session nothing is downloaded until now
     const emulatorFiles = getEmulatorFiles()
     const emulator = data ?? (lazy ? await prepareOnce() : undefined)
@@ -488,7 +494,8 @@ export function useEmulatorSessionController({
       focus('canvas')
     }
 
-    if (preference.emulator.fullscreen) {
+    // Asked for when Start was pressed (see launch); asked again in case that was refused
+    if (goesFullscreen(preference.emulator.fullscreen) && !document.fullscreenElement) {
       await toggleFullscreen()
     }
     onCancel(noop)

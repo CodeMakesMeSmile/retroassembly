@@ -10,7 +10,8 @@ export interface Preference {
   emulator: {
     autoSaveInterval: number
     core: Partial<Record<CoreName, Record<string, string>>>
-    fullscreen: boolean
+    /** Whether a game goes fullscreen when it starts; 'auto' is on phones and tablets (see goesFullscreen) */
+    fullscreen: 'auto' | boolean
     platform: Record<
       PlatformName,
       {
@@ -142,7 +143,7 @@ export const defaultPreference: ResolvedPreference = {
         ppsspp_frameskip: '1',
       },
     },
-    fullscreen: false,
+    fullscreen: 'auto',
     platform: mapValues(platformMap, ({ cores: [core] }, name) => ({
       bioses: [],
       core,
@@ -224,4 +225,15 @@ export function resolveUserPreference(rawUserPreference: null | PreferenceSnippe
   }
 
   return mergePreference(fallbackPreference, userPreference) as Preference
+}
+
+/**
+ * Whether a game goes fullscreen when it starts. Left on Automatic, it does on a device you mainly touch, where the
+ * phone's own bars otherwise take a quarter of the height from the game, and not on a computer
+ */
+export function goesFullscreen(fullscreen: Preference['emulator']['fullscreen']) {
+  if (typeof fullscreen === 'boolean') {
+    return fullscreen
+  }
+  return globalThis.matchMedia?.('(pointer: coarse)').matches ?? false
 }

@@ -1,5 +1,6 @@
 import { Card, Switch } from '@radix-ui/themes'
 import { useTranslation } from 'react-i18next'
+import { goesFullscreen } from '#@/constants/preference.ts'
 import { usePreference } from '#@/pages/library/hooks/use-preference.ts'
 import { SettingsTitle } from '../settings-title.tsx'
 import { ShaderSelect } from './shader-select.tsx'
@@ -74,7 +75,7 @@ export function ShaderSettings() {
                 {t('settings.goFullscreenOnLaunch')}
               </SettingsTitle>
               <Switch
-                checked={preference.emulator.fullscreen}
+                checked={goesFullscreen(preference.emulator.fullscreen)}
                 disabled={isLoading}
                 onCheckedChange={(checked) =>
                   update({
