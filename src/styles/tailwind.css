@@ -53,3 +53,14 @@
     }
   }
 }
+
+/* Takes taps inside a box that's set to let them through (such as a game cover's heart, over the cover's link), except
+   while a menu or dialog is open: the page behind one takes no taps then (it sets the page's pointer-events to none), and
+   pointer-events-auto would bring this back, so a tap meant to close the menu could favourite a game */
+@utility taps-in-pass-through {
+  pointer-events: auto;
+
+  body[style*='pointer-events: none'] & {
+    pointer-events: none;
+  }
+}

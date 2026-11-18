@@ -71,7 +71,8 @@ export function LayoutHeader() {
               <Select.Root onValueChange={handleValueChange} size='2' value={currentRouteName ?? ''}>
                 {/* Shown as the placeholder too, for when the page isn't a console's (typed as text, but shown as given) */}
                 <Select.Trigger
-                  className='text-white!'
+                  // White as a console's name is, though shown as a placeholder (which is otherwise grey, lost on red)
+                  className='text-white! [&_.rt-SelectTriggerInner]:text-white!'
                   placeholder={(<HeaderLinkItem link={pickerLabel} />) as unknown as string}
                   variant='ghost'
                 >
