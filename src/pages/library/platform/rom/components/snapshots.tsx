@@ -29,20 +29,19 @@ export function Snapshots({ disabled, onPick }: Readonly<{ disabled: boolean; on
 
   return (
     <section className='mt-6' data-sn-section=''>
-      <div className='mb-2 flex items-center gap-2' data-sn-heading=''>
+      {/* With none, the count of 0 says so, and there's no row */}
+      <div className='flex items-center gap-2' data-sn-heading=''>
         <h2 className='text-base font-semibold'>{t('emulator.snapshots')}</h2>
-        {states.length > 0 ? <span className='text-(--gray-11)'>{states.length}</span> : null}
+        <span className='text-(--gray-11)'>{states.length}</span>
         {states.length > 0 ? <SeeAllSnapshots disabled={disabled} onPick={onPick} /> : null}
       </div>
       {states.length > 0 ? (
-        <div className='scrollbar-on-hover flex gap-2.5 overflow-x-auto pb-1'>
+        <div className='scrollbar-on-hover mt-2 flex gap-2.5 overflow-x-auto pb-1'>
           {states.slice(0, shownInRow).map((snapshot) => (
             <SnapshotButton disabled={disabled} key={snapshot.id} onPick={onPick} snapshot={snapshot} />
           ))}
         </div>
-      ) : (
-        <p className='text-sm text-(--gray-11)'>{t('emulator.noneYet')}</p>
-      )}
+      ) : null}
     </section>
   )
 }

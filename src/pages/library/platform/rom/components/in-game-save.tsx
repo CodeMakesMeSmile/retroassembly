@@ -64,7 +64,8 @@ export function InGameSave() {
     <div className='mt-4 flex items-center gap-2 border-t border-(--gray-5) pt-3' data-sn-section=''>
       <h2 className='text-base font-semibold'>{t('emulator.inGameSave')}</h2>
       <span className='mr-auto text-(--gray-11)' suppressHydrationWarning>
-        {gameSave ? ago(gameSave.createdAt) : t('emulator.noneYet')}
+        {/* With none, the line is just its name and the upload button */}
+        {gameSave ? ago(gameSave.createdAt) : null}
       </span>
       {gameSave ? (
         <IconButton asChild variant='soft'>
