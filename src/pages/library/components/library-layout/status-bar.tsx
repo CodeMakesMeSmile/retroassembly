@@ -57,8 +57,9 @@ export function StatusBar() {
         </>
       ) : (
         <>
-          {/* Browsers only report a controller once one of its buttons is pressed on the page */}
-          <span className='flex items-center gap-2 text-white/90'>
+          {/* Browsers only report a controller once one of its buttons is pressed on the page. The hint is left out below
+              1280 points, where it would crowd the keys */}
+          <span className='hidden items-center gap-2 text-white/90 xl:flex'>
             <span className='icon-[mdi--google-gamepad]' />
             {t('gamepad.pressToUse')}
           </span>

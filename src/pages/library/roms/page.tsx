@@ -35,19 +35,21 @@ export default function LibraryROMsPage() {
         {search ? null : (
           <>
             <span className='icon-[mdi--bar-chart] text-(--color-text)' />
-            <Trans
-              components={{
-                1: <span className='font-semibold text-(--accent-11)' />,
-                3: <span className='font-semibold text-(--accent-11)' />,
-              }}
-              i18nKey='stats.totalGames'
-              values={{
-                game: gameLabel,
-                gameCount: pagination.total,
-                platform: platformLabel,
-                platformCount,
-              }}
-            />
+            <span>
+              <Trans
+                components={{
+                  1: <span className='font-semibold text-(--accent-11)' />,
+                  3: <span className='font-semibold text-(--accent-11)' />,
+                }}
+                i18nKey='stats.totalGames'
+                values={{
+                  game: gameLabel,
+                  gameCount: pagination.total,
+                  platform: platformLabel,
+                  platformCount,
+                }}
+              />
+            </span>
           </>
         )}
       </PageStats>

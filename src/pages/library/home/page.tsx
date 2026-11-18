@@ -18,7 +18,7 @@ function ShuffleButton({ onClick }: Readonly<{ onClick: () => void }>) {
   const { t } = useTranslation()
   return (
     <button
-      className='rounded-full border border-(--accent-6) px-3 py-0.5 text-xs font-semibold text-(--accent-11) hover:bg-(--accent-3)'
+      className='min-h-6 rounded-full border border-(--accent-6) px-3 text-xs font-semibold text-(--accent-11) hover:bg-(--accent-3)'
       onClick={onClick}
       type='button'
     >
@@ -60,7 +60,7 @@ export function LibraryHomePage() {
       <OnThisDayRow />
 
       {/* Side by side on a computer when there are both; Recently added alone takes the whole width */}
-      <div className={favoriteRoms.length > 0 ? 'lg:grid lg:grid-cols-2 lg:gap-8' : ''}>
+      <div className={favoriteRoms.length > 0 ? 'xl:grid xl:grid-cols-2 xl:gap-8' : ''}>
         {favoriteRoms.length > 0 ? (
           <HomeRow link={generatePath(routes.libraryFavorites)} title={t('nav.favorites')}>
             <GameRow roms={favoriteRoms} />

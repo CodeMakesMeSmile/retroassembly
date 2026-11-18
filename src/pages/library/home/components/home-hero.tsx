@@ -135,7 +135,9 @@ export function HomeHero() {
               </div>
             </div>
             {/* Download the game only when it's launched, so opening the library stays quick */}
-            <GameButtons compact lazy />
+            <div className='sm:max-w-sm'>
+              <GameButtons compact lazy />
+            </div>
           </div>
 
           {inProgressRoms.length > 0 ? <AlsoInProgress layout='panel' roms={inProgressRoms} /> : null}
