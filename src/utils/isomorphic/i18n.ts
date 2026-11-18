@@ -32,6 +32,8 @@ export const dateFormatMap: Record<LocalCode, string> = {
   cs: euDateFormat,
   de: dotDateFormat,
   en: usDateFormat,
+  // Year first, as written in Canada
+  'en-CA': isoDateFormat,
   es: euDateFormat,
   fr: euDateFormat,
   it: euDateFormat,

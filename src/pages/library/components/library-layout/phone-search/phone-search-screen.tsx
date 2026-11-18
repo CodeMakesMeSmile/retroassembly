@@ -193,7 +193,7 @@ export function PhoneSearchScreen() {
         {query ? (
           <>
             {chips.length > 2 ? (
-              <div className='-mx-3 mb-1 flex gap-2 overflow-x-auto px-3 py-1'>
+              <div className='scrollbar-on-hover -mx-3 mb-1 flex gap-2 overflow-x-auto px-3 py-1'>
                 {chips.map(({ count, name, text: chipText }) => (
                   <button
                     className={clsx(

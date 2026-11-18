@@ -1,6 +1,7 @@
 import { isEqual } from 'es-toolkit'
 import cs from './cs.json' with { type: 'json' }
 import de from './de.json' with { type: 'json' }
+import { canadianize } from './en-ca.ts'
 import en from './en.json' with { type: 'json' }
 import es from './es.json' with { type: 'json' }
 import fr from './fr.json' with { type: 'json' }
@@ -12,7 +13,21 @@ import ru from './ru.json' with { type: 'json' }
 import zhCN from './zh-CN.json' with { type: 'json' }
 import zhTW from './zh-TW.json' with { type: 'json' }
 
-export const localeCodes = ['cs', 'de', 'en', 'es', 'fr', 'it', 'ja', 'ko', 'pt', 'ru', 'zh-CN', 'zh-TW'] as const
+export const localeCodes = [
+  'cs',
+  'de',
+  'en',
+  'en-CA',
+  'es',
+  'fr',
+  'it',
+  'ja',
+  'ko',
+  'pt',
+  'ru',
+  'zh-CN',
+  'zh-TW',
+] as const
 
 export type LocalCode = (typeof localeCodes)[number]
 
@@ -20,6 +35,7 @@ export const locales = [
   { code: 'cs', name: 'Čeština', translation: cs },
   { code: 'de', name: 'Deutsch', translation: de },
   { code: 'en', name: 'English', translation: en },
+  { code: 'en-CA', name: 'English (Canada)', translation: canadianize(en) },
   { code: 'es', name: 'Español', translation: es },
   { code: 'fr', name: 'Français', translation: fr },
   { code: 'it', name: 'Italiano', translation: it },

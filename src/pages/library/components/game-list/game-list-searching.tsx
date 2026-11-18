@@ -46,7 +46,7 @@ export function GameListSearching() {
     <div className='px-4 lg:hidden' data-sn-section=''>
       {tabs.length > 2 ? (
         <div
-          className='-mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden'
+          className='scrollbar-on-hover -mx-4 mb-3 flex gap-2 overflow-x-auto px-4 pb-1 lg:hidden'
           key={pathname}
           ref={(row) => {
             if (row) {

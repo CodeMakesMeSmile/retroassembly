@@ -28,7 +28,9 @@ export function HomeRow({
           ) : null}
         </div>
       </div>
-      <div className='-mx-4 flex gap-3 overflow-x-auto px-4 pb-2 lg:mx-0 lg:gap-4 lg:px-0'>{children}</div>
+      <div className='scrollbar-on-hover -mx-4 flex gap-3 overflow-x-auto px-4 pb-2 lg:mx-0 lg:gap-4 lg:px-0'>
+        {children}
+      </div>
     </section>
   )
 }

@@ -61,7 +61,7 @@ function AlsoInProgress({ layout, roms }: Readonly<{ layout: 'panel' | 'row'; ro
   return (
     <div className='mt-3 xl:hidden' data-sn-section=''>
       <div className='mb-1.5 px-1 text-sm font-semibold'>{t('home.alsoInProgress')}</div>
-      <div className='-mx-4 flex gap-2 overflow-x-auto px-4 pb-1'>
+      <div className='scrollbar-on-hover -mx-4 flex gap-2 overflow-x-auto px-4 pb-1'>
         {roms.map((rom) => (
           <Link
             className='flex w-52 shrink-0 items-center gap-2 rounded-lg border border-(--gray-5) p-1.5 pr-3'
